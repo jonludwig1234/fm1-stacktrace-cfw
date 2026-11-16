@@ -47,6 +47,19 @@
 
 ---
 
+## Demo Songs & Walkthrough Videos
+
+All 4 mastered demo songs and both showcase videos are included directly in [`demos/`](demos/) and on the [Releases](../../releases/tag/v1.0.0-stacktrace) page:
+
+- [`demos/FM1_K250_STACKTRACE_YOUTUBE_16x9.mp4`](demos/FM1_K250_STACKTRACE_YOUTUBE_16x9.mp4) — Full 5m 59s 16:9 feature walkthrough covering all 4 demo songs
+- [`demos/FM1_K250_STACKTRACE_SHORT_9x16.mp4`](demos/FM1_K250_STACKTRACE_SHORT_9x16.mp4) — 56s 9:16 vertical showcase
+- [`demos/FM1_K250_SONG1_ORCHESTRA_56s.wav`](demos/FM1_K250_SONG1_ORCHESTRA_56s.wav) — Beethoven Concerto No. 3 Orchestra (56s)
+- [`demos/FM1_K250_SONG2_JAZZ_112s.wav`](demos/FM1_K250_SONG2_JAZZ_112s.wav) — Jazz Big-Band All-Star (112s)
+- [`demos/FM1_K250_SONG3_MARCH_87s.wav`](demos/FM1_K250_SONG3_MARCH_87s.wav) — Stars & Stripes Forever March (87s)
+- [`demos/FM1_K250_SONG4_MIXED_102s.wav`](demos/FM1_K250_SONG4_MIXED_102s.wav) — Multi-Genre & EDM/Rock Showcase (102s)
+
+---
+
 ## Standalone Web Workstation
 
 Open `web_emulator/index.html` in any modern Chromium/Firefox/Safari browser (no server or install required) to:
