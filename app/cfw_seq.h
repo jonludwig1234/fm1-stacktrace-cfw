@@ -95,7 +95,7 @@ int groove_samples_bind_slices(unsigned slot, unsigned start_pct, unsigned end_p
 int groove_samples_restore_bank(void);
 
 /* Built-in K250 Showcase Demo Jukebox */
-enum { CFW_DEMO_ORCH = 0, CFW_DEMO_JAZZ = 1, CFW_DEMO_MARCH = 2, CFW_DEMO_MIXED = 3, CFW_DEMO_COUNT = 4 };
+enum { CFW_DEMO_ORCH = 0, CFW_DEMO_JAZZ = 1, CFW_DEMO_MARCH = 2, CFW_DEMO_MIXED = 3, CFW_DEMO_FOX = 4, CFW_DEMO_COUNT = 5 };
 int groove_factory_apply_demo(unsigned demo_id);
 int cfw_demo_start(unsigned id);
 void cfw_demo_stop(void);

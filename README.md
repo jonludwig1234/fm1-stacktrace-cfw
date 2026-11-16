@@ -17,7 +17,7 @@
 | **Grit & Punch Live FX** | **Overdrive**, **Bitcrusher**, **4-Stage Phaser**, **Sidechain Pump**, plus **Punch FX** (`STUTTER`, `TAPE STOP`, `WASH HPF`, `HALF-TIME`, `BIT SCATTER`) and `FILL` hold |
 | **Zero-Flash-Write Slicer** | Slice any of the 8 flash sample slots into 2, 4, or 8 pads with custom start/end % — **no flash wear** |
 | **MIDI CC Learn & USB Audio** | Map external MIDI CCs to Cutoff, Reso, Decay, Morph, Drive, Crush, Phaser, Sidechain, Punch FX, Fill, and USB Monitor; live USB Audio RX/TX telemetry |
-| **4 Built-In Showcase Demos** | **Beethoven Orchestra (56s)**, **Jazz Big-Band All-Star (112s)**, **Stars & Stripes March (87s)**, and **Multi-Genre & EDM/Rock Showcase (102s)** — stored as compact LZ77-packed MIDI streams (`9.1 KB` total, zero embedded WAVs) |
+| **4 Built-In Showcase Demos** | **Beethoven Orchestra (56s)**, **Jazz Big-Band All-Star (112s)**, **Stars & Stripes March (87s)**, **Multi-Genre & EDM/Rock Showcase (102s)**, and **20th Century Fanfare (23s)** — stored as compact LZ77-packed MIDI streams (`9.0 KB` total, zero embedded WAVs) |
 | **256-Preset Web Workstation** | Standalone `web_emulator/index.html` with 675 calibrated multi-samples, studio amp/cabinet IR DSP, 8-bus mixer, and `.WAV` / `.MID` export |
 
 ---
@@ -77,6 +77,8 @@ All 4 mastered demo songs and both showcase videos are included directly in [`de
 - [`demos/FM1_K250_SONG2_JAZZ_112s.wav`](demos/FM1_K250_SONG2_JAZZ_112s.wav) — Jazz Big-Band All-Star (112s)
 - [`demos/FM1_K250_SONG3_MARCH_87s.wav`](demos/FM1_K250_SONG3_MARCH_87s.wav) — Stars & Stripes Forever March (87s)
 - [`demos/FM1_K250_SONG4_MIXED_102s.wav`](demos/FM1_K250_SONG4_MIXED_102s.wav) — Multi-Genre & EDM/Rock Showcase (102s)
+- [`demos/FM1_K250_SONG5_FOX_FANFARE_23s.wav`](demos/FM1_K250_SONG5_FOX_FANFARE_23s.wav) — 20th Century Fanfare (Bb Major Orchestral, 23s)
+- [`demos/20th_Century_Fox_Fanfare.mid`](demos/20th_Century_Fox_Fanfare.mid) — Standard MIDI File (SMF Type 1, 114 BPM)
 
 ---
 
