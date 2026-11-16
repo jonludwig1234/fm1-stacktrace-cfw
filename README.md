@@ -47,6 +47,26 @@
 
 ---
 
+## Walkthrough Video & UI Screenshots
+
+### Full 5m 59s Feature Walkthrough (All 4 Approved Demo Songs)
+
+https://github.com/jonludwig1234/fm1-stacktrace-cfw/releases/download/v1.0.0-stacktrace/FM1_K250_STACKTRACE_YOUTUBE_16x9.mp4
+
+[![Watch the Full 5m 59s Walkthrough Video](screenshots/01_workstation_overview.png)](https://github.com/jonludwig1234/fm1-stacktrace-cfw/releases/download/v1.0.0-stacktrace/FM1_K250_STACKTRACE_YOUTUBE_16x9.mp4)
+
+### Workstation & CFW Screenshots
+
+| Workstation & 256-Preset Library | 8-Bus Concert Stage Mixer |
+| :---: | :---: |
+| ![Workstation Overview](screenshots/01_workstation_overview.png) | ![8-Bus Stage Mixer](screenshots/03_8bus_stage_mixer.png) |
+| **256 Presets & Live Keybed** | **128-Step Pro SLOOP Sequencer** |
+| ![256 Presets Keybed](screenshots/02_256_presets_keybed.png) | ![128-Step Sequencer](screenshots/04_128step_sequencer.png) |
+| **DX7 / VA Poly / C64 SID Engines** | **Sample Slicer, Granular & Grit FX** |
+| ![DX7 VA SID Engines](screenshots/05_dx7_va_sid_engines.png) | ![Sample Slicer and Granular FX](screenshots/06_slicer_granular_fx.png) |
+
+---
+
 ## Demo Songs & Walkthrough Videos
 
 All 4 mastered demo songs and both showcase videos are included directly in [`demos/`](demos/) and on the [Releases](../../releases/tag/v1.0.0-stacktrace) page:
