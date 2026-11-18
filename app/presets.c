@@ -326,19 +326,37 @@ int groove_factory_apply_demo(unsigned demo_id)
         {GROOVE_DX7, LEAD, BELL,      80, 4},
         {GROOVE_DX7, LEAD, VIBES,     82, 5}
     };
+    static const struct part fox_parts[GROOVE_TRACKS] = {
+        {GROOVE_DX7, LEAD, BRASS,     96, 5},
+        {GROOVE_DX7, LEAD, BRASS,     92, 5},
+        {GROOVE_DX7, LEAD, STRINGS,   88, 5},
+        {GROOVE_DX7, PAD,  STRINGS,   86, 6},
+        {GROOVE_DX7, LEAD, BRASS,     94, 5},
+        {GROOVE_DX7, KEYS, ELECTRIC,  82, 4},
+        {GROOVE_DX7, BASS, ROUND_BASS,90, 3},
+        {GROOVE_808, BEAT, 0,         88, 2}
+    };
     struct groove_project *p = groove_project_scratch();
-    if (!p || demo_id > 3U) return GROOVE_PROJECT_INVALID;
+    if (!p || demo_id > 4U) return GROOVE_PROJECT_INVALID;
     memset(p, 0, sizeof *p);
-    memcpy(p->name, demo_id == 0U ? "K250 ORCH   " : demo_id == 1U ? "K250 JAZZ   " : demo_id == 2U ? "K250 MARCH  " : "ALL-BANK MIX", 12);
-    p->tempo = demo_id == 1U ? 140U : (demo_id == 3U ? 116U : 132U);
+    memcpy(p->name,
+           demo_id == 0U ? "K250 ORCH   " :
+           demo_id == 1U ? "K250 JAZZ   " :
+           demo_id == 2U ? "K250 MARCH  " :
+           demo_id == 3U ? "ALL-BANK MIX" : "20TH FANFARE", 12);
+    p->tempo = demo_id == 1U ? 140U : (demo_id == 3U ? 116U : (demo_id == 4U ? 114U : 132U));
     p->mute = 0;
-    p->effects[0] = demo_id == 0U ? 82U : demo_id == 1U ? 62U : (demo_id == 3U ? 58U : 72U);
+    p->effects[0] = demo_id == 0U ? 82U : demo_id == 1U ? 62U : (demo_id == 3U ? 58U : (demo_id == 4U ? 80U : 72U));
     p->effects[1] = 28U;
     p->effects[2] = demo_id == 0U ? 24U : 28U;
-    p->effects[3] = demo_id == 0U ? 84U : 76U;
+    p->effects[3] = (demo_id == 0U || demo_id == 4U) ? 84U : 76U;
     groove_sequence_defaults(&p->sequence);
     groove_project_arp_defaults(p);
-    const struct part *parts = demo_id == 0U ? orch_parts : demo_id == 1U ? jazz_parts : (demo_id == 2U ? march_parts : mixed_parts);
+    const struct part *parts =
+        demo_id == 0U ? orch_parts :
+        demo_id == 1U ? jazz_parts :
+        demo_id == 2U ? march_parts :
+        demo_id == 3U ? mixed_parts : fox_parts;
     for (unsigned t = 0; t < GROOVE_TRACKS; ++t)
         preset(&p->preset[t], &parts[t]);
     return groove_project_valid(p) ? groove_project_apply(p) : GROOVE_PROJECT_INVALID;

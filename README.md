@@ -1,6 +1,6 @@
 # FM-1 Stack Trace CFW (Custom Firmware + 256-Preset Web Workstation)
 
-**Open-source Custom Firmware (`FM1_K250_STACKTRACE.fwsc`) for the M-VAVE FM-1 Groovebox / Synthesizer**, built on FM1 Open V14 with 4 new Q23 fixed-point DSP synthesis engines, a 128-step Pro Sequencer, Euclidean & 303 Acid generators, an 8-scene clip launcher, live Grit & Punch FX, a zero-flash-write sample slicer, MIDI CC Learn, 4 built-in MIDI-driven showcase demos, and a standalone 256-preset browser workstation.
+**Open-source Custom Firmware (`FM1_K250_STACKTRACE.fwsc`) for the M-VAVE FM-1 Groovebox / Synthesizer**, built on FM1 Open V14 with 4 new Q23 fixed-point DSP synthesis engines, a 128-step Pro Sequencer, Euclidean & 303 Acid generators, an 8-scene clip launcher, live Grit & Punch FX, a zero-flash-write sample slicer, MIDI CC Learn, 5 built-in MIDI-driven showcase demos, and a standalone 256-preset browser workstation.
 
 > **Safety First:** Always back up your Projects, Samples, and DX7 Voice Banks via the [M-VAVE FM-1 Workbench](https://open.m-vave.com/fm1-workbench) before flashing any custom firmware. You can return to stock V15 at any time using the official Workbench.
 
@@ -17,8 +17,8 @@
 | **Grit & Punch Live FX** | **Overdrive**, **Bitcrusher**, **4-Stage Phaser**, **Sidechain Pump**, plus **Punch FX** (`STUTTER`, `TAPE STOP`, `WASH HPF`, `HALF-TIME`, `BIT SCATTER`) and `FILL` hold |
 | **Zero-Flash-Write Slicer** | Slice any of the 8 flash sample slots into 2, 4, or 8 pads with custom start/end % — **no flash wear** |
 | **MIDI CC Learn & USB Audio** | Map external MIDI CCs to Cutoff, Reso, Decay, Morph, Drive, Crush, Phaser, Sidechain, Punch FX, Fill, and USB Monitor; live USB Audio RX/TX telemetry |
-| **4 Built-In Showcase Demos** | **Beethoven Orchestra (56s)**, **Jazz Big-Band All-Star (112s)**, **Stars & Stripes March (87s)**, **Multi-Genre & EDM/Rock Showcase (102s)**, and **20th Century Fanfare (23s)** — stored as compact LZ77-packed MIDI streams (`9.0 KB` total, zero embedded WAVs) |
-| **256-Preset Web Workstation** | Standalone `web_emulator/index.html` with 675 calibrated multi-samples, studio amp/cabinet IR DSP, 8-bus mixer, and `.WAV` / `.MID` export |
+| **5 Built-In Showcase Demos** | **Beethoven Orchestra (56s)**, **Jazz Big-Band All-Star (112s)**, **Stars & Stripes March (87s)**, **Multi-Genre & EDM/Rock Showcase (102s)**, and **20th Century Fanfare (23s)** — stored as compact LZ77-packed MIDI streams (`9.0 KB` total, zero embedded WAVs) |
+| **256-Preset Web Workstation** | Standalone `FM1_Web_Workstation.html` (on GitHub Releases) with 675 calibrated multi-samples, studio amp/cabinet IR DSP, 8-bus mixer, and `.WAV` / `.MID` export (plus FM-1 Workbench sources in [`web/`](web/)) |
 
 ---
 
@@ -42,7 +42,7 @@
 
 - **CFW Engines & Sound Params:** On track view, select between `STOCK`, `VA POLY`, `TR-909`, `C64 SID`, and `GRANULAR`, and tweak the 4 Q23 engine parameters (`0–100`).
 - **128-Step Sequencer (Bank A/B):** Toggle Bank A (`1–64`) / Bank B (`65–128`) and edit per-step **Prob**, **Cond**, and **Ratchet (1×–4×)**.
-- **Demo Jukebox:** Open the **DEMO SONGS** bank (`preset_bank == 2`) from the preset/project browser to audition all 4 built-in MIDI showcase tracks directly on the hardware DSP.
+- **Demo Jukebox:** Open the **DEMO SONGS** bank (`preset_bank == 2`) from the preset/project browser to audition all 5 built-in MIDI showcase tracks directly on the hardware DSP.
 - **Zero-Wear Slicer:** Select a flash sample slot (`0–7`), set `2 / 4 / 8` slices and Start/End %, then apply to map slices across pads without writing to Flash.
 
 ---
@@ -69,7 +69,7 @@ https://github.com/jonludwig1234/fm1-stacktrace-cfw/releases/download/v1.0.0-sta
 
 ## Demo Songs & Walkthrough Videos
 
-All 4 mastered demo songs and both showcase videos are included directly in [`demos/`](demos/) and on the [Releases](../../releases/tag/v1.0.0-stacktrace) page:
+All 5 mastered demo songs and both showcase videos are included directly in [`demos/`](demos/) and on the [Releases](../../releases/tag/v1.0.0-stacktrace) page:
 
 - [`demos/FM1_K250_STACKTRACE_YOUTUBE_16x9.mp4`](demos/FM1_K250_STACKTRACE_YOUTUBE_16x9.mp4) — Full 5m 59s 16:9 feature walkthrough covering all 4 demo songs
 - [`demos/FM1_K250_STACKTRACE_SHORT_9x16.mp4`](demos/FM1_K250_STACKTRACE_SHORT_9x16.mp4) — 56s 9:16 vertical showcase
@@ -84,9 +84,9 @@ All 4 mastered demo songs and both showcase videos are included directly in [`de
 
 ## Standalone Web Workstation
 
-Open `web_emulator/index.html` in any modern Chromium/Firefox/Safari browser (no server or install required) to:
+Download `FM1_Web_Workstation.html` from [GitHub Releases](../../releases) and open it in any modern Chromium/Firefox/Safari browser (no server or install required), or build the FM-1 browser workbench from [`web/`](web/) via `build.bat --web`, to:
 - Audition all **256 workstation presets** across 8 synthesis/sampling engines.
-- Play all **4 Showcase Demo Songs** live through the 8-bus mixer and record lossless 16-bit `.WAV` masters.
+- Play all **5 Showcase Demo Songs** live through the 8-bus mixer and record lossless 16-bit `.WAV` masters.
 - Sync with physical FM-1 hardware over WebMIDI (`0xF8` clock & DX7 `.SYX` transfer).
 
 ---
@@ -100,11 +100,16 @@ Firmware builds target the **AC791N (PI32v2 `r3`)** using the JieLi 2.5.3 toolch
   $env:FM1_PI32_TOOLCHAIN = 'C:\JL\pi32'
   .\sdk\Build.ps1 -FirmwareOnly -Toolchain 'C:\JL\pi32'
   ```
-- Linux (via Wine + Python packager):
-  1. Generate compact Flash assets (`cfw_demo_songs.h`, `stacktrace_avatar_rle.h`): `python3 gen_firmware_assets.py`
-  2. Compile & link `sdk.elf`: `python3 build_firmware.py`
-  3. Package `FM1_OFFICIAL_OPEN.fwsc`: `python3 package_fw.py`
-  4. Verify ELF/ISR/Container integrity (`7/7 PASS`): `python3 verify_firmware_suite.py`
+- Linux (via Wine + Python packager; set `FM1_PI32_TOOLCHAIN` to your JieLi PI32v2 directory):
+  1. Generate compact Flash assets (`cfw_demo_songs.h`, `stacktrace_avatar_rle.h`): `python3 tools/gen_firmware_assets.py`
+  2. Compile & link `sdk.elf`: `FM1_PI32_TOOLCHAIN=/path/to/jieli_pi32 python3 tools/build_firmware.py`
+  3. Package `FM1_OFFICIAL_OPEN.fwsc`: `FM1_PI32_TOOLCHAIN=/path/to/jieli_pi32 python3 tools/package_fw.py`
+  4. Verify ELF/ISR/Container integrity (`7/7 PASS`): `FM1_PI32_TOOLCHAIN=/path/to/jieli_pi32 python3 tools/verify_firmware_suite.py`
+- Host-side storage fault-injection & unit tests (Linux/macOS with `gcc`):
+  ```bash
+  gcc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -Iapp -Iapp/synth -Isdk/include tests/test_storage_faults.c app/project.c app/fm_library.c -o /tmp/test_storage_faults && /tmp/test_storage_faults
+  gcc -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined -Iapp -Iapp/synth -Isdk/include tests/test_cfw_fixes.c app/presets.c app/samples.c -o /tmp/test_cfw_fixes && /tmp/test_cfw_fixes
+  ```
 
 ---
 

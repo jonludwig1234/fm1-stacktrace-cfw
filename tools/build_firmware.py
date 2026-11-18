@@ -5,12 +5,15 @@ import hashlib
 import json
 import struct
 
-ROOT = '/home/jon/.gemini/antigravity/scratch/fm1_k250_stacktrace/fm1_open'
-TOOLCHAIN_BIN = '/home/jon/.gemini/antigravity/scratch/jieli_pi32/bin'
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+_tc_root = os.environ.get('FM1_PI32_TOOLCHAIN', os.path.join(ROOT, '..', 'jieli_pi32'))
+TOOLCHAIN_BIN = _tc_root if os.path.isdir(os.path.join(_tc_root, 'clang.exe')) or os.path.basename(_tc_root) == 'bin' else os.path.join(_tc_root, 'bin')
 CLANG = os.path.join(TOOLCHAIN_BIN, 'clang.exe')
 LD = os.path.join(TOOLCHAIN_BIN, 'pi32v2-ld.exe')
 NM = os.path.join(TOOLCHAIN_BIN, 'llvm-nm.exe')
 OBJCOPY = os.path.join(TOOLCHAIN_BIN, 'llvm-objcopy.exe')
+if not os.path.isfile(CLANG):
+    sys.exit(f"JieLi PI32v2 toolchain not found at {CLANG}. Set FM1_PI32_TOOLCHAIN to your JieLi pi32 directory.")
 BUILD_DIR = os.path.join(ROOT, 'build/dx7')
 OBJ_DIR = os.path.join(BUILD_DIR, 'obj')
 GEN_DIR = os.path.join(BUILD_DIR, 'generated')

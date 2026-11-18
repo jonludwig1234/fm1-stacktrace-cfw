@@ -4,9 +4,11 @@ import struct
 import subprocess
 import json
 
-ELF = '/home/jon/Desktop/FM1_Firmware/FM1_K250_STACKTRACE.elf'
-FWSC = '/home/jon/Desktop/FM1_Firmware/FM1_K250_STACKTRACE.fwsc'
-TOOLCHAIN_BIN = '/home/jon/.gemini/antigravity/scratch/jieli_pi32/bin'
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+ELF = os.environ.get('FM1_ELF', os.path.join(ROOT, 'build/dx7/sdk.elf'))
+FWSC = os.environ.get('FM1_FWSC', os.path.join(ROOT, 'build/dx7/generated/FM1_OFFICIAL_OPEN.fwsc'))
+_tc_root = os.environ.get('FM1_PI32_TOOLCHAIN', os.path.join(ROOT, '..', 'jieli_pi32'))
+TOOLCHAIN_BIN = _tc_root if os.path.basename(_tc_root) == 'bin' else os.path.join(_tc_root, 'bin')
 NM = os.path.join(TOOLCHAIN_BIN, 'llvm-nm.exe')
 
 def run_wine(cmd):

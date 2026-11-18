@@ -77,6 +77,29 @@ static uint32_t checksum(void)
         crc = groove_crc32(crc, &record.project, GROOVE_PROJECT_LEGACY_BYTES);
     return ~crc;
 }
+static int is_blank(const void *data, unsigned bytes)
+{
+    const uint8_t *p = data;
+    while (bytes--)
+        if (*p++ != 0xffU)
+            return 0;
+    return 1;
+}
+static int flash_is_blank(uint32_t address, unsigned bytes)
+{
+    uint8_t buffer[64];
+    while (bytes) {
+        unsigned n = bytes < sizeof buffer ? bytes : sizeof buffer;
+        int r = fm1_flash_read(address, buffer, n);
+        if (r)
+            return r;
+        if (!is_blank(buffer, n))
+            return 0;
+        address += n;
+        bytes -= n;
+    }
+    return 1;
+}
 static int read_sector(unsigned sector)
 {
     uint32_t address = sector * FM1_FLASH_SECTOR_BYTES;
@@ -84,6 +107,12 @@ static int read_sector(unsigned sector)
     if (r)
         return r;
     const struct header *h = &record.header;
+    if (is_blank(h, sizeof *h)) {
+        r = flash_is_blank(address + sizeof *h, FM1_FLASH_SECTOR_BYTES - sizeof *h);
+        if (r < 0)
+            return r;
+        return r ? GROOVE_PROJECT_EMPTY : GROOVE_PROJECT_INVALID;
+    }
     unsigned legacy = h->magic == LEGACY_PROJECT_MAGIC || h->magic == LEGACY_SETTINGS_MAGIC;
     unsigned v5 = h->magic == V5_PROJECT_MAGIC || h->magic == V5_SETTINGS_MAGIC;
     unsigned project = h->magic == PROJECT_MAGIC || h->magic == LEGACY_PROJECT_MAGIC || h->magic == V5_PROJECT_MAGIC;
@@ -91,7 +120,7 @@ static int read_sector(unsigned sector)
         h->target >= GROOVE_PROJECT_SLOTS ||
         (sector != STAGING_SECTOR && h->target != sector) ||
         (!project && h->target != SETTINGS_SECTOR))
-        return GROOVE_PROJECT_EMPTY;
+        return GROOVE_PROJECT_INVALID;
     unsigned bytes = legacy ? GROOVE_PROJECT_LEGACY_BYTES : sizeof record.project;
     if (project)
         r = fm1_flash_read(address + sizeof record.header, &record.project, bytes);
@@ -104,21 +133,21 @@ static int read_sector(unsigned sector)
     if (h->crc != checksum() || s->role > FM1_BLE_CENTRAL || s->clock > GROOVE_CLOCK_MIDI ||
         s->slot >= GROOVE_PROJECT_SLOTS || (s->radio_off & ~GROOVE_RADIO_ALL) ||
         (h->target != SETTINGS_SECTOR && (s->role || s->clock || s->slot || s->radio_off)))
-        return GROOVE_PROJECT_EMPTY;
+        return GROOVE_PROJECT_INVALID;
     if (legacy || v5) {
         if (h->target == SETTINGS_SECTOR) groove_midi_defaults(&record.settings.midi);
         else memset(&record.settings.midi, 0, sizeof record.settings.midi);
-    } else if (!groove_midi_config_valid(&s->midi)) return GROOVE_PROJECT_EMPTY;
+    } else if (!groove_midi_config_valid(&s->midi)) return GROOVE_PROJECT_INVALID;
     if (h->target != SETTINGS_SECTOR) {
         static const struct groove_midi_config zero;
-        if (memcmp(&s->midi, &zero, sizeof zero)) return GROOVE_PROJECT_EMPTY;
+        if (memcmp(&s->midi, &zero, sizeof zero)) return GROOVE_PROJECT_INVALID;
     }
     if (project && legacy) {
-        if (record.project.sequence.version != 3) return GROOVE_PROJECT_EMPTY;
+        if (record.project.sequence.version != 3) return GROOVE_PROJECT_INVALID;
         record.project.sequence.version = 4;
         groove_project_arp_defaults(&record.project);
     }
-    if (project && !groove_project_valid(&record.project)) return GROOVE_PROJECT_EMPTY;
+    if (project && !groove_project_valid(&record.project)) return GROOVE_PROJECT_INVALID;
     /* Verify the old CRC before migration. Normalize only in RAM; the next
      * explicit save/settings write uses the new record and staging protocol. */
     if (legacy || v5) {
@@ -131,12 +160,17 @@ static int latest(unsigned target, unsigned *sector, uint32_t *generation)
 {
     if (fm1_flash_size() < USER_BYTES || target > SETTINGS_SECTOR)
         return FM1_FLASH_UNAVAILABLE;
-    unsigned found = 0;
+    unsigned found = 0, target_invalid = 0;
     for (unsigned i = 0; i < 2; ++i) {
         unsigned s = i ? STAGING_SECTOR : target;
         int r = read_sector(s);
-        if (r < 0)
-            return r;
+        if (r < 0) {
+            if (r != GROOVE_PROJECT_INVALID)
+                return r;
+            if (!i)
+                target_invalid = 1;
+            continue;
+        }
         uint32_t d = record.header.generation - *generation;
         if (!r && record.header.target == target && (!found || (d && d < 0x80000000U))) {
             *sector = s;
@@ -144,7 +178,7 @@ static int latest(unsigned target, unsigned *sector, uint32_t *generation)
             found = 1;
         }
     }
-    return found ? 0 : GROOVE_PROJECT_EMPTY;
+    return found ? 0 : target_invalid ? GROOVE_PROJECT_INVALID : GROOVE_PROJECT_EMPTY;
 }
 static int read_project(unsigned sector)
 {
@@ -186,17 +220,28 @@ static int flash_checksum(uint32_t address, unsigned bytes, uint32_t *result)
     return 0;
 }
 /* A committed tuning journal is authoritative until its destination verifies. */
-static int tuning_location(uint32_t *address)
+static int tuning_location_ex(uint32_t *address, unsigned *legacy_journal)
 {
     *address = GROOVE_TUNING_OFFSET;
+    if (legacy_journal)
+        *legacy_journal = 0;
     struct tuning_journal header;
     int r = fm1_flash_read(TUNING_JOURNAL_ADDRESS, &header, sizeof header);
     if (r || (header.magic != TUNING_JOURNAL_MAGIC && header.magic != LEGACY_TUNING_JOURNAL_MAGIC) || header.commit) return r;
     uint32_t crc, body = TUNING_JOURNAL_ADDRESS + sizeof header;
-    r = flash_checksum(body, header.magic == LEGACY_TUNING_JOURNAL_MAGIC
+    unsigned legacy = header.magic == LEGACY_TUNING_JOURNAL_MAGIC;
+    r = flash_checksum(body, legacy
         ? offsetof(struct tuning_sector, session) : sizeof(struct tuning_sector), &crc);
-    if (!r && crc == header.crc) *address = body;
+    if (!r && crc == header.crc) {
+        *address = body;
+        if (legacy_journal)
+            *legacy_journal = legacy;
+    }
     return r;
+}
+static int tuning_location(uint32_t *address)
+{
+    return tuning_location_ex(address, NULL);
 }
 static int tuning_recover(void)
 {
@@ -329,23 +374,31 @@ static int tuning_upgrade(void)
     if (r)
         return r < 0 ? r : 0;
     uint32_t address;
-    r = tuning_location(&address);
+    unsigned legacy_journal = 0;
+    r = tuning_location_ex(&address, &legacy_journal);
     if (!r) r = fm1_flash_read(address, head, sizeof head);
     if (r || head[0] != TUNING_MAGIC || head[1] != 1)
         return r;
     struct tuning_sector *s = malloc(sizeof *s);
     if (!s)
         return GROOVE_PROJECT_MEMORY;
-    r = fm1_flash_read(address, s, sizeof *s);
+    memset(s, 0xff, sizeof *s);
+    r = fm1_flash_read(address, s, legacy_journal
+        ? offsetof(struct tuning_sector, session) : sizeof *s);
     for (unsigned slot = 0; !r && slot < GROOVE_PROJECT_SLOTS; ++slot) {
         uint32_t key[3];
         int found = tuning_key(slot, key);
         if (found < 0) { r = found; break; }
         struct tuning_entry *e = &s->entry[slot];
-        if (!found && e->key == key[0] &&
-            e->crc == legacy_entry_crc(key[0], e->t, key[1]) && tuning_tables_valid(e->t)) {
-            e->key = key[2];
-            e->crc = entry_crc(e);
+        if (!found && !is_blank(e, sizeof *e) && e->key == key[0]) {
+            if (e->crc == legacy_entry_crc(key[0], e->t, key[1]) && tuning_tables_valid(e->t)) {
+                e->key = key[2];
+                e->crc = entry_crc(e);
+            } else {
+                /* Corrupt v1 tuning entry for a live project: do not erase v1. */
+                r = GROOVE_PROJECT_INVALID;
+                break;
+            }
         } else {
             memset(e, 0xff, sizeof *e);
         }
@@ -381,6 +434,10 @@ static int tuning_save(unsigned slot)
     if (!r) {
         *s = *old;
         if (s->magic != TUNING_MAGIC || s->version != TUNING_VERSION) {
+            if (!is_blank(old, sizeof *old)) {
+                free(s);
+                return GROOVE_PROJECT_INVALID;
+            }
             memset(s, 0xff, sizeof *s);
             s->magic = TUNING_MAGIC;
             s->version = TUNING_VERSION;
@@ -396,8 +453,9 @@ static int tuning_save(unsigned slot)
     free(s);
     return r;
 }
-/* Read and validate before applying any project state. Missing/corrupt entries
- * mean zero tuning; an I/O error aborts the load and leaves live state intact. */
+/* Read and validate before applying any project state. Genuinely absent tuning
+ * yields zero (12-TET) default; corrupt header/entry returns GROOVE_PROJECT_INVALID;
+ * an I/O error aborts the load and leaves live state intact. */
 static int tuning_read(unsigned slot, const uint32_t key[3],
                        struct groove_tuning tables[GROOVE_TRACKS])
 {
@@ -408,18 +466,40 @@ static int tuning_read(unsigned slot, const uint32_t key[3],
     struct tuning_entry e;
     uint32_t head[2];
     uint32_t address;
-    r = tuning_location(&address);
+    unsigned legacy_journal = 0;
+    r = tuning_location_ex(&address, &legacy_journal);
     if (!r) r = fm1_flash_read(address, head, sizeof head);
     if (r)
         return r;
+    if (head[0] == ~0U && head[1] == ~0U) {
+        unsigned check_bytes = legacy_journal
+            ? offsetof(struct tuning_sector, session) : sizeof(struct tuning_sector);
+        r = flash_is_blank(address, check_bytes);
+        if (r < 0)
+            return r;
+        return r ? 0 : GROOVE_PROJECT_INVALID;
+    }
     if (head[0] != TUNING_MAGIC || (head[1] != 1 && head[1] != TUNING_VERSION))
-        return 0;
+        return GROOVE_PROJECT_INVALID;
     r = fm1_flash_read(address + offsetof(struct tuning_sector, entry) +
                        slot * sizeof e, &e, sizeof e);
     if (r)
         return r;
-    if ((head[1] == 1 ? e.key == key[0] && e.crc == legacy_entry_crc(key[0], e.t, key[1])
-                       : e.key == key[2] && e.crc == entry_crc(&e)) && tuning_tables_valid(e.t))
+    if (is_blank(&e, sizeof e))
+        return 0;
+    if (head[1] == 1) {
+        if (!tuning_tables_valid(e.t))
+            return GROOVE_PROJECT_INVALID;
+        if (e.key != key[0])
+            return 0;
+        if (e.crc != legacy_entry_crc(key[0], e.t, key[1]))
+            return GROOVE_PROJECT_INVALID;
+        memcpy(tables, e.t, sizeof e.t);
+        return 0;
+    }
+    if (e.crc != entry_crc(&e) || !tuning_tables_valid(e.t))
+        return GROOVE_PROJECT_INVALID;
+    if (e.key == key[2])
         memcpy(tables, e.t, sizeof e.t);
     return 0;
 }
@@ -441,7 +521,7 @@ static int program_record(unsigned sector)
     }
     if (!r)
         r = read_sector(sector);
-    return r == GROOVE_PROJECT_EMPTY ? FM1_FLASH_IO : r;
+    return (r == GROOVE_PROJECT_EMPTY || r == GROOVE_PROJECT_INVALID) ? FM1_FLASH_IO : r;
 }
 /* Complete the last committed replacement before staging a different one.
  * Called only by writes, before capturing their payload into the shared RAM
@@ -455,16 +535,16 @@ static int recover_staging(void)
     if (r) return r;
     r = read_sector(STAGING_SECTOR);
     if (r)
-        return r == GROOVE_PROJECT_EMPTY ? 0 : r;
+        return (r == GROOVE_PROJECT_EMPTY || r == GROOVE_PROJECT_INVALID) ? 0 : r;
     const struct header staged = record.header;
     r = read_sector(staged.target);
-    if (r < 0)
+    if (r < 0 && r != GROOVE_PROJECT_INVALID)
         return r;
     uint32_t d = record.header.generation - staged.generation;
     if (!r && ((!d && record.header.crc == staged.crc) || (d && d < 0x80000000U)))
         return 0;
     r = read_sector(STAGING_SECTOR);
-    return r ? (r == GROOVE_PROJECT_EMPTY ? FM1_FLASH_IO : r)
+    return r ? ((r == GROOVE_PROJECT_EMPTY || r == GROOVE_PROJECT_INVALID) ? FM1_FLASH_IO : r)
              : program_record(staged.target);
 }
 int groove_storage_prepare(void) { return recover_staging(); }
@@ -736,10 +816,27 @@ static int session_settings_valid(const struct session_settings *c)
 static int session_settings_load(unsigned before_project)
 {
     int r = tuning_blocked(); if (r) return r < 0 ? r : 0;
-    uint32_t address; r = tuning_location(&address);
+    uint32_t address;
+    unsigned legacy_journal = 0;
+    r = tuning_location_ex(&address, &legacy_journal);
+    if (r || legacy_journal) return r;
+    uint32_t head[2];
+    r = fm1_flash_read(address, head, sizeof head);
+    if (r) return r;
+    if (head[0] == ~0U && head[1] == ~0U) {
+        r = flash_is_blank(address, sizeof(struct tuning_sector));
+        if (r < 0) return r;
+        return r ? 0 : GROOVE_PROJECT_INVALID;
+    }
+    if (head[0] != TUNING_MAGIC || (head[1] != 1 && head[1] != TUNING_VERSION))
+        return GROOVE_PROJECT_INVALID;
+    if (head[1] == 1)
+        return 0;
     struct session_settings c;
-    if (!r) r = fm1_flash_read(address + offsetof(struct tuning_sector,session),&c,sizeof c);
-    if (r || !session_settings_valid(&c)) return r;
+    r = fm1_flash_read(address + offsetof(struct tuning_sector,session),&c,sizeof c);
+    if (r) return r;
+    if (is_blank(&c, sizeof c)) return 0;
+    if (!session_settings_valid(&c)) return GROOVE_PROJECT_INVALID;
     for (unsigned t=0;t<8;++t) {
         /* Off must release resources before loading the project. Play is
          * initialized afterwards so its starting timbre comes from that slot. */
@@ -757,6 +854,7 @@ static int session_settings_save(void)
     r = fm1_flash_read(GROOVE_TUNING_OFFSET,s,sizeof *s);
     if (!r) {
         if (s->magic != TUNING_MAGIC || s->version != TUNING_VERSION) {
+            if (!is_blank(s, sizeof *s)) { free(s); return GROOVE_PROJECT_INVALID; }
             memset(s,0xff,sizeof *s); s->magic=TUNING_MAGIC; s->version=TUNING_VERSION;
         }
         struct session_settings c = {.magic=SESSION_MAGIC};

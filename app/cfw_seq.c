@@ -59,7 +59,7 @@ static void demo_lz77_unpack(const uint8_t *src, unsigned src_len, uint8_t *dst,
             unsigned low = src[at++], dist = low & 127U;
             if ((low & 128U) && at < src_len) dist |= (unsigned)src[at++] << 7;
             for (unsigned n = (tok & 127U) + 3U; n && out < dst_cap; --n) {
-                dst[out] = dist <= out ? dst[out - dist] : 0U;
+                dst[out] = (dist > 0U && dist <= out) ? dst[out - dist] : 0U;
                 ++out;
             }
         }
@@ -655,7 +655,7 @@ int cfw_demo_start(unsigned id)
         cfw_dsp_engine_set(7U, CFW_ENG_GRANULAR);
     }
     const struct cfw_demo_song_desc *desc = &cfw_demo_songs[id];
-    demo_raw_len = desc->raw_bytes;
+    demo_raw_len = desc->raw_bytes <= sizeof(demo_unpacked) ? desc->raw_bytes : (uint16_t)sizeof(demo_unpacked);
     demo_lz77_unpack(desc->lz_stream, desc->lz_bytes, demo_unpacked, demo_raw_len);
     demo_song_id = (uint8_t)id;
     demo_pos = 0U;

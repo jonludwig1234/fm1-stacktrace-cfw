@@ -4,9 +4,12 @@ import subprocess
 import struct
 import hashlib
 
-ROOT = '/home/jon/.gemini/antigravity/scratch/fm1_k250_stacktrace/fm1_open'
-TOOLCHAIN_BIN = '/home/jon/.gemini/antigravity/scratch/jieli_pi32/bin'
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+_tc_root = os.environ.get('FM1_PI32_TOOLCHAIN', os.path.join(ROOT, '..', 'jieli_pi32'))
+TOOLCHAIN_BIN = _tc_root if os.path.basename(_tc_root) == 'bin' else os.path.join(_tc_root, 'bin')
 OBJCOPY = os.path.join(TOOLCHAIN_BIN, 'llvm-objcopy.exe')
+if not os.path.isfile(OBJCOPY):
+    sys.exit(f"JieLi PI32v2 llvm-objcopy.exe not found at {OBJCOPY}. Set FM1_PI32_TOOLCHAIN.")
 BUILD_DIR = os.path.join(ROOT, 'build/dx7')
 GEN_DIR = os.path.join(BUILD_DIR, 'generated')
 SDK_DIR = os.path.join(ROOT, 'sdk')

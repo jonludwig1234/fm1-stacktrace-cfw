@@ -277,7 +277,10 @@ int groove_samples_bind_slices(unsigned slot, unsigned start_pct, unsigned end_p
             unsigned c1 = c_start + ((p + 1U) * span) / count;
             if (c1 <= c0) c1 = c0 + 1U;
             unsigned c_bytes = (c1 - c0) * SAMPLE_DRUM_CHUNK_BYTES;
+            unsigned start_frame = c0 * SAMPLE_DRUM_CHUNK_FRAMES;
+            unsigned avail_frames = start_frame < s->frames ? s->frames - start_frame : 0U;
             unsigned c_frames = (c1 - c0) * SAMPLE_DRUM_CHUNK_FRAMES;
+            if (c_frames > avail_frames) c_frames = avail_frames;
             char sname[16];
             memset(sname, 0, sizeof sname);
             memcpy(sname, "SLC ", 4);
