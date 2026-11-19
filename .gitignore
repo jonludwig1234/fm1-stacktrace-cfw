@@ -28,3 +28,6 @@ id_ed25519
 /INTERNAL_PROVENANCE.md
 /fm1-open-publish.md
 /.codex-sinco/
+
+# Local K250 reference manuals & ROM staging (untracked)
+firmware_ref/

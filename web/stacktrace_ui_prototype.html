@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>FM-1 Stack Trace — Unified UI Prototype (Web Workstation + 240×240 Hardware LCD)</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230b0f14'/><circle cx='16' cy='16' r='9' fill='none' stroke='%23f59e0b' stroke-width='4'/></svg>" />
 <style>
   :root {
     --bg-canvas: #0b0f14;
@@ -24,7 +25,12 @@
     --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; scrollbar-color: #2c384a #0b0f14; scrollbar-width: thin; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #0b0f14; }
+  ::-webkit-scrollbar-thumb { background: #2c384a; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #41526b; }
+  [tabindex="0"]:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   body {
     background: var(--bg-canvas);
     color: var(--text-primary);
@@ -107,6 +113,8 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
     transition: all 0.12s;
   }
   .btn:hover { background: var(--bg-hover); border-color: var(--border-strong); }
@@ -261,12 +269,14 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 10px 12px;
   }
   .track-identity {
     display: flex;
     align-items: center;
     gap: 10px;
+    min-width: 0;
   }
   .engine-badge {
     display: inline-flex;
@@ -282,22 +292,28 @@
     letter-spacing: 0.03em;
     cursor: pointer;
     position: relative;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   .preset-title {
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 700;
     letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .stage-actions {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 6px;
   }
 
   /* Hero Row: Scope + 4 Macro Arcs */
   .hero-grid {
     display: grid;
-    grid-template-columns: 1fr 1.35fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
     gap: 14px;
     align-items: stretch;
   }
@@ -309,6 +325,7 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+    min-width: 0;
   }
   .card-label {
     font-size: 11px;
@@ -319,6 +336,17 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  @media (max-width: 1260px) {
+    .main { grid-template-columns: 224px 1fr 276px; }
+    .hero-grid { grid-template-columns: 1fr; }
+    #scopeCanvas { height: 112px; }
+  }
+  @media (max-width: 1060px) {
+    .macros-grid { grid-template-columns: repeat(2, 1fr); }
+    .drawer { grid-template-columns: repeat(2, 1fr); }
   }
   #scopeCanvas {
     width: 100%;
@@ -651,18 +679,18 @@
       <span style="color:var(--text-muted);font-weight:500;">// UNIFIED STUDIO</span>
     </div>
 
-    <div class="cmd-trigger" id="cmdTrigger" title="Quick jump to any preset, demo, or engine">
-      <span>Search 256 presets, engines, or demos...</span>
+    <div class="cmd-trigger" id="cmdTrigger" tabindex="0" role="button" aria-label="Search presets, engines, or demos" title="Quick jump to any preset, demo, or engine">
+      <span>Search presets, engines, or demos...</span>
       <span class="kbd">/ or ⌘K</span>
     </div>
 
     <div class="transport">
       <button class="btn" id="playBtn">▶ PLAY</button>
-      <div class="bpm-pill" id="bpmPill" title="Click to nudge BPM">
+      <div class="bpm-pill" id="bpmPill" tabindex="0" role="button" aria-label="Adjust BPM tempo" title="Click to nudge BPM">
         <span style="color:var(--text-muted)">BPM</span>
         <strong id="bpmVal">124</strong>
       </div>
-      <div class="hw-badge" id="hwToggle" title="Toggle 240×240 Hardware LCD Live Mirror">
+      <div class="hw-badge" id="hwToggle" tabindex="0" role="button" aria-label="Toggle 240x240 Hardware LCD Mirror" title="Toggle 240×240 Hardware LCD Live Mirror">
         <span class="led"></span>
         <span>HW LCD</span>
       </div>
@@ -674,7 +702,7 @@
     <!-- Left: Collapsible Preset Browser -->
     <aside class="browser">
       <div class="browser-head">
-        <input type="text" class="search-input" id="browserSearch" placeholder="Filter presets (↑ / ↓ to audition)..." />
+        <input type="text" class="search-input" id="browserSearch" aria-label="Filter presets" placeholder="Filter presets (↑ / ↓ to audition)..." />
         <div class="cat-pills" id="catPills"></div>
         <div class="audition-row">
           <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
@@ -780,11 +808,11 @@
     <div class="dock-bar">
       <div class="dock-tabs">
         <button class="btn active" data-dock="keys">1 · KEYS &amp; PADS</button>
-        <button class="btn" data-dock="seq">2 · 16/128-STEP SEQ</button>
+        <button class="btn" data-dock="seq">2 · 16-STEP SEQ</button>
         <button class="btn" data-dock="mix">3 · 8-BUS MIXER</button>
       </div>
       <div style="font-size:11px;color:var(--text-muted);font-family:var(--mono)">
-        Keys: A W S E D F T G Y H U J K · ↑/↓ Audition Presets · / Search
+        Keys: A–; (W/E/T/Y/U/O/P) · ↑/↓ Audition Presets · / Search
       </div>
     </div>
     <div class="dock-content" id="dockContent"></div>
@@ -793,7 +821,7 @@
   <!-- Command Palette Modal -->
   <div class="cmd-backdrop" id="cmdBackdrop">
     <div class="cmd-modal">
-      <input type="text" id="cmdInput" placeholder="Jump to preset, engine, or demo (Esc to close)..." />
+      <input type="text" id="cmdInput" aria-label="Command palette search" placeholder="Jump to preset, engine, or demo (Esc to close)..." />
       <div class="cmd-results" id="cmdResults"></div>
     </div>
   </div>
@@ -827,23 +855,26 @@ const PRESETS = [
 ];
 
 const TRACKS = [
-  { id:0, label:'T1', eng:'DX7',  presetIdx:0,  vol:88, mute:false, steps:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0] },
-  { id:1, label:'T2', eng:'B303', presetIdx:3,  vol:82, mute:false, steps:[1,0,1,0,0,0,1,0,1,0,0,1,0,1,0,0] },
-  { id:2, label:'T3', eng:'D808', presetIdx:11, vol:92, mute:false, steps:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1] },
-  { id:3, label:'T4', eng:'VA',   presetIdx:5,  vol:86, mute:false, steps:[1,0,0,1,0,0,1,0,0,0,1,0,1,0,0,0] },
-  { id:4, label:'T5', eng:'DX7',  presetIdx:7,  vol:80, mute:false, steps:[1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0] },
-  { id:5, label:'T6', eng:'SID',  presetIdx:9,  vol:76, mute:false, steps:[0,0,1,0,0,0,1,0,0,0,1,0,0,1,1,0] },
-  { id:6, label:'T7', eng:'GRAN', presetIdx:12, vol:74, mute:false, steps:[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] },
-  { id:7, label:'T8', eng:'VA',   presetIdx:6,  vol:78, mute:false, steps:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0] }
+  { id:0, label:'T1', eng:'DX7',  presetIdx:0,  vol:88, mute:false, macros:[...PRESETS[0].m],  abSlot:'A', snapshotB:null, steps:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0] },
+  { id:1, label:'T2', eng:'B303', presetIdx:3,  vol:82, mute:false, macros:[...PRESETS[3].m],  abSlot:'A', snapshotB:null, steps:[1,0,1,0,0,0,1,0,1,0,0,1,0,1,0,0] },
+  { id:2, label:'T3', eng:'D808', presetIdx:11, vol:92, mute:false, macros:[...PRESETS[11].m], abSlot:'A', snapshotB:null, steps:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1] },
+  { id:3, label:'T4', eng:'VA',   presetIdx:5,  vol:86, mute:false, macros:[...PRESETS[5].m],  abSlot:'A', snapshotB:null, steps:[1,0,0,1,0,0,1,0,0,0,1,0,1,0,0,0] },
+  { id:4, label:'T5', eng:'DX7',  presetIdx:7,  vol:80, mute:false, macros:[...PRESETS[7].m],  abSlot:'A', snapshotB:null, steps:[1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0] },
+  { id:5, label:'T6', eng:'SID',  presetIdx:9,  vol:76, mute:false, macros:[...PRESETS[9].m],  abSlot:'A', snapshotB:null, steps:[0,0,1,0,0,0,1,0,0,0,1,0,0,1,1,0] },
+  { id:6, label:'T7', eng:'GRAN', presetIdx:12, vol:74, mute:false, macros:[...PRESETS[12].m], abSlot:'A', snapshotB:null, steps:[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] },
+  { id:7, label:'T8', eng:'VA',   presetIdx:6,  vol:78, mute:false, macros:[...PRESETS[6].m],  abSlot:'A', snapshotB:null, steps:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0] }
 ];
 
 let state = {
   track: 3,
   cat: 'ALL',
   search: '',
-  macros: [...PRESETS[5].m],
-  abSlot: 'A',
-  snapshotB: null,
+  get macros() { return TRACKS[this.track].macros; },
+  set macros(v) { TRACKS[this.track].macros = v; },
+  get abSlot() { return TRACKS[this.track].abSlot; },
+  set abSlot(v) { TRACKS[this.track].abSlot = v; },
+  get snapshotB() { return TRACKS[this.track].snapshotB; },
+  set snapshotB(v) { TRACKS[this.track].snapshotB = v; },
   env: { a:12, d:62, s:70, r:48 },
   lfo: { rate:35, depth:28, wave:0, dest:0 },
   fx:  { drive:18, crush:0, phaser:24, reverb:42 },
@@ -857,8 +888,32 @@ let state = {
   step: -1
 };
 
-// ---- Real Web Audio Synth Engine ----
+// ---- Real Web Audio Synth Engine (ADSR + LFO + Grit/Phaser/Reverb FX + Mixer Vol/Mute) ----
 let audioCtx = null, analyser = null, masterGain = null;
+let shaperNode = null, phaserNode = null, reverbNode = null, reverbWet = null, dryGain = null;
+
+function makeDriveCurve(drivePct, crushPct) {
+  const n = 256, curve = new Float32Array(n);
+  const k = 1 + (drivePct / 100) * 18;
+  const levels = crushPct > 0 ? Math.max(4, Math.round(64 - (crushPct / 100) * 58)) : 0;
+  for (let i = 0; i < n; i++) {
+    let x = (i * 2) / n - 1;
+    let y = Math.tanh(x * k) / Math.tanh(k);
+    if (levels > 0) y = Math.round(y * levels) / levels;
+    curve[i] = y;
+  }
+  return curve;
+}
+
+function updateMasterFx() {
+  if (!audioCtx || !shaperNode) return;
+  shaperNode.curve = makeDriveCurve(state.fx.drive, state.fx.crush);
+  phaserNode.frequency.setValueAtTime(300 + (state.fx.phaser / 100) * 2600, audioCtx.currentTime);
+  phaserNode.Q.setValueAtTime(0.5 + (state.fx.phaser / 100) * 6, audioCtx.currentTime);
+  reverbWet.gain.setValueAtTime((state.fx.reverb / 100) * 0.55, audioCtx.currentTime);
+  dryGain.gain.setValueAtTime(1 - (state.fx.reverb / 100) * 0.25, audioCtx.currentTime);
+}
+
 function ensureAudio() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -866,8 +921,33 @@ function ensureAudio() {
     analyser.fftSize = 512;
     masterGain = audioCtx.createGain();
     masterGain.gain.value = 0.28;
-    masterGain.connect(analyser);
+
+    shaperNode = audioCtx.createWaveShaper();
+    shaperNode.oversample = '2x';
+    phaserNode = audioCtx.createBiquadFilter();
+    phaserNode.type = 'allpass';
+
+    // Lightweight synthetic hall reverb impulse
+    reverbNode = audioCtx.createConvolver();
+    const len = Math.floor(audioCtx.sampleRate * 1.4);
+    const ir = audioCtx.createBuffer(2, len, audioCtx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = ir.getChannelData(ch);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.8);
+    }
+    reverbNode.buffer = ir;
+    reverbWet = audioCtx.createGain();
+    dryGain = audioCtx.createGain();
+
+    masterGain.connect(shaperNode);
+    shaperNode.connect(phaserNode);
+    phaserNode.connect(dryGain);
+    phaserNode.connect(reverbNode);
+    reverbNode.connect(reverbWet);
+    dryGain.connect(analyser);
+    reverbWet.connect(analyser);
     analyser.connect(audioCtx.destination);
+    updateMasterFx();
   }
   if (audioCtx.state === 'suspended') audioCtx.resume();
 }
@@ -875,6 +955,7 @@ function ensureAudio() {
 function playNote(midi, dur = 0.45, vel = 0.8) {
   ensureAudio();
   const t = TRACKS[state.track];
+  if (t.mute || t.vol <= 0) return;
   const eng = ENGINES[t.eng];
   const now = audioCtx.currentTime;
   const freq = 440 * Math.pow(2, (midi - 69) / 12);
@@ -893,24 +974,47 @@ function playNote(midi, dur = 0.45, vel = 0.8) {
 
   filter.type = 'lowpass';
   const cutoffHz = 180 * Math.pow(65, state.macros[0] / 100);
+  const envDec = 0.06 + ((state.env.d * 0.5 + state.macros[2] * 0.5) / 100) * 0.9;
   filter.frequency.setValueAtTime(Math.min(18000, cutoffHz * 1.4), now);
-  filter.frequency.exponentialRampToValueAtTime(Math.max(120, cutoffHz * 0.45), now + 0.1 + (state.macros[2] / 100) * 0.8);
+  filter.frequency.exponentialRampToValueAtTime(Math.max(120, cutoffHz * 0.45), now + envDec);
   filter.Q.setValueAtTime(0.7 + (state.macros[1] / 100) * 14, now);
 
-  const atk = 0.006 + (state.env.a / 100) * 0.25;
-  const dec = 0.08 + (state.macros[2] / 100) * 1.1;
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.linearRampToValueAtTime(vel * 0.45, now + atk);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + atk + Math.max(dur, dec));
+  // LFO -> Filter cutoff modulation
+  let lfoOsc = null;
+  if (state.lfo.depth > 0) {
+    lfoOsc = audioCtx.createOscillator();
+    const lfoGain = audioCtx.createGain();
+    lfoOsc.type = 'sine';
+    lfoOsc.frequency.setValueAtTime(0.25 + (state.lfo.rate / 100) * 14, now);
+    lfoGain.gain.setValueAtTime((state.lfo.depth / 100) * cutoffHz * 0.45, now);
+    lfoOsc.connect(lfoGain);
+    lfoGain.connect(filter.frequency);
+  }
 
+  // Full ADSR envelope + Track mixer volume scaling
+  const peakGain = Math.max(0.001, vel * 0.45 * (t.vol / 100));
+  const atk = 0.006 + (state.env.a / 100) * 0.25;
+  const susLevel = Math.max(0.001, peakGain * (state.env.s / 100));
+  const rel = 0.05 + (state.env.r / 100) * 0.85;
+  const noteEnd = now + atk + Math.max(dur, envDec);
+
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.linearRampToValueAtTime(peakGain, now + atk);
+  gain.gain.exponentialRampToValueAtTime(susLevel, now + atk + envDec);
+  gain.gain.setValueAtTime(susLevel, noteEnd);
+  gain.gain.exponentialRampToValueAtTime(0.0001, noteEnd + rel);
+
+  updateMasterFx();
   osc1.connect(filter);
   osc2.connect(filter);
   filter.connect(gain);
   gain.connect(masterGain);
 
   osc1.start(now); osc2.start(now);
-  const stopAt = now + atk + Math.max(dur, dec) + 0.05;
+  if (lfoOsc) lfoOsc.start(now);
+  const stopAt = noteEnd + rel + 0.05;
   osc1.stop(stopAt); osc2.stop(stopAt);
+  if (lfoOsc) lfoOsc.stop(stopAt);
 
   document.getElementById('scopeVoiceInfo').textContent = `${eng.name} · MIDI ${midi}`;
 }
@@ -946,7 +1050,7 @@ function getFilteredPresets() {
 
 function renderBrowser() {
   const pillsEl = document.getElementById('catPills');
-  pillsEl.innerHTML = CATS.map(c => `<span class="pill ${state.cat===c?'active':''}" data-cat="${c}">${c}</span>`).join('');
+  pillsEl.innerHTML = CATS.map(c => `<span class="pill ${state.cat===c?'active':''}" tabindex="0" role="button" data-cat="${c}">${c}</span>`).join('');
   pillsEl.querySelectorAll('.pill').forEach(el => {
     el.onclick = () => { state.cat = el.dataset.cat; renderBrowser(); };
   });
@@ -956,7 +1060,7 @@ function renderBrowser() {
   const activeIdx = TRACKS[state.track].presetIdx;
   const listEl = document.getElementById('presetList');
   listEl.innerHTML = list.map(p => `
-    <div class="preset-item ${p.idx===activeIdx?'active':''}" data-idx="${p.idx}">
+    <div class="preset-item ${p.idx===activeIdx?'active':''}" tabindex="0" role="button" data-idx="${p.idx}">
       <span class="preset-num">${p.num}</span>
       <span class="preset-name">${p.name}</span>
       <span class="preset-cat">${p.cat}</span>
@@ -1011,7 +1115,7 @@ function renderMacros() {
     const fullEnd = startA + 270 * Math.PI / 180;
     const fx2 = cx + r * Math.cos(fullEnd), fy2 = cy + r * Math.sin(fullEnd);
     return `
-      <div class="macro-knob" data-macro="${i}">
+      <div class="macro-knob" tabindex="0" role="button" aria-label="${name} ${val}" data-macro="${i}">
         <svg viewBox="0 0 72 72">
           <path d="M ${x1} ${y1} A ${r} ${r} 0 1 1 ${fx2} ${fy2}" fill="none" stroke="rgba(255,255,255,0.09)" stroke-width="5" stroke-linecap="round"/>
           ${val > 0 ? `<path d="M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}" fill="none" stroke="${eng.color}" stroke-width="5" stroke-linecap="round"/>` : ''}
@@ -1098,7 +1202,7 @@ function renderTracks() {
   dock.innerHTML = TRACKS.map((t, i) => {
     const eng = ENGINES[t.eng];
     return `
-      <div class="track-pill ${i===state.track?'active':''}" data-t="${i}">
+      <div class="track-pill ${i===state.track?'active':''}" tabindex="0" role="button" data-t="${i}" style="${t.mute?'opacity:0.45':''}">
         <span class="t-dot" style="background:${eng.color}"></span>
         <span>${t.label} · ${eng.name}</span>
       </div>`;
@@ -1106,7 +1210,7 @@ function renderTracks() {
   dock.querySelectorAll('.track-pill').forEach(el => {
     el.onclick = () => {
       state.track = +el.dataset.t;
-      state.macros = [...PRESETS[TRACKS[state.track].presetIdx].m];
+      document.getElementById('abBtn').classList.toggle('active', state.abSlot === 'B');
       renderAll();
     };
   });
@@ -1130,7 +1234,7 @@ function renderDock() {
     const t = TRACKS[state.track];
     content.innerHTML = `<div class="seq-grid">
       ${t.steps.map((on,i)=>`
-        <div class="step-pad ${on?'on':''} ${i===state.step?'playing':''}" data-step="${i}">
+        <div class="step-pad ${on?'on':''} ${i===state.step?'playing':''}" tabindex="0" role="button" data-step="${i}">
           <span>${String(i+1).padStart(2,'0')}</span>
           <div class="step-led"></div>
         </div>`).join('')}
@@ -1142,13 +1246,19 @@ function renderDock() {
     content.innerHTML = `<div class="mixer-grid">
       ${TRACKS.map((t,i)=>`
         <div class="mix-ch">
-          <div class="mix-ch-name" style="color:${ENGINES[t.eng].color}">${t.label}</div>
-          <input type="range" min="0" max="100" value="${t.vol}" data-mix="${i}" />
-          <span style="font-family:var(--mono);font-size:10px;color:var(--text-muted)">${t.vol}%</span>
+          <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+            <span class="mix-ch-name" style="color:${ENGINES[t.eng].color}">${t.label}</span>
+            <button class="hw-key ${t.mute?'active':''}" style="height:20px;padding:0 5px;font-size:9px;" data-mute="${i}">${t.mute?'MUTE':'ON'}</button>
+          </div>
+          <input type="range" min="0" max="100" value="${t.vol}" aria-label="${t.label} volume" data-mix="${i}" />
+          <span style="font-family:var(--mono);font-size:10px;color:var(--text-muted)">${t.mute?'MUTED':t.vol+'%'}</span>
         </div>`).join('')}
     </div>`;
     content.querySelectorAll('[data-mix]').forEach(inp => {
       inp.oninput = () => { TRACKS[+inp.dataset.mix].vol = +inp.value; renderDock(); drawHwLcd(); };
+    });
+    content.querySelectorAll('[data-mute]').forEach(btn => {
+      btn.onclick = () => { TRACKS[+btn.dataset.mute].mute = !TRACKS[+btn.dataset.mute].mute; renderTracks(); renderDock(); drawHwLcd(); };
     });
   }
 }
@@ -1393,7 +1503,15 @@ document.getElementById('browserSearch').oninput = (e) => { state.search = e.tar
 document.getElementById('playBtn').onclick = togglePlay;
 document.getElementById('bpmPill').onclick = () => { state.bpm = state.bpm >= 150 ? 96 : state.bpm + 4; document.getElementById('bpmVal').textContent = state.bpm; drawHwLcd(); };
 document.getElementById('hwToggle').onclick = () => document.getElementById('mainGrid').classList.toggle('hw-hidden');
-document.getElementById('engineBadge').onclick = (e) => { e.stopPropagation(); renderEnginePopover(); document.getElementById('enginePopover').classList.toggle('open'); };
+document.getElementById('engineBadge').onclick = (e) => {
+  e.stopPropagation();
+  renderEnginePopover();
+  const pop = document.getElementById('enginePopover');
+  const r = e.currentTarget.getBoundingClientRect();
+  pop.style.left = `${Math.max(8, Math.min(r.left, window.innerWidth - 392))}px`;
+  pop.style.top = `${Math.min(r.bottom + 6, window.innerHeight - 220)}px`;
+  pop.classList.toggle('open');
+};
 document.addEventListener('click', () => document.getElementById('enginePopover').classList.remove('open'));
 document.getElementById('auditionNowBtn').onclick = auditionChord;
 document.getElementById('mutateBtn').onclick = () => {
@@ -1433,8 +1551,11 @@ document.getElementById('cmdInput').oninput = (e) => renderCmdResults(e.target.v
 document.getElementById('cmdBackdrop').onclick = (e) => { if (e.target.id === 'cmdBackdrop') e.target.classList.remove('open'); };
 
 // Keyboard shortcuts: /, Cmd+K, ArrowUp/Down audition, computer keyboard notes
-const KEY_MAP = { a:60, w:61, s:62, e:63, d:64, f:65, t:66, g:67, y:68, h:69, u:70, j:71, k:72 };
+const KEY_MAP = { a:60, w:61, s:62, e:63, d:64, f:65, t:66, g:67, y:68, h:69, u:70, j:71, k:72, o:73, l:74, p:75, ';':76 };
 window.addEventListener('keydown', (e) => {
+  if ((e.key === 'Enter' || e.key === ' ') && document.activeElement?.getAttribute('role') === 'button') {
+    e.preventDefault(); document.activeElement.click(); return;
+  }
   if (e.key === 'Escape') { document.getElementById('cmdBackdrop').classList.remove('open'); return; }
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openCmd(); return; }
   if (document.activeElement.tagName === 'INPUT') return;
