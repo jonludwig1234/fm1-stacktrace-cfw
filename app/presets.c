@@ -310,8 +310,8 @@ int groove_factory_apply_demo(unsigned demo_id)
         {GROOVE_808, BEAT, 0,         92, 2},
         {GROOVE_DX7, BASS, SUB_BASS,  96, 0},
         {GROOVE_DX7, LEAD, BRASS,     84, 4},
-        {GROOVE_DX7, LEAD, BELL,      82, 4},
-        {GROOVE_DX7, LEAD, SOFT_LEAD, 88, 4},
+        {GROOVE_DX7, LEAD, BELL,      84, 4},
+        {GROOVE_DX7, LEAD, REED,      90, 4},
         {GROOVE_DX7, LEAD, REED,      86, 4},
         {GROOVE_DX7, LEAD, BRASS,     92, 4},
         {GROOVE_DX7, LEAD, BRASS,     90, 4}
@@ -327,14 +327,14 @@ int groove_factory_apply_demo(unsigned demo_id)
         {GROOVE_DX7, LEAD, VIBES,     82, 5}
     };
     static const struct part fox_parts[GROOVE_TRACKS] = {
+        {GROOVE_808, BEAT, 0,         92, 2},
+        {GROOVE_DX7, BASS, SUB_BASS,  94, 2},
+        {GROOVE_DX7, LEAD, STRINGS,   86, 5},
+        {GROOVE_DX7, LEAD, STRINGS,   90, 5},
         {GROOVE_DX7, LEAD, BRASS,     96, 5},
         {GROOVE_DX7, LEAD, BRASS,     92, 5},
-        {GROOVE_DX7, LEAD, STRINGS,   88, 5},
-        {GROOVE_DX7, PAD,  STRINGS,   86, 6},
-        {GROOVE_DX7, LEAD, BRASS,     94, 5},
-        {GROOVE_DX7, KEYS, ELECTRIC,  82, 4},
-        {GROOVE_DX7, BASS, ROUND_BASS,90, 3},
-        {GROOVE_808, BEAT, 0,         88, 2}
+        {GROOVE_DX7, PAD,  WARM_PAD,  80, 5},
+        {GROOVE_808, BEAT, 0,         84, 2}
     };
     struct groove_project *p = groove_project_scratch();
     if (!p || demo_id > 4U) return GROOVE_PROJECT_INVALID;

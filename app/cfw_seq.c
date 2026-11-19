@@ -35,7 +35,7 @@ static struct cfw_scene scenes[CFW_SCENES];
 static struct cfw_slicer_cfg slicer = {0U, 8U, 0U, 100U};
 static unsigned bank_a_dirty_ticks;
 
-enum { DEMO_MAX_ACTIVE = 16 };
+enum { DEMO_MAX_ACTIVE = 32 };
 struct cfw_demo_voice {
     uint8_t active, track, note;
     uint32_t off_ms;
@@ -584,28 +584,28 @@ void cfw_seq_control_poll(void)
         }
 
         unsigned burst = 0U;
-        while ((unsigned)demo_pos + 3U <= (unsigned)demo_raw_len && burst < 10U) {
+        while ((unsigned)demo_pos + 5U <= (unsigned)demo_raw_len && burst < 32U) {
             const uint8_t *ev = demo_unpacked + demo_pos;
-            uint8_t b0 = ev[0], b1 = ev[1], b2 = ev[2];
+            uint8_t b0 = ev[0], b1 = ev[1], b2 = ev[2], b3 = ev[3], b4 = ev[4];
             if ((b1 & 0x7FU) == 0U) {
-                uint32_t w = (uint32_t)b0 | ((uint32_t)b2 << 8);
-                uint32_t t = demo_next_ms + w * 15U;
+                uint32_t w = (uint32_t)b0 | ((uint32_t)b2 << 8) | ((uint32_t)b3 << 16);
+                uint32_t t = demo_next_ms + w;
                 if (elapsed < t) break;
                 demo_next_ms = t;
-                demo_pos += 3U;
+                demo_pos += 5U;
                 continue;
             }
-            uint32_t dt = b0 & 0x3FU;
-            uint32_t t = demo_next_ms + dt * 15U;
+            uint32_t t = demo_next_ms + (uint32_t)b0;
             if (elapsed < t) break;
             demo_next_ms = t;
-            demo_pos += 3U;
+            demo_pos += 5U;
 
-            uint8_t trk = b2 & 7U;
             uint8_t midi = b1 & 0x7FU;
-            uint8_t vel3 = (uint8_t)(((b0 >> 6) & 3U) | ((b1 >> 5) & 4U));
-            uint8_t vel = (uint8_t)(56U + (unsigned)vel3 * 10U);
-            uint32_t dur_ms = (uint32_t)cfw_demo_dur_ticks[(b2 >> 3) & 31U] * 15U;
+            uint8_t vel = b2 & 0x7FU;
+            if (!vel) vel = 1U;
+            uint8_t trk = b4 & 7U;
+            uint32_t dur_ms = (uint32_t)b3 | ((uint32_t)((b4 >> 3) & 31U) << 8);
+            if (!dur_ms) dur_ms = 1U;
 
             int free_slot = -1;
             unsigned oldest_idx = 0U;
@@ -632,7 +632,7 @@ void cfw_seq_control_poll(void)
             ++burst;
         }
 
-        if ((unsigned)demo_pos + 3U > (unsigned)demo_raw_len) {
+        if ((unsigned)demo_pos + 5U > (unsigned)demo_raw_len) {
             unsigned still_on = 0U;
             for (unsigned i = 0; i < DEMO_MAX_ACTIVE; ++i)
                 if (demo_voices[i].active) { still_on = 1U; break; }

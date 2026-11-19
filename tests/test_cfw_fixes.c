@@ -32,8 +32,9 @@ static struct {
 } bound_pads[8];
 static unsigned bound_count = 0;
 
+static uint32_t sim_ms = 1000;
 uint32_t fm1_flash_size(void) { return sizeof flash_buf; }
-uint32_t fm1_millis(void) { return 1000; }
+uint32_t fm1_millis(void) { return sim_ms; }
 int fm1_flash_read(uint32_t offset, void *dst, size_t bytes)
 {
     if (offset + bytes > sizeof flash_buf) return FM1_FLASH_INVALID;
@@ -102,7 +103,24 @@ void groove_sequence_length_set(unsigned track, unsigned steps) { (void)track; (
 unsigned groove_sequence_length(unsigned track) { (void)track; return 64; }
 void groove_get_view(unsigned track, unsigned step, struct groove_view *v)
 { (void)track; (void)step; memset(v, 0, sizeof *v); v->tempo = 120; }
-int groove_midi_local(const uint8_t *msg, size_t bytes) { (void)msg; (void)bytes; return 0; }
+static unsigned midi_on_count = 0, midi_off_count = 0;
+static unsigned midi_ch_mask = 0;
+static unsigned midi_snare_seen = 0;
+int groove_midi_local(const uint8_t *msg, size_t bytes)
+{
+    if (bytes == 3) {
+        uint8_t st = msg[0] & 0xF0U;
+        uint8_t ch = msg[0] & 0x0FU;
+        if (st == 0x90U && msg[2] > 0) {
+            ++midi_on_count;
+            midi_ch_mask |= (1U << ch);
+            if (ch == 0 && msg[1] == 38) ++midi_snare_seen;
+        } else if (st == 0x80U || (st == 0x90U && msg[2] == 0)) {
+            ++midi_off_count;
+        }
+    }
+    return 0;
+}
 void groove_midi_panic(void) {}
 void cfw_dsp_note_on(uint8_t track, uint8_t note, uint8_t vel) { (void)track; (void)note; (void)vel; }
 void cfw_dsp_note_off(uint8_t track, uint8_t note) { (void)track; (void)note; }
@@ -230,11 +248,47 @@ static void test_samples_bind_slices_clamp(void)
     CHECK(bound_pads[1].frames == 180, "slice 1 must clamp to remaining 180 frames (not 320)");
 }
 
+/* ---- Test 4: End-to-End Exact MIDI Playback of All 5 Demos ---- */
+static void test_all_5_demos_exact_midi_playback(void)
+{
+    for (unsigned d = 0; d < CFW_DEMO_COUNT; ++d) {
+        midi_on_count = 0;
+        midi_off_count = 0;
+        midi_ch_mask = 0;
+        midi_snare_seen = 0;
+        sim_ms = 1000;
+        CHECK(cfw_demo_start(d) == 0, "cfw_demo_start must succeed for all 5 demos");
+
+        uint32_t max_ms = ((uint32_t)cfw_demo_duration_sec(d) + 8U) * 1000U;
+        for (uint32_t step = 0; step <= max_ms && cfw_demo_playing(); step += 5U) {
+            sim_ms = 1000U + step;
+            cfw_seq_control_poll();
+        }
+        CHECK(!cfw_demo_playing(), "demo must finish cleanly within duration window");
+        CHECK(midi_on_count > 100, "demo must emit expected MIDI note-on events");
+        CHECK(midi_on_count == midi_off_count, "every Note-On must have a matching Note-Off (0 stuck notes)");
+
+        /* Track 7 maps to MIDI ch 9; tracks 0..6 map to MIDI ch 0..6 */
+        unsigned expected_all8 = 0x007FU | (1U << 9);
+        if (d < 4U) {
+            CHECK((midi_ch_mask & expected_all8) == expected_all8,
+                  "Songs 1..4 must trigger all 8 tracks (0..7) with zero unused tracks");
+        } else {
+            CHECK((midi_ch_mask & 0x003FU) == 0x003FU,
+                  "Song 5 (20th Fanfare) must trigger all 6 score tracks (0..5)");
+        }
+        if (d == 2U || d == 4U) {
+            CHECK(midi_snare_seen > 30, "March & Fox Fanfare must emit snare drum (MIDI 38) on Track 0");
+        }
+    }
+}
+
 int main(void)
 {
     test_factory_demo_fox();
     test_demo_lz77_dist_zero();
     test_samples_bind_slices_clamp();
+    test_all_5_demos_exact_midi_playback();
 
     if (failures) {
         fprintf(stderr, "TOTAL FAILURES: %d\n", failures);
