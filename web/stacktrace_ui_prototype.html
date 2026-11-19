@@ -405,6 +405,7 @@
     .drawer, .drawer.env-mode { grid-template-columns: 1fr; }
   }
 </style>
+  <script src="k250_presets_and_zones.js"></script>
 </head>
 <body>
 
@@ -416,8 +417,8 @@
       <span style="color:var(--text-muted);font-weight:500;">// UNIFIED STUDIO</span>
     </div>
 
-    <div class="cmd-trigger" id="cmdTrigger" tabindex="0" role="button" aria-label="Search presets, engines, or demos" title="Quick jump to any preset, demo, or engine">
-      <span>Search presets, engines, or demos...</span>
+    <div class="cmd-trigger" id="cmdTrigger" tabindex="0" role="button" aria-label="Search 256 K250 presets, engines, or demos" title="Quick jump to any K250 preset, demo, or engine">
+      <span>Search 256 K250 presets, engines, or demos...</span>
       <span class="kbd">/ or ⌘K</span>
     </div>
 
@@ -574,30 +575,57 @@
 <script>
 // ---- Engine Definitions (Shared Web + 240x240 LCD Semantic Palette) ----
 const ENGINES = {
-  DX7:  { id:'DX7',  name:'DX7 FM',     color:'#38BDF8', soft:'rgba(56,189,248,0.16)',  desc:'6-Op FM classic keys, bells & brass', wave:'sine',     macros:['BRIGHT','FM IDX','DECAY','DETUNE'] },
-  VA:   { id:'VA',   name:'VA POLY',    color:'#F59E0B', soft:'rgba(245,158,11,0.16)',  desc:'Dual-DCO SuperSaw + resonant SVF',   wave:'sawtooth', macros:['CUTOFF','RESO','DECAY','DETUNE'] },
-  B303: { id:'B303', name:'TB-303',     color:'#A3E635', soft:'rgba(163,230,53,0.16)',  desc:'Acid mono bassline + accent/slide',  wave:'sawtooth', macros:['CUTOFF','RESO','ENV MOD','DECAY'] },
-  D808: { id:'D808', name:'TR-808/909', color:'#FB7185', soft:'rgba(251,113,133,0.16)', desc:'Analog/PCM hybrid drum kit',         wave:'triangle', macros:['PUNCH','TONE','DECAY','DRIVE'] },
-  SID:  { id:'SID',  name:'C64 SID',    color:'#A78BFA', soft:'rgba(167,139,250,0.16)', desc:'6581 pulse/tri + chiptune arp',      wave:'square',   macros:['PW','RESO','DECAY','ARP SPD'] },
-  GRAN: { id:'GRAN', name:'GRANULAR',   color:'#2DD4BF', soft:'rgba(45,212,191,0.16)',  desc:'Real-time stereo scatter cloud',     wave:'triangle', macros:['GRAIN','SCATTER','DECAY','MORPH'] }
+  K250: { id:'K250', name:'K250 SAMPLER', color:'#22D3EE', soft:'rgba(34,211,238,0.16)',  desc:'256 Kurzweil K250 multi-sampled instruments (675 samples)', wave:'triangle', macros:['CUTOFF','RESO','DECAY','DETUNE'] },
+  DX7:  { id:'DX7',  name:'DX7 FM',       color:'#38BDF8', soft:'rgba(56,189,248,0.16)',  desc:'6-Op FM classic keys, bells & brass', wave:'sine',     macros:['BRIGHT','FM IDX','DECAY','DETUNE'] },
+  VA:   { id:'VA',   name:'VA POLY',      color:'#F59E0B', soft:'rgba(245,158,11,0.16)',  desc:'Dual-DCO SuperSaw + resonant SVF',   wave:'sawtooth', macros:['CUTOFF','RESO','DECAY','DETUNE'] },
+  B303: { id:'B303', name:'TB-303',       color:'#A3E635', soft:'rgba(163,230,53,0.16)',  desc:'Acid mono bassline + accent/slide',  wave:'sawtooth', macros:['CUTOFF','RESO','ENV MOD','DECAY'] },
+  D808: { id:'D808', name:'TR-808/909',   color:'#FB7185', soft:'rgba(251,113,133,0.16)', desc:'Analog/PCM hybrid drum kit',         wave:'triangle', macros:['PUNCH','TONE','DECAY','DRIVE'] },
+  SID:  { id:'SID',  name:'C64 SID',      color:'#A78BFA', soft:'rgba(167,139,250,0.16)', desc:'6581 pulse/tri + chiptune arp',      wave:'square',   macros:['PW','RESO','DECAY','ARP SPD'] },
+  GRAN: { id:'GRAN', name:'GRANULAR',     color:'#2DD4BF', soft:'rgba(45,212,191,0.16)',  desc:'Real-time stereo scatter cloud',     wave:'triangle', macros:['GRAIN','SCATTER','DECAY','MORPH'] }
 };
 
-const PRESETS = [
-  { num:'001', name:'Steinway Concert Grand', cat:'KEYS',  eng:'DX7',  m:[72,28,68,14], fav:true },
-  { num:'008', name:'CP-70 Electric Piano',   cat:'KEYS',  eng:'DX7',  m:[64,40,62,22], fav:true },
-  { num:'015', name:'FM Crystal Tines',       cat:'KEYS',  eng:'DX7',  m:[82,58,74,30], fav:false },
-  { num:'024', name:'303 Acid Squelch',       cat:'BASS',  eng:'B303', m:[44,78,66,42], fav:true },
-  { num:'031', name:'Sub Moog Foundation',    cat:'BASS',  eng:'VA',   m:[32,24,52,18], fav:false },
-  { num:'042', name:'Blade SuperSaw',         cat:'PAD',   eng:'VA',   m:[74,38,76,54], fav:true },
-  { num:'048', name:'Warm K250 Strings',      cat:'PAD',   eng:'VA',   m:[58,20,84,40], fav:false },
-  { num:'056', name:'20th Century Brass',     cat:'BRASS', eng:'DX7',  m:[86,62,64,26], fav:true },
-  { num:'064', name:'Symphonic French Horn',  cat:'BRASS', eng:'VA',   m:[54,30,70,20], fav:false },
-  { num:'072', name:'6581 Arpeggio Lead',     cat:'LEAD',  eng:'SID',  m:[68,52,48,66], fav:true },
-  { num:'085', name:'Hyper Sync Solo',        cat:'LEAD',  eng:'VA',   m:[84,46,56,48], fav:false },
-  { num:'096', name:'TR-909 Warehouse Kit',   cat:'DRUMS', eng:'D808', m:[78,50,44,36], fav:false },
-  { num:'112', name:'Tape Shimmer Cloud',     cat:'FX',    eng:'GRAN', m:[66,72,88,62], fav:true },
-  { num:'128', name:'Glass Choir Scatter',    cat:'FX',    eng:'GRAN', m:[74,60,82,70], fav:false }
-];
+const K250_CAT_MAP = {
+  'Acoustic Pianos & Keys': 'PIANO',
+  'Electric Pianos & Tines': 'EP',
+  'Tonewheel & Church Organs': 'ORGAN',
+  'Orchestral Strings & Ensembles': 'STRINGS',
+  'Orchestral & Commercial Brass': 'BRASS',
+  'Woodwinds & Reeds': 'WINDS',
+  'Choirs, Vocals & Pads': 'CHOIR',
+  'Guitars & Basses': 'BASS/GTR',
+  'Tuned Mallets & Percussion': 'MALLETS',
+  'Drums, Splits & Tutti': 'DRUMS'
+};
+
+const K250_DEFAULT_FAVS = new Set([1, 25, 49, 76, 107, 137, 161, 185, 209, 233]);
+
+const PRESETS = (typeof K250_PRESETS !== 'undefined' && Array.isArray(K250_PRESETS))
+  ? K250_PRESETS.map(kp => {
+      const cleanName = (kp.name || '').replace(/^\d+:\s*/, '');
+      const cat = K250_CAT_MAP[kp.category] || 'PIANO';
+      const cutPct = Math.max(25, Math.min(100, Math.round((Math.log(Math.max(200, kp.cut || 12000) / 180) / Math.log(95)) * 100)));
+      const resPct = Math.max(8, Math.min(85, Math.round(((kp.res || 1) / 12) * 100)));
+      const decPct = Math.max(20, Math.min(95, Math.round((Math.min(8, kp.dec || 3) / 8) * 100)));
+      const detPct = Math.max(0, Math.min(80, Math.round(Math.abs(kp.det || 0) * 3)));
+      return {
+        num: String(kp.id).padStart(3, '0'),
+        name: cleanName,
+        cat,
+        eng: 'K250',
+        k250: kp,
+        m: [cutPct, resPct, decPct, detPct],
+        fav: K250_DEFAULT_FAVS.has(kp.id)
+      };
+    })
+  : [
+      { num:'001', name:'Steinway Concert Grand', cat:'PIANO', eng:'K250', m:[92,10,85,0], fav:true }
+    ];
+
+function findPresetIdx(substr, fallback = 0) {
+  const q = substr.toUpperCase();
+  const idx = PRESETS.findIndex(p => p.name.toUpperCase().includes(q));
+  return idx >= 0 ? idx : Math.min(fallback, PRESETS.length - 1);
+}
 
 function make128Steps(pattern16) {
   const arr = [];
@@ -605,15 +633,26 @@ function make128Steps(pattern16) {
   return arr;
 }
 
+const DEF_IDX = [
+  findPresetIdx('STEINWAY CONCERT GRAND', 0),
+  findPresetIdx('UPRIGHT', 192),
+  findPresetIdx('ACOUSTIC STUDIO DRUM', 232),
+  findPresetIdx('SYMPHONIC VIOLINS', 75),
+  findPresetIdx('CONCERT ORCHESTRAL TRUMPET', 106),
+  findPresetIdx('CONCERT FLUTE', 136),
+  findPresetIdx('MIXED CATHEDRAL CHOIR', 160),
+  findPresetIdx('HAMMOND', 48)
+];
+
 const TRACKS = [
-  { id:0, label:'T1', eng:'DX7',  presetIdx:0,  vol:88, mute:false, solo:false, peak:0, macros:[...PRESETS[0].m],  abSlot:'A', snapshotB:null, steps:make128Steps([1,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0]) },
-  { id:1, label:'T2', eng:'B303', presetIdx:3,  vol:82, mute:false, solo:false, peak:0, macros:[...PRESETS[3].m],  abSlot:'A', snapshotB:null, steps:make128Steps([1,0,1,0,0,0,1,0,1,0,0,1,0,1,0,0]) },
-  { id:2, label:'T3', eng:'D808', presetIdx:11, vol:92, mute:false, solo:false, peak:0, macros:[...PRESETS[11].m], abSlot:'A', snapshotB:null, steps:make128Steps([1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1]) },
-  { id:3, label:'T4', eng:'VA',   presetIdx:5,  vol:86, mute:false, solo:false, peak:0, macros:[...PRESETS[5].m],  abSlot:'A', snapshotB:null, steps:make128Steps([1,0,0,1,0,0,1,0,0,0,1,0,1,0,0,0]) },
-  { id:4, label:'T5', eng:'DX7',  presetIdx:7,  vol:80, mute:false, solo:false, peak:0, macros:[...PRESETS[7].m],  abSlot:'A', snapshotB:null, steps:make128Steps([1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0]) },
-  { id:5, label:'T6', eng:'SID',  presetIdx:9,  vol:76, mute:false, solo:false, peak:0, macros:[...PRESETS[9].m],  abSlot:'A', snapshotB:null, steps:make128Steps([0,0,1,0,0,0,1,0,0,0,1,0,0,1,1,0]) },
-  { id:6, label:'T7', eng:'GRAN', presetIdx:12, vol:74, mute:false, solo:false, peak:0, macros:[...PRESETS[12].m], abSlot:'A', snapshotB:null, steps:make128Steps([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]) },
-  { id:7, label:'T8', eng:'VA',   presetIdx:6,  vol:78, mute:false, solo:false, peak:0, macros:[...PRESETS[6].m],  abSlot:'A', snapshotB:null, steps:make128Steps([0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0]) }
+  { id:0, label:'T1', eng:'K250', presetIdx:DEF_IDX[0], vol:90, mute:false, solo:false, peak:0, macros:[...PRESETS[DEF_IDX[0]].m], abSlot:'A', snapshotB:null, steps:make128Steps([1,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0]) },
+  { id:1, label:'T2', eng:'K250', presetIdx:DEF_IDX[1], vol:86, mute:false, solo:false, peak:0, macros:[...PRESETS[DEF_IDX[1]].m], abSlot:'A', snapshotB:null, steps:make128Steps([1,0,1,0,0,0,1,0,1,0,0,1,0,1,0,0]) },
+  { id:2, label:'T3', eng:'K250', presetIdx:DEF_IDX[2], vol:92, mute:false, solo:false, peak:0, macros:[...PRESETS[DEF_IDX[2]].m], abSlot:'A', snapshotB:null, steps:make128Steps([1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1]) },
+  { id:3, label:'T4', eng:'K250', presetIdx:DEF_IDX[3], vol:86, mute:false, solo:false, peak:0, macros:[...PRESETS[DEF_IDX[3]].m], abSlot:'A', snapshotB:null, steps:make128Steps([1,0,0,1,0,0,1,0,0,0,1,0,1,0,0,0]) },
+  { id:4, label:'T5', eng:'K250', presetIdx:DEF_IDX[4], vol:84, mute:false, solo:false, peak:0, macros:[...PRESETS[DEF_IDX[4]].m], abSlot:'A', snapshotB:null, steps:make128Steps([1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0]) },
+  { id:5, label:'T6', eng:'K250', presetIdx:DEF_IDX[5], vol:80, mute:false, solo:false, peak:0, macros:[...PRESETS[DEF_IDX[5]].m], abSlot:'A', snapshotB:null, steps:make128Steps([0,0,1,0,0,0,1,0,0,0,1,0,0,1,1,0]) },
+  { id:6, label:'T7', eng:'K250', presetIdx:DEF_IDX[6], vol:78, mute:false, solo:false, peak:0, macros:[...PRESETS[DEF_IDX[6]].m], abSlot:'A', snapshotB:null, steps:make128Steps([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]) },
+  { id:7, label:'T8', eng:'K250', presetIdx:DEF_IDX[7], vol:80, mute:false, solo:false, peak:0, macros:[...PRESETS[DEF_IDX[7]].m], abSlot:'A', snapshotB:null, steps:make128Steps([0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0]) }
 ];
 
 // Compact authentic showcase demo motifs for instant browser jukebox playback
@@ -658,11 +697,11 @@ const DEMOS = [
   ]}
 ];
 
-const STORAGE_KEY = 'fm1_stacktrace_session_v1';
+const STORAGE_KEY = 'fm1_stacktrace_session_v2';
 let undoStack = [];
 
 let state = {
-  track: 3,
+  track: 0,
   cat: 'ALL',
   search: '',
   get macros() { return TRACKS[this.track].macros; },
@@ -780,9 +819,12 @@ function updateMasterFx() {
   const qVal = 0.7 + (state.macros[1] / 100) * 14;
   const detune = (state.macros[3] / 100) * 32;
   for (const v of heldVoices.values()) {
-    v.filter.frequency.setTargetAtTime(cutoffHz, audioCtx.currentTime, 0.02);
-    v.filter.Q.setTargetAtTime(qVal, audioCtx.currentTime, 0.02);
-    v.osc2.detune.setTargetAtTime(detune, audioCtx.currentTime, 0.02);
+    if (v.filter) {
+      v.filter.frequency.setTargetAtTime(cutoffHz, audioCtx.currentTime, 0.02);
+      v.filter.Q.setTargetAtTime(qVal, audioCtx.currentTime, 0.02);
+    }
+    if (v.osc2) v.osc2.detune.setTargetAtTime(detune, audioCtx.currentTime, 0.02);
+    if (v.src) v.src.detune.setTargetAtTime(detune, audioCtx.currentTime, 0.02);
   }
 }
 
@@ -844,18 +886,230 @@ function releaseAllHeld() {
   const rel = 0.05 + (state.env.r / 100) * 0.65;
   for (const [m, v] of heldVoices.entries()) {
     try {
-      v.gain.gain.cancelScheduledValues(now);
-      v.gain.gain.setValueAtTime(Math.max(0.0001, v.gain.gain.value), now);
-      v.gain.gain.exponentialRampToValueAtTime(0.0001, now + rel);
-      v.osc1.stop(now + rel + 0.03);
-      v.osc2.stop(now + rel + 0.03);
-      if (v.lfoOsc) v.lfoOsc.stop(now + rel + 0.03);
+      if (v.release) {
+        v.release(now);
+      } else {
+        v.gain.gain.cancelScheduledValues(now);
+        v.gain.gain.setValueAtTime(Math.max(0.0001, v.gain.gain.value), now);
+        v.gain.gain.exponentialRampToValueAtTime(0.0001, now + rel);
+        if (v.osc1) v.osc1.stop(now + rel + 0.03);
+        if (v.osc2) v.osc2.stop(now + rel + 0.03);
+        if (v.src) v.src.stop(now + rel + 0.03);
+        if (v.lfoOsc) v.lfoOsc.stop(now + rel + 0.03);
+      }
     } catch {}
     const kEl = document.querySelector(`[data-midi="${m}"]`);
     if (kEl) kEl.classList.remove('pressed');
   }
   heldVoices.clear();
 }
+
+// ---- Kurzweil K250 675-Sample Lazy Chunk Loader & Sampler Voice Engine ----
+window.K250_MANIFEST = {};
+window.decodedBuffers = {};
+window.engineVoicePools = { k250: [] };
+const k250RawChunks = {};
+const k250ChunkPromises = {};
+const k250DecodePromises = {};
+let k250ManifestPromise = null;
+
+function initK250Manifest() {
+  if (k250ManifestPromise) return k250ManifestPromise;
+  k250ManifestPromise = fetch('k250_chunks/manifest.json')
+    .then(r => r.ok ? r.json() : {})
+    .then(m => {
+      window.K250_MANIFEST = m || {};
+      // Prefetch chunk 0 (Steinway Concert Grand) in background for instant piano playback
+      fetchK250Chunk(0).catch(() => {});
+      return window.K250_MANIFEST;
+    })
+    .catch(() => ({}));
+  return k250ManifestPromise;
+}
+
+function fetchK250Chunk(chunkIdx) {
+  if (k250RawChunks[chunkIdx]) return Promise.resolve(k250RawChunks[chunkIdx]);
+  if (k250ChunkPromises[chunkIdx]) return k250ChunkPromises[chunkIdx];
+  const url = `k250_chunks/chunk_${String(chunkIdx).padStart(2, '0')}.json`;
+  k250ChunkPromises[chunkIdx] = fetch(url)
+    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+    .then(data => { k250RawChunks[chunkIdx] = data; return data; })
+    .catch(err => { delete k250ChunkPromises[chunkIdx]; throw err; });
+  return k250ChunkPromises[chunkIdx];
+}
+
+function base64DataUrlToArrayBuffer(dataUrl) {
+  const comma = dataUrl.indexOf(',');
+  const b64 = comma >= 0 ? dataUrl.slice(comma + 1) : dataUrl;
+  const bin = atob(b64);
+  const len = bin.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes.buffer;
+}
+
+async function loadK250Sample(key) {
+  if (window.decodedBuffers[key]) return window.decodedBuffers[key];
+  if (k250DecodePromises[key]) return k250DecodePromises[key];
+  k250DecodePromises[key] = (async () => {
+    await initK250Manifest();
+    const chunkIdx = window.K250_MANIFEST[key];
+    if (chunkIdx === undefined) return null;
+    const chunk = await fetchK250Chunk(chunkIdx);
+    const dataUrl = chunk && chunk[key];
+    if (!dataUrl || !audioCtx) return null;
+    const ab = base64DataUrlToArrayBuffer(dataUrl);
+    const buf = await audioCtx.decodeAudioData(ab);
+    window.decodedBuffers[key] = buf;
+    return buf;
+  })().catch(() => null).finally(() => { delete k250DecodePromises[key]; });
+  return k250DecodePromises[key];
+}
+
+function triggerK250Buffer(buf, opts, ctx) {
+  if (!audioCtx || !buf) return;
+  const now = audioCtx.currentTime;
+  const t = TRACKS[ctx.tIdx] || TRACKS[state.track];
+  const m = t.macros;
+
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  src.playbackRate.setValueAtTime(Math.max(0.125, Math.min(8, opts.pitchRatio || 1)), now);
+  const detuneCents = (opts.detune || 0) + ((m[3] / 100) * 28);
+  src.detune.setValueAtTime(detuneCents, now);
+  if (opts.canLoop && buf.duration > 0.65) {
+    src.loop = true;
+    src.loopStart = buf.duration * 0.28;
+    src.loopEnd = buf.duration * 0.88;
+  }
+
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = opts.filterType || 'lowpass';
+  const baseCut = opts.cutoff || 14000;
+  const macroScale = 0.15 + Math.pow(m[0] / 100, 1.5) * 1.45;
+  const effCut = Math.max(180, Math.min(19000, baseCut * macroScale));
+  filter.frequency.setValueAtTime(effCut, now);
+  filter.Q.setValueAtTime(Math.max(0.5, (opts.res || 1.0) + (m[1] / 100) * 6), now);
+
+  let lfoOsc = null;
+  if (state.lfo.depth > 0 || (opts.vibratoDepth && opts.vibratoRate)) {
+    lfoOsc = audioCtx.createOscillator();
+    const lfoGain = audioCtx.createGain();
+    lfoOsc.type = 'sine';
+    const rate = opts.vibratoRate || (0.25 + (state.lfo.rate / 100) * 12);
+    lfoOsc.frequency.setValueAtTime(rate, now);
+    if (opts.vibratoDepth) {
+      lfoGain.gain.setValueAtTime(opts.vibratoDepth * 14, now);
+      lfoOsc.connect(lfoGain);
+      lfoGain.connect(src.detune);
+    } else {
+      lfoGain.gain.setValueAtTime((state.lfo.depth / 100) * effCut * 0.35, now);
+      lfoOsc.connect(lfoGain);
+      lfoGain.connect(filter.frequency);
+    }
+    lfoOsc.start(now);
+  }
+
+  const gain = audioCtx.createGain();
+  const vel = Math.max(0.05, Math.min(1.25, opts.velocity ?? 0.8));
+  const peakGain = Math.max(0.001, vel * 0.85 * (t.vol / 100));
+  const atk = Math.max(0.002, (opts.attack ?? 0.006) + (state.env.a / 100) * 0.12);
+  const rel = Math.max(0.04, (opts.releaseTime ?? 0.38) * (0.4 + (state.env.r / 100) * 1.4));
+  const decScale = 0.35 + (m[2] / 100) * 1.15;
+  const holdDur = Math.max(ctx.dur || 0.45, opts.naturalSustain ? Math.min(buf.duration, (opts.decay || 3.2) * decScale) : (ctx.dur || 0.55));
+
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.linearRampToValueAtTime(peakGain, now + atk);
+
+  updateMasterFx();
+  src.connect(filter);
+  filter.connect(gain);
+  gain.connect(masterGain);
+  src.start(now);
+
+  const voice = {
+    src, filter, gain, lfoOsc,
+    _monoKey: window.__currentMonoKey || null,
+    releaseTime: rel,
+    isReleased: false,
+    release(tRel) {
+      if (this.isReleased) return;
+      this.isReleased = true;
+      const rt = Math.max(0.015, this.releaseTime || 0.25);
+      try {
+        gain.gain.cancelScheduledValues(tRel);
+        gain.gain.setValueAtTime(Math.max(0.0001, gain.gain.value), tRel);
+        gain.gain.exponentialRampToValueAtTime(0.0001, tRel + rt);
+        src.stop(tRel + rt + 0.04);
+        if (lfoOsc) lfoOsc.stop(tRel + rt + 0.04);
+      } catch {}
+    }
+  };
+
+  const pool = window.engineVoicePools.k250;
+  pool.push(voice);
+  if (pool.length > 32) {
+    const oldest = pool.shift();
+    if (oldest && !oldest.isReleased) oldest.release(now);
+  }
+
+  if (ctx.latch) {
+    heldVoices.set(ctx.midi, voice);
+    const kEl = document.querySelector(`[data-midi="${ctx.midi}"]`);
+    if (kEl) kEl.classList.add('pressed');
+  } else {
+    const noteEnd = now + atk + holdDur;
+    gain.gain.setValueAtTime(peakGain * (opts.canLoop ? 0.85 : 0.7), noteEnd);
+    gain.gain.exponentialRampToValueAtTime(0.0001, noteEnd + rel);
+    const stopAt = noteEnd + rel + 0.05;
+    src.stop(stopAt);
+    if (lfoOsc) lfoOsc.stop(stopAt);
+    src.onended = () => {
+      voice.isReleased = true;
+      const idx = pool.indexOf(voice);
+      if (idx >= 0) pool.splice(idx, 1);
+    };
+  }
+}
+
+window.playSamplerVoice = function(opts) {
+  const ctx = window.__k250PlayCtx || { tIdx: state.track, dur: 0.55, latch: false, midi: opts.midiNote || 60 };
+  const buf = window.decodedBuffers[opts.key];
+  if (buf) {
+    triggerK250Buffer(buf, opts, ctx);
+    return;
+  }
+  const infoEl = document.getElementById('scopeVoiceInfo');
+  if (infoEl) infoEl.textContent = `Loading K250 sample (${opts.key})...`;
+  loadK250Sample(opts.key).then(loaded => {
+    if (loaded) {
+      triggerK250Buffer(loaded, opts, ctx);
+      if (infoEl) {
+        const p = PRESETS[TRACKS[ctx.tIdx].presetIdx];
+        infoEl.textContent = `K250 · ${p ? p.name : opts.key} · MIDI ${ctx.midi}`;
+      }
+    }
+  });
+};
+
+// Fallback synth helpers referenced by non-sample paths inside playVoiceByType
+function playK250SynthFallback(midiNote, velocity, wave = 'sawtooth') {
+  const ctx = window.__k250PlayCtx || { tIdx: state.track, dur: 0.45, latch: false, midi: midiNote };
+  playSynthVoice(midiNote, ctx.dur, velocity || 0.75, ctx.tIdx, ctx.latch, wave);
+}
+window.playK250StringVoice = (m, em, v) => playK250SynthFallback(em || m, v, 'sawtooth');
+window.playWoodwindSynth = (m, em, v) => playK250SynthFallback(em || m, v, 'triangle');
+window.playHammondB3Voice = (m, em, v) => playK250SynthFallback(em || m, v, 'sine');
+window.playHarpVoice = (m, em, v) => playK250SynthFallback(em || m, v, 'triangle');
+window.playHarpsichordVoice = (m, em, v) => playK250SynthFallback(em || m, v, 'sawtooth');
+window.playAuthenticBassVoice = (m, em, v) => playK250SynthFallback(em || m, v, 'triangle');
+window.playAcousticDrumKitVoice = (m, v) => playK250SynthFallback(m, v, 'triangle');
+window.playMalletSynth = (m, em, v) => playK250SynthFallback(em || m, v, 'sine');
+window.playFmSynth = (m, em, v) => playK250SynthFallback(em || m, v, 'sine');
+window.play303Bass = (m, em, v) => playK250SynthFallback(em || m, v, 'sawtooth');
+window.play808Drum = (m, v) => playK250SynthFallback(m, v, 'triangle');
+
+initK250Manifest();
 
 function playNote(midi, dur = 0.45, vel = 0.8, trackOverride = null, latch = false) {
   ensureAudio();
@@ -866,16 +1120,40 @@ function playNote(midi, dur = 0.45, vel = 0.8, trackOverride = null, latch = fal
   if (latch && heldVoices.has(midi)) {
     const v = heldVoices.get(midi);
     const now = audioCtx.currentTime;
-    v.gain.gain.cancelScheduledValues(now);
-    v.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
-    v.osc1.stop(now + 0.1); v.osc2.stop(now + 0.1);
-    if (v.lfoOsc) v.lfoOsc.stop(now + 0.1);
+    if (v.release) {
+      v.release(now);
+    } else {
+      v.gain.gain.cancelScheduledValues(now);
+      v.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+      if (v.osc1) v.osc1.stop(now + 0.1);
+      if (v.osc2) v.osc2.stop(now + 0.1);
+      if (v.src) v.src.stop(now + 0.1);
+      if (v.lfoOsc) v.lfoOsc.stop(now + 0.1);
+    }
     heldVoices.delete(midi);
     const kEl = document.querySelector(`[data-midi="${midi}"]`);
     if (kEl) kEl.classList.remove('pressed');
     return;
   }
 
+  const preset = PRESETS[t.presetIdx];
+  if (t.eng === 'K250' && preset && preset.k250 && typeof playVoiceByType === 'function') {
+    const kp = preset.k250;
+    window.__k250PlayCtx = { tIdx, dur, latch, midi };
+    playVoiceByType(kp.type, midi, vel, kp);
+    if (kp.layer && kp.layerVol > 0) {
+      playVoiceByType(kp.layer, midi, vel * kp.layerVol, { ...kp, det: (kp.det || 0) + (kp.layerDet || 0) });
+    }
+    pulseTrack(tIdx, vel * (t.vol / 100));
+    document.getElementById('scopeVoiceInfo').textContent = `K250 · ${preset.name} · MIDI ${midi}`;
+    return;
+  }
+
+  playSynthVoice(midi, dur, vel, tIdx, latch);
+}
+
+function playSynthVoice(midi, dur, vel, tIdx, latch, waveOverride = null) {
+  const t = TRACKS[tIdx];
   const eng = ENGINES[t.eng];
   const now = audioCtx.currentTime;
   const freq = 440 * Math.pow(2, (midi - 69) / 12);
@@ -886,8 +1164,8 @@ function playNote(midi, dur = 0.45, vel = 0.8, trackOverride = null, latch = fal
   const filter = audioCtx.createBiquadFilter();
   const gain = audioCtx.createGain();
 
-  osc1.type = eng.wave;
-  osc2.type = eng.id === 'DX7' ? 'sine' : eng.wave;
+  osc1.type = waveOverride || eng.wave;
+  osc2.type = eng.id === 'DX7' ? 'sine' : (waveOverride || eng.wave);
   osc1.frequency.setValueAtTime(freq, now);
   osc2.frequency.setValueAtTime(eng.id === 'DX7' ? freq * 2 : freq, now);
   osc2.detune.setValueAtTime((m[3] / 100) * 32, now);
@@ -968,7 +1246,7 @@ function applyAccent() {
 }
 
 // ---- Preset Browser ----
-const CATS = ['ALL', '★', 'KEYS', 'BASS', 'PAD', 'BRASS', 'LEAD', 'DRUMS', 'FX'];
+const CATS = ['ALL', '★', 'PIANO', 'EP', 'ORGAN', 'STRINGS', 'BRASS', 'WINDS', 'CHOIR', 'BASS/GTR', 'MALLETS', 'DRUMS'];
 function getFilteredPresets() {
   const q = state.search.toLowerCase();
   return PRESETS.map((p, idx) => ({ ...p, idx })).filter(p => {
