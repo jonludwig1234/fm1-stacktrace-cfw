@@ -417,8 +417,8 @@
       <span style="color:var(--text-muted);font-weight:500;">// UNIFIED STUDIO</span>
     </div>
 
-    <div class="cmd-trigger" id="cmdTrigger" tabindex="0" role="button" aria-label="Search 256 K250 presets, engines, or demos" title="Quick jump to any K250 preset, demo, or engine">
-      <span>Search 256 K250 presets, engines, or demos...</span>
+    <div class="cmd-trigger" id="cmdTrigger" tabindex="0" role="button" aria-label="Search 53 K250 instruments, engines, or demos" title="Quick jump to any K250 instrument, demo, or engine">
+      <span>Search 53 K250 instruments, engines, or demos...</span>
       <span class="kbd">/ or ⌘K</span>
     </div>
 
@@ -575,7 +575,7 @@
 <script>
 // ---- Engine Definitions (Shared Web + 240x240 LCD Semantic Palette) ----
 const ENGINES = {
-  K250: { id:'K250', name:'K250 SAMPLER', color:'#22D3EE', soft:'rgba(34,211,238,0.16)',  desc:'256 Kurzweil K250 multi-sampled instruments (675 samples)', wave:'triangle', macros:['CUTOFF','RESO','DECAY','DETUNE'] },
+  K250: { id:'K250', name:'K250 SAMPLER', color:'#22D3EE', soft:'rgba(34,211,238,0.16)',  desc:'53 distinct multi-sampled Kurzweil K250 instruments (675 samples)', wave:'triangle', macros:['CUTOFF','RESO','DECAY','DETUNE'] },
   DX7:  { id:'DX7',  name:'DX7 FM',       color:'#38BDF8', soft:'rgba(56,189,248,0.16)',  desc:'6-Op FM classic keys, bells & brass', wave:'sine',     macros:['BRIGHT','FM IDX','DECAY','DETUNE'] },
   VA:   { id:'VA',   name:'VA POLY',      color:'#F59E0B', soft:'rgba(245,158,11,0.16)',  desc:'Dual-DCO SuperSaw + resonant SVF',   wave:'sawtooth', macros:['CUTOFF','RESO','DECAY','DETUNE'] },
   B303: { id:'B303', name:'TB-303',       color:'#A3E635', soft:'rgba(163,230,53,0.16)',  desc:'Acid mono bassline + accent/slide',  wave:'sawtooth', macros:['CUTOFF','RESO','ENV MOD','DECAY'] },
@@ -597,18 +597,31 @@ const K250_CAT_MAP = {
   'Drums, Splits & Tutti': 'DRUMS'
 };
 
-const K250_DEFAULT_FAVS = new Set([1, 25, 49, 76, 107, 137, 161, 185, 209, 233]);
+const K250_SAMPLED_ONLY_IDS = new Set([
+  1, 12, 16, 87,
+  26, 36,
+  53, 59,
+  73, 76, 78, 79, 80, 81, 82,
+  105, 107, 108, 110, 112, 113, 115,
+  137, 138, 139, 141, 143, 152, 153,
+  161,
+  185, 188, 189, 190, 191, 194, 195, 196,
+  209, 210, 212, 213, 214, 215,
+  221, 222, 223, 233, 234, 235, 236, 241, 242
+]);
+
+const K250_DEFAULT_FAVS = new Set([1, 26, 53, 76, 107, 137, 161, 188, 195, 213, 233]);
 
 const PRESETS = (typeof K250_PRESETS !== 'undefined' && Array.isArray(K250_PRESETS))
-  ? K250_PRESETS.map(kp => {
+  ? K250_PRESETS.filter(kp => K250_SAMPLED_ONLY_IDS.has(kp.id)).map((kp, i) => {
       const cleanName = (kp.name || '').replace(/^\d+:\s*/, '');
-      const cat = K250_CAT_MAP[kp.category] || 'PIANO';
+      const cat = kp.id === 87 ? 'PIANO' : (K250_CAT_MAP[kp.category] || 'PIANO');
       const cutPct = Math.max(25, Math.min(100, Math.round((Math.log(Math.max(200, kp.cut || 12000) / 180) / Math.log(95)) * 100)));
       const resPct = Math.max(8, Math.min(85, Math.round(((kp.res || 1) / 12) * 100)));
       const decPct = Math.max(20, Math.min(95, Math.round((Math.min(8, kp.dec || 3) / 8) * 100)));
       const detPct = Math.max(0, Math.min(80, Math.round(Math.abs(kp.det || 0) * 3)));
       return {
-        num: String(kp.id).padStart(3, '0'),
+        num: String(i + 1).padStart(2, '0'),
         name: cleanName,
         cat,
         eng: 'K250',
@@ -618,7 +631,7 @@ const PRESETS = (typeof K250_PRESETS !== 'undefined' && Array.isArray(K250_PRESE
       };
     })
   : [
-      { num:'001', name:'Steinway Concert Grand', cat:'PIANO', eng:'K250', m:[92,10,85,0], fav:true }
+      { num:'01', name:'Steinway Concert Grand', cat:'PIANO', eng:'K250', m:[92,10,85,0], fav:true }
     ];
 
 function findPresetIdx(substr, fallback = 0) {
@@ -635,13 +648,13 @@ function make128Steps(pattern16) {
 
 const DEF_IDX = [
   findPresetIdx('STEINWAY CONCERT GRAND', 0),
-  findPresetIdx('UPRIGHT', 192),
-  findPresetIdx('ACOUSTIC STUDIO DRUM', 232),
-  findPresetIdx('SYMPHONIC VIOLINS', 75),
-  findPresetIdx('CONCERT ORCHESTRAL TRUMPET', 106),
-  findPresetIdx('CONCERT FLUTE', 136),
-  findPresetIdx('MIXED CATHEDRAL CHOIR', 160),
-  findPresetIdx('HAMMOND', 48)
+  findPresetIdx('UPRIGHT BASS', 0),
+  findPresetIdx('WEST ROOM ACOUSTIC DRUM', 0),
+  findPresetIdx('WARM LEGATO VIOLINS', 0),
+  findPresetIdx('CONCERT ORCHESTRAL TRUMPET', 0),
+  findPresetIdx('CONCERT SILVER FLUTE', 0),
+  findPresetIdx('SYMPHONIC CLASSICAL CHOIR', 0),
+  findPresetIdx('ROCK 888000000 ORGAN', 0)
 ];
 
 const TRACKS = [
@@ -697,7 +710,7 @@ const DEMOS = [
   ]}
 ];
 
-const STORAGE_KEY = 'fm1_stacktrace_session_v3';
+const STORAGE_KEY = 'fm1_stacktrace_session_v4';
 let undoStack = [];
 
 let state = {
