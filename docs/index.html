@@ -1066,7 +1066,13 @@ function triggerK250Buffer(buf, opts, ctx) {
   const defCutPct = (pDef && pDef.m) ? pDef.m[0] : 75;
   const cutRatio = Math.pow(4, (m[0] - defCutPct) / 50);
   const effCut = Math.max(180, Math.min(19500, baseCut * cutRatio));
-  filter.frequency.setValueAtTime(effCut, now);
+  if (opts.brassSweepHz && opts.brassSweepHz > 0) {
+    filter.frequency.setValueAtTime(Math.max(380, effCut * 0.45), now);
+    filter.frequency.exponentialRampToValueAtTime(Math.min(19500, effCut + opts.brassSweepHz), now + 0.075);
+    filter.frequency.exponentialRampToValueAtTime(effCut, now + 0.32);
+  } else {
+    filter.frequency.setValueAtTime(effCut, now);
+  }
   const defResPct = (pDef && pDef.m) ? pDef.m[1] : 15;
   filter.Q.setValueAtTime(Math.max(0.5, (opts.res || 1.0) + Math.max(0, (m[1] - defResPct) / 100) * 8), now);
 
@@ -1078,7 +1084,14 @@ function triggerK250Buffer(buf, opts, ctx) {
     const rate = opts.vibratoRate || (0.25 + (state.lfo.rate / 100) * 12);
     lfoOsc.frequency.setValueAtTime(rate, now);
     if (opts.vibratoDepth) {
-      lfoGain.gain.setValueAtTime(opts.vibratoDepth * 14, now);
+      const targetVib = opts.vibratoDepth * 14;
+      if (opts.vibratoDelay && opts.vibratoDelay > 0) {
+        lfoGain.gain.setValueAtTime(0, now);
+        lfoGain.gain.setValueAtTime(0, now + opts.vibratoDelay);
+        lfoGain.gain.linearRampToValueAtTime(targetVib, now + opts.vibratoDelay + 0.18);
+      } else {
+        lfoGain.gain.setValueAtTime(targetVib, now);
+      }
       lfoOsc.connect(lfoGain);
       lfoGain.connect(src.detune);
     } else {
@@ -1106,7 +1119,7 @@ function triggerK250Buffer(buf, opts, ctx) {
   if (opts.stereoEnsemble && typeof audioCtx.createStereoPanner === 'function') {
     src2 = audioCtx.createBufferSource();
     src2.buffer = buf;
-    src2.playbackRate.setValueAtTime(Math.max(0.125, Math.min(8, opts.pitchRatio || 1)), now);
+    src2.playbackRate.setValueAtTime(pr, now);
     src2.detune.setValueAtTime(detuneCents + 7, now);
     src.detune.setValueAtTime(detuneCents - 7, now);
     if (src.loop) { src2.loop = true; src2.loopStart = src.loopStart; src2.loopEnd = src.loopEnd; }
@@ -1120,20 +1133,42 @@ function triggerK250Buffer(buf, opts, ctx) {
   } else {
     src.connect(filter);
   }
+  let postNode = filter;
+  if (opts.jazzGuitarFx) {
+    const bodyEq = audioCtx.createBiquadFilter();
+    bodyEq.type = 'peaking';
+    bodyEq.frequency.setValueAtTime(380, now);
+    bodyEq.Q.setValueAtTime(1.1, now);
+    bodyEq.gain.setValueAtTime(4.5, now);
+    postNode.connect(bodyEq);
+    postNode = bodyEq;
+  }
   if (opts.rockDistFx) {
     const dist = audioCtx.createWaveShaper();
     dist.curve = makeDriveCurve(72, 0);
     dist.oversample = '2x';
-    filter.connect(dist);
-    dist.connect(gain);
-  } else {
-    filter.connect(gain);
+    postNode.connect(dist);
+    postNode = dist;
   }
+  postNode.connect(gain);
+
+  let subOsc = null;
+  if (opts.subBodyFreq && opts.subBodyLevel && opts.subBodyLevel > 0) {
+    subOsc = audioCtx.createOscillator();
+    const subGain = audioCtx.createGain();
+    subOsc.type = 'sine';
+    subOsc.frequency.setValueAtTime(Math.max(32, Math.min(440, opts.subBodyFreq)), now);
+    subGain.gain.setValueAtTime(Math.min(0.45, opts.subBodyLevel * 0.45), now);
+    subOsc.connect(subGain);
+    subGain.connect(gain);
+    subOsc.start(now);
+  }
+
   gain.connect(masterGain);
   src.start(now);
 
   const voice = {
-    src, src2, filter, gain, lfoOsc,
+    src, src2, subOsc, filter, gain, lfoOsc,
     _monoKey: window.__currentMonoKey || null,
     releaseTime: rel,
     isReleased: false,
@@ -1147,6 +1182,7 @@ function triggerK250Buffer(buf, opts, ctx) {
         gain.gain.exponentialRampToValueAtTime(0.0001, tRel + rt);
         src.stop(tRel + rt + 0.04);
         if (src2) src2.stop(tRel + rt + 0.04);
+        if (subOsc) subOsc.stop(tRel + rt + 0.04);
         if (lfoOsc) lfoOsc.stop(tRel + rt + 0.04);
       } catch {}
     }
@@ -1170,6 +1206,7 @@ function triggerK250Buffer(buf, opts, ctx) {
     const stopAt = noteEnd + rel + 0.05;
     src.stop(stopAt);
     if (src2) src2.stop(stopAt);
+    if (subOsc) subOsc.stop(stopAt);
     if (lfoOsc) lfoOsc.stop(stopAt);
     src.onended = () => {
       voice.isReleased = true;
