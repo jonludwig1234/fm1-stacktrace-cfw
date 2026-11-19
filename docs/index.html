@@ -907,7 +907,79 @@ function releaseAllHeld() {
 // ---- Kurzweil K250 675-Sample Lazy Chunk Loader & Sampler Voice Engine ----
 window.K250_MANIFEST = {};
 window.decodedBuffers = {};
-window.engineVoicePools = { k250: [] };
+window.engineVoicePools = { k250: [], fm: [], bass303: [], va: [], sid: [], drum: [] };
+window.lastGlideFreqByTrack = {};
+window.triggerSidechainDuck = function() {};
+window.initAudio = function() { ensureAudio(); };
+window.getAudioTime = function() { return audioCtx ? audioCtx.currentTime : 0; };
+window.getTrackBusNode = function() { ensureAudio(); return masterGain; };
+window.pruneReleasedVoiceFromPool = function(voice) {
+  const eng = voice && voice._engine ? voice._engine : 'k250';
+  const pool = window.engineVoicePools[eng];
+  if (!pool) return;
+  const idx = pool.indexOf(voice);
+  if (idx >= 0) pool.splice(idx, 1);
+};
+
+class ActiveVoice {
+  constructor({ note, src, gain, filter, lfo, baseDetune = 0, basePitchRatio = 1.0, stopTime, releaseTime = 0.14, engine = 'k250' }) {
+    this.note = note;
+    this.src = src;
+    this.gain = gain;
+    this.filter = filter;
+    this.lfo = lfo;
+    this.baseDetune = baseDetune;
+    this.basePitchRatio = basePitchRatio;
+    this.stopTime = stopTime;
+    this.releaseTime = releaseTime;
+    this._engine = engine;
+    this.isReleased = false;
+  }
+  release(when = 0) {
+    if (this.isReleased) return;
+    this.isReleased = true;
+    window.pruneReleasedVoiceFromPool(this);
+    if (!audioCtx) return;
+    const now = when > 0 ? Math.max(audioCtx.currentTime, when) : audioCtx.currentTime;
+    try {
+      const gains = Array.isArray(this.gain) ? this.gain : [this.gain];
+      for (const g of gains) {
+        if (g && g.gain) {
+          g.gain.cancelScheduledValues(now);
+          g.gain.setValueAtTime(Math.max(0.0001, g.gain.value), now);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + this.releaseTime);
+        }
+      }
+      const srcs = Array.isArray(this.src) ? this.src : [this.src];
+      for (const s of srcs) {
+        if (s && s.stop) s.stop(now + this.releaseTime + 0.02);
+      }
+      if (this.lfo && this.lfo.stop) this.lfo.stop(now + this.releaseTime + 0.02);
+    } catch {}
+  }
+}
+window.ActiveVoice = ActiveVoice;
+
+window.registerActiveVoice = function(note, voice, durationSec = 10.0, engine = 'k250') {
+  const eng = window.engineVoicePools[engine] ? engine : 'k250';
+  voice._engine = eng;
+  voice._monoKey = window.__currentMonoKey || null;
+  const pool = window.engineVoicePools[eng];
+  pool.push(voice);
+  if (pool.length > 28) {
+    const oldest = pool.shift();
+    if (oldest && !oldest.isReleased) oldest.release(audioCtx ? audioCtx.currentTime : 0);
+  }
+  const ctx = window.__k250PlayCtx;
+  if (ctx && ctx.latch) {
+    heldVoices.set(ctx.midi, voice);
+    const kEl = document.querySelector(`[data-midi="${ctx.midi}"]`);
+    if (kEl) kEl.classList.add('pressed');
+  } else if (audioCtx && ctx && ctx.dur) {
+    const relAt = audioCtx.currentTime + Math.max(ctx.dur, 0.25);
+    setTimeout(() => { if (!voice.isReleased) voice.release(audioCtx.currentTime); }, Math.max(120, Math.round((relAt - audioCtx.currentTime) * 1000)));
+  }
+};
 const k250RawChunks = {};
 const k250ChunkPromises = {};
 const k250DecodePromises = {};
@@ -1092,23 +1164,6 @@ window.playSamplerVoice = function(opts) {
   });
 };
 
-// Fallback synth helpers referenced by non-sample paths inside playVoiceByType
-function playK250SynthFallback(midiNote, velocity, wave = 'sawtooth') {
-  const ctx = window.__k250PlayCtx || { tIdx: state.track, dur: 0.45, latch: false, midi: midiNote };
-  playSynthVoice(midiNote, ctx.dur, velocity || 0.75, ctx.tIdx, ctx.latch, wave);
-}
-window.playK250StringVoice = (m, em, v) => playK250SynthFallback(em || m, v, 'sawtooth');
-window.playWoodwindSynth = (m, em, v) => playK250SynthFallback(em || m, v, 'triangle');
-window.playHammondB3Voice = (m, em, v) => playK250SynthFallback(em || m, v, 'sine');
-window.playHarpVoice = (m, em, v) => playK250SynthFallback(em || m, v, 'triangle');
-window.playHarpsichordVoice = (m, em, v) => playK250SynthFallback(em || m, v, 'sawtooth');
-window.playAuthenticBassVoice = (m, em, v) => playK250SynthFallback(em || m, v, 'triangle');
-window.playAcousticDrumKitVoice = (m, v) => playK250SynthFallback(m, v, 'triangle');
-window.playMalletSynth = (m, em, v) => playK250SynthFallback(em || m, v, 'sine');
-window.playFmSynth = (m, em, v) => playK250SynthFallback(em || m, v, 'sine');
-window.play303Bass = (m, em, v) => playK250SynthFallback(em || m, v, 'sawtooth');
-window.play808Drum = (m, v) => playK250SynthFallback(m, v, 'triangle');
-
 initK250Manifest();
 
 function playNote(midi, dur = 0.45, vel = 0.8, trackOverride = null, latch = false) {
@@ -1140,9 +1195,33 @@ function playNote(midi, dur = 0.45, vel = 0.8, trackOverride = null, latch = fal
   if (t.eng === 'K250' && preset && preset.k250 && typeof playVoiceByType === 'function') {
     const kp = preset.k250;
     window.__k250PlayCtx = { tIdx, dur, latch, midi };
-    playVoiceByType(kp.type, midi, vel, kp);
-    if (kp.layer && kp.layerVol > 0) {
-      playVoiceByType(kp.layer, midi, vel * kp.layerVol, { ...kp, det: (kp.det || 0) + (kp.layerDet || 0) });
+    if (kp.type === 'split') {
+      const splitNote = kp.splitNote || 54;
+      const targetType = midi < splitNote ? (kp.leftType || 'bass') : (kp.rightType || 'piano');
+      playVoiceByType(targetType, midi, vel, kp);
+    } else {
+      playVoiceByType(kp.type, midi, vel, kp);
+      const isHarpPreset = Boolean(kp.name && kp.name.includes('HARP'));
+      if (kp.layer && !((isHarpPreset || kp.type === 'harpsichord') && kp.layer.startsWith('clav'))) {
+        const isUnpitchedLayer = (kp.layer === 'drum_cymbal' || kp.layer === 'orch_gong');
+        const layerBase = (typeof LAYER_BASE_NOTES !== 'undefined' && LAYER_BASE_NOTES[kp.layer]) || 60;
+        const layerRatio = isUnpitchedLayer
+          ? 1.0
+          : Math.pow(2, ((midi + ((kp.oct || 0) * 12)) - layerBase) / 12);
+        playSamplerVoice({
+          key: kp.layer,
+          midiNote: midi,
+          pitchRatio: layerRatio,
+          velocity: vel * (kp.layerVol || 0.6),
+          attack: kp.att,
+          decay: kp.dec,
+          cutoff: kp.cut,
+          filterType: kp.filt,
+          res: kp.res,
+          detune: kp.layerDet || 0,
+          canLoop: !isUnpitchedLayer
+        });
+      }
     }
     pulseTrack(tIdx, vel * (t.vol / 100));
     document.getElementById('scopeVoiceInfo').textContent = `K250 · ${preset.name} · MIDI ${midi}`;

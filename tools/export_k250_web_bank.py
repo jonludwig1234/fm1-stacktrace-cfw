@@ -32,15 +32,20 @@ assert m_s, 'K250_SAMPLES not found'
 samples = json.loads(m_s.group(1))
 print(f'Extracted {len(samples)} K250 multi-samples')
 
-# 3. Extract LAYER_BASE_NOTES, all MS_* tables, findClosestSample, and playVoiceByType
+# 3. Extract DX7_ALGORITHMS + dx7Bank, LAYER_BASE_NOTES, all MS_* tables, findClosestSample, playVoiceByType,
+#    and all 11 real K250 DSP/sampler voice engines (through play808Drum, before playVaSynth)
+l_dx7_alg = next(i for i, l in enumerate(lines) if 'const DX7_ALGORITHMS =' in l)
+l_dx7 = next(i for i, l in enumerate(lines) if 'const dx7Bank =' in l)
+bdepth = 0; l_dx7_end = l_dx7
+for i in range(l_dx7, len(lines)):
+    bdepth += lines[i].count('[') - lines[i].count(']')
+    if i >= l_dx7 and bdepth <= 0 and ']' in lines[i]:
+        l_dx7_end = i; break
+dx7_code = '\n'.join(lines[l_dx7_alg:l_dx7_end + 1]) + '\nlet activeDx7PatchIdx = 0;\n'
+
 l_layer = next(i for i, l in enumerate(lines) if 'const LAYER_BASE_NOTES' in l)
 l_ms_start = next(i for i, l in enumerate(lines) if 'const MS_STEINWAY' in l)
-l_pvt_start = next(i for i, l in enumerate(lines) if 'function playVoiceByType(' in l)
-depth = 0; l_pvt_end = l_pvt_start
-for i in range(l_pvt_start, len(lines)):
-    depth += lines[i].count('{') - lines[i].count('}')
-    if i > l_pvt_start and depth <= 0:
-        l_pvt_end = i; break
+l_va_start = next(i for i, l in enumerate(lines) if 'function playVaSynth(' in l)
 
 # Extract LAYER_BASE_NOTES block cleanly
 depth = 0; l_layer_end = l_layer
@@ -50,18 +55,44 @@ for i in range(l_layer, l_ms_start):
         l_layer_end = i; break
 
 layer_code = '\n'.join(lines[l_layer:l_layer_end + 1])
-zones_and_pvt = '\n'.join(lines[l_ms_start:l_pvt_end + 1])
+zones_and_engines = '\n'.join(lines[l_ms_start:l_va_start])
 
-# Make playVoiceByType always call playSamplerVoice even before decodedBuffers[key] is populated
-# so our lazy chunk loader can fetch & decode the exact sample on demand!
-zones_and_pvt = re.sub(r'if\s*\(\s*decodedBuffers\[([^\]]+)\]\s*\)', r'if (K250_MANIFEST[\1] !== undefined || decodedBuffers[\1])', zones_and_pvt)
+# Rewrite ALL decodedBuffers[expr] existence checks to hasK250Sample(expr) so
+# findClosestSample(), MS_VIBES/MS_MARIMBA/MS_CELESTA/MS_XYLO/MS_GLOCK/MS_HARPSICHORD,
+# drum kit sample lookups, and playVoiceByType() all see all 675 lazy-loaded samples!
+def replace_decoded_buffers(code_str):
+    out = []
+    i = 0
+    needle = 'decodedBuffers['
+    n = len(code_str)
+    while i < n:
+        idx = code_str.find(needle, i)
+        if idx == -1:
+            out.append(code_str[i:])
+            break
+        out.append(code_str[i:idx])
+        # Find matching ']' handling nested brackets like MS_MARIMBA[0].key
+        j = idx + len(needle)
+        bdepth = 1
+        while j < n and bdepth > 0:
+            if code_str[j] == '[': bdepth += 1
+            elif code_str[j] == ']': bdepth -= 1
+            j += 1
+        expr = code_str[idx + len(needle):j - 1]
+        out.append(f'hasK250Sample({expr})')
+        i = j
+    return ''.join(out)
+
+zones_and_engines = replace_decoded_buffers(zones_and_engines)
 
 out_js = os.path.join(DOCS_DIR, 'k250_presets_and_zones.js')
 with open(out_js, 'w', encoding='utf-8') as f:
-    f.write('// Auto-extracted Kurzweil K250 256-Preset & 675-Sample Zone Tables\n')
+    f.write('// Auto-extracted Kurzweil K250 256-Preset, 675-Sample Zone Tables & Voice Engines\n')
+    f.write('function hasK250Sample(k) { return Boolean((window.decodedBuffers && window.decodedBuffers[k]) || (window.K250_MANIFEST && window.K250_MANIFEST[k] !== undefined)); }\n')
     f.write('const K250_PRESETS = ' + presets_json + ';\n\n')
+    f.write(dx7_code + '\n')
     f.write(layer_code + '\n\n')
-    f.write(zones_and_pvt + '\n')
+    f.write(zones_and_engines + '\n')
 print(f'Wrote {out_js} ({os.path.getsize(out_js)/1024:.1f} KB)')
 
 # 4. Split 675 samples into ~3 MB chunks (putting Steinway sal_* first in chunk_00 for instant piano!)

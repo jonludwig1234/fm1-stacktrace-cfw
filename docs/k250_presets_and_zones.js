@@ -1,4 +1,5 @@
-// Auto-extracted Kurzweil K250 256-Preset & 675-Sample Zone Tables
+// Auto-extracted Kurzweil K250 256-Preset, 675-Sample Zone Tables & Voice Engines
+function hasK250Sample(k) { return Boolean((window.decodedBuffers && window.decodedBuffers[k]) || (window.K250_MANIFEST && window.K250_MANIFEST[k] !== undefined)); }
 const K250_PRESETS = [
       {
             "id": 1,
@@ -4622,6 +4623,141 @@ const K250_PRESETS = [
       }
 ];
 
+    const DX7_ALGORITHMS = [
+      { id: 1,  carriers: [1,3],       edges: [[2,1],[6,5],[5,4],[4,3]],                 fbOp: 6 },
+      { id: 2,  carriers: [1,3],       edges: [[2,1],[6,5],[5,4],[4,3]],                 fbOp: 2 },
+      { id: 3,  carriers: [1,4],       edges: [[3,2],[2,1],[6,5],[5,4]],                 fbOp: 6 },
+      { id: 4,  carriers: [1,4],       edges: [[3,2],[2,1],[6,5],[5,4]],                 fbOp: 4 },
+      { id: 5,  carriers: [1,3,5],     edges: [[2,1],[4,3],[6,5]],                       fbOp: 6 },
+      { id: 6,  carriers: [1,3,5],     edges: [[2,1],[4,3],[6,5]],                       fbOp: 5 },
+      { id: 7,  carriers: [1,3],       edges: [[2,1],[4,3],[6,5],[5,3]],                 fbOp: 6 },
+      { id: 8,  carriers: [1,3],       edges: [[2,1],[4,3],[6,5],[5,3]],                 fbOp: 4 },
+      { id: 9,  carriers: [1,3],       edges: [[2,1],[4,3],[6,5],[5,3]],                 fbOp: 2 },
+      { id: 10, carriers: [1,4],       edges: [[3,2],[2,1],[5,4],[6,4]],                 fbOp: 3 },
+      { id: 11, carriers: [1,4],       edges: [[3,2],[2,1],[5,4],[6,4]],                 fbOp: 6 },
+      { id: 12, carriers: [1,3],       edges: [[2,1],[4,3],[5,3],[6,3]],                 fbOp: 2 },
+      { id: 13, carriers: [1,3],       edges: [[2,1],[4,3],[5,3],[6,3]],                 fbOp: 6 },
+      { id: 14, carriers: [1,3],       edges: [[2,1],[6,4],[5,4],[4,3]],                 fbOp: 6 },
+      { id: 15, carriers: [1,3],       edges: [[2,1],[6,4],[5,4],[4,3]],                 fbOp: 2 },
+      { id: 16, carriers: [1],         edges: [[2,1],[4,3],[3,1],[6,5],[5,1]],           fbOp: 6 },
+      { id: 17, carriers: [1],         edges: [[2,1],[4,3],[3,1],[6,5],[5,1]],           fbOp: 2 },
+      { id: 18, carriers: [1],         edges: [[2,1],[3,1],[6,5],[5,4],[4,1]],           fbOp: 3 },
+      { id: 19, carriers: [1,4,5],     edges: [[3,2],[2,1],[6,4],[6,5]],                 fbOp: 6 },
+      { id: 20, carriers: [1,2,4],     edges: [[3,1],[3,2],[5,4],[6,4]],                 fbOp: 3 },
+      { id: 21, carriers: [1,2,4,5],   edges: [[3,1],[3,2],[6,4],[6,5]],                 fbOp: 3 },
+      { id: 22, carriers: [1,3,4,5],   edges: [[2,1],[6,3],[6,4],[6,5]],                 fbOp: 6 },
+      { id: 23, carriers: [1,2,4,5],   edges: [[3,2],[6,4],[6,5]],                       fbOp: 6 },
+      { id: 24, carriers: [1,2,3,4,5], edges: [[6,3],[6,4],[6,5]],                       fbOp: 6 },
+      { id: 25, carriers: [1,2,3,4,5], edges: [[6,4],[6,5]],                             fbOp: 6 },
+      { id: 26, carriers: [1,2,4],     edges: [[3,2],[5,4],[6,4]],                       fbOp: 6 },
+      { id: 27, carriers: [1,2,4],     edges: [[3,2],[5,4],[6,4]],                       fbOp: 3 },
+      { id: 28, carriers: [1,3,6],     edges: [[2,1],[5,4],[4,3]],                       fbOp: 5 },
+      { id: 29, carriers: [1,2,3,5],   edges: [[4,3],[6,5]],                             fbOp: 6 },
+      { id: 30, carriers: [1,2,3,6],   edges: [[5,4],[4,3]],                             fbOp: 5 },
+      { id: 31, carriers: [1,2,3,4,5], edges: [[6,5]],                                   fbOp: 6 },
+      { id: 32, carriers: [1,2,3,4,5,6], edges: [],                                      fbOp: 6 }
+    ];
+
+    const dx7Bank = [
+      {
+        name: "E.PIANO 1 ",
+        alg: 5, feedback: 6, modDepth: 1.0,
+        ops: [
+          { ratio: 1.0,  level: 0.99, dec: 2.2, detune: -2 },
+          { ratio: 14.0, level: 0.56, dec: 0.28, detune: 0 },
+          { ratio: 1.0,  level: 0.92, dec: 2.0, detune: 2 },
+          { ratio: 1.0,  level: 0.68, dec: 1.1, detune: 0 },
+          { ratio: 1.0,  level: 0.85, dec: 2.4, detune: 5 },
+          { ratio: 1.0,  level: 0.58, dec: 0.9, detune: -5 }
+        ]
+      },
+      {
+        name: "BASS 1    ",
+        alg: 16, feedback: 7, modDepth: 1.2,
+        ops: [
+          { ratio: 0.5, level: 0.99, dec: 0.65, detune: 0 },
+          { ratio: 1.0, level: 0.82, dec: 0.25, detune: 1 },
+          { ratio: 1.0, level: 0.65, dec: 0.45, detune: -2 },
+          { ratio: 2.0, level: 0.52, dec: 0.20, detune: 0 },
+          { ratio: 3.0, level: 0.48, dec: 0.18, detune: 2 },
+          { ratio: 1.0, level: 0.72, dec: 0.14, detune: 0 }
+        ]
+      },
+      {
+        name: "BRASS 1   ",
+        alg: 22, feedback: 6, modDepth: 1.1,
+        ops: [
+          { ratio: 1.0, level: 0.95, dec: 1.5, detune: -4 },
+          { ratio: 1.0, level: 0.76, dec: 0.8, detune: 0 },
+          { ratio: 1.0, level: 0.88, dec: 1.5, detune: 4 },
+          { ratio: 1.0, level: 0.85, dec: 1.5, detune: -8 },
+          { ratio: 2.0, level: 0.62, dec: 1.2, detune: 8 },
+          { ratio: 1.0, level: 0.82, dec: 0.9, detune: 0 }
+        ]
+      },
+      {
+        name: "MARIMBA   ",
+        alg: 19, feedback: 4, modDepth: 0.95,
+        ops: [
+          { ratio: 1.0, level: 0.99, dec: 0.55, detune: 0 },
+          { ratio: 4.0, level: 0.68, dec: 0.14, detune: 0 },
+          { ratio: 3.98, level: 0.42, dec: 0.09, detune: 3 },
+          { ratio: 2.0, level: 0.55, dec: 0.35, detune: -3 },
+          { ratio: 1.0, level: 0.60, dec: 0.45, detune: 2 },
+          { ratio: 8.0, level: 0.50, dec: 0.08, detune: 0 }
+        ]
+      },
+      {
+        name: "TUB BELLS ",
+        alg: 5, feedback: 5, modDepth: 1.15,
+        ops: [
+          { ratio: 1.0,  level: 0.96, dec: 2.8, detune: 0 },
+          { ratio: 3.5,  level: 0.78, dec: 1.9, detune: 4 },
+          { ratio: 1.0,  level: 0.80, dec: 2.6, detune: -4 },
+          { ratio: 7.07, level: 0.55, dec: 1.1, detune: 0 },
+          { ratio: 2.0,  level: 0.62, dec: 2.2, detune: 3 },
+          { ratio: 5.41, level: 0.64, dec: 0.7, detune: -3 }
+        ]
+      },
+      {
+        name: "STRINGS 1 ",
+        alg: 2, feedback: 5, modDepth: 0.85,
+        ops: [
+          { ratio: 1.0, level: 0.92, dec: 2.6, detune: -9 },
+          { ratio: 1.0, level: 0.52, dec: 2.0, detune: 4 },
+          { ratio: 1.0, level: 0.92, dec: 2.6, detune: 9 },
+          { ratio: 2.0, level: 0.45, dec: 1.8, detune: -5 },
+          { ratio: 1.0, level: 0.42, dec: 1.9, detune: 6 },
+          { ratio: 1.0, level: 0.48, dec: 1.5, detune: 0 }
+        ]
+      },
+      {
+        name: "CALIOPE   ",
+        alg: 32, feedback: 3, modDepth: 0.9,
+        ops: [
+          { ratio: 1.0, level: 0.90, dec: 1.8, detune: 0 },
+          { ratio: 2.0, level: 0.75, dec: 1.8, detune: 3 },
+          { ratio: 3.0, level: 0.65, dec: 1.7, detune: -3 },
+          { ratio: 4.0, level: 0.50, dec: 1.6, detune: 5 },
+          { ratio: 6.0, level: 0.36, dec: 1.4, detune: -5 },
+          { ratio: 8.0, level: 0.25, dec: 1.2, detune: 0 }
+        ]
+      },
+      {
+        name: "SYN-LEAD  ",
+        alg: 1, feedback: 7, modDepth: 1.25,
+        ops: [
+          { ratio: 1.0, level: 0.99, dec: 1.6, detune: -6 },
+          { ratio: 1.0, level: 0.84, dec: 0.9, detune: 5 },
+          { ratio: 2.0, level: 0.85, dec: 1.6, detune: 6 },
+          { ratio: 1.0, level: 0.72, dec: 0.8, detune: -3 },
+          { ratio: 3.0, level: 0.58, dec: 0.5, detune: 4 },
+          { ratio: 1.0, level: 0.75, dec: 0.7, detune: 0 }
+        ]
+      }
+    ];
+let activeDx7PatchIdx = 0;
+
     const LAYER_BASE_NOTES = {
       "strings_swell": 60,
       "choir_pad": 60,
@@ -5150,7 +5286,7 @@ const K250_PRESETS = [
           best = msList[i];
         }
       }
-      return { key: decodedBuffers[best.key] ? best.key : fallbackKey, baseNote: best.note, tune: best.tune || 0 };
+      return { key: hasK250Sample(best.key) ? best.key : fallbackKey, baseNote: best.note, tune: best.tune || 0 };
     }
 
     function playVoiceByType(type, midiNote, velocity, p) {
@@ -5218,7 +5354,7 @@ const K250_PRESETS = [
           atk = Math.max(0.07, Math.min(0.18, p.att || 0.10)); rel = 0.50;
         }
         const sampleInfo = findClosestSample(zoneTable, effMidi, "strings_swell");
-        if (K250_MANIFEST[sampleInfo.key] !== undefined || decodedBuffers[sampleInfo.key]) {
+        if (hasK250Sample(sampleInfo.key)) {
           const ratio = Math.pow(2, (effMidi - sampleInfo.baseNote) / 12);
           playSamplerVoice({
             key: sampleInfo.key, midiNote, pitchRatio: ratio, velocity: velocity * velMul,
@@ -5297,7 +5433,7 @@ const K250_PRESETS = [
             zoneTable = MS_BASSOON; fallback = "sso_bsn_sus_e3";
           }
           const sampleInfo = findClosestSample(zoneTable, effMidi, fallback);
-          if (K250_MANIFEST[sampleInfo.key] !== undefined || decodedBuffers[sampleInfo.key]) {
+          if (hasK250Sample(sampleInfo.key)) {
             const ratio = Math.pow(2, (effMidi - sampleInfo.baseNote) / 12);
             playSamplerVoice({
               key: sampleInfo.key, midiNote, pitchRatio: ratio, velocity: velocity * 0.96,
@@ -5353,7 +5489,7 @@ const K250_PRESETS = [
       } else if (type === "clav") {
         if (p.name && p.name.includes("HARP")) {
           const sampleInfo = findClosestSample(MS_HARP, effMidi, "sso_hrp_c4");
-          if (K250_MANIFEST[sampleInfo.key] !== undefined || decodedBuffers[sampleInfo.key]) {
+          if (hasK250Sample(sampleInfo.key)) {
             const ratio = Math.pow(2, (effMidi - sampleInfo.baseNote) / 12);
             playSamplerVoice({
               key: sampleInfo.key, midiNote, pitchRatio: ratio, velocity: velocity * 0.98,
@@ -5431,7 +5567,7 @@ const K250_PRESETS = [
       } else if (type === "bass") {
         const pName = (p && p.name) || "";
         const isAcousticUpright = pName.includes("UPRIGHT") || p.id === 195 || p.id === 201 || p.id === 208;
-        if (isAcousticUpright && decodedBuffers["f3r_abass_c2"]) {
+        if (isAcousticUpright && hasK250Sample("f3r_abass_c2")) {
           const sampleInfo = findClosestSample(MS_UPRIGHT_BASS, effMidi, "f3r_abass_c2");
           const ratio = Math.pow(2, (effMidi - sampleInfo.baseNote) / 12);
           playSamplerVoice({
@@ -5446,7 +5582,7 @@ const K250_PRESETS = [
 
       // 10. Choirs & Vocal Ensembles
       } else if (type === "choir") {
-        const cKey = decodedBuffers["k2000_mixed_choir_c4"] ? "k2000_mixed_choir_c4" : "choir_pad";
+        const cKey = hasK250Sample("k2000_mixed_choir_c4") ? "k2000_mixed_choir_c4" : "choir_pad";
         const ratio = Math.pow(2, (effMidi - 60) / 12);
         playSamplerVoice({
           key: cKey, midiNote, pitchRatio: ratio, velocity: velocity * 0.95,
@@ -5459,11 +5595,11 @@ const K250_PRESETS = [
       } else if (type === "mallet") {
         const pName = (p && p.name) || "";
         let mTbl = null;
-        if ((p.id === 213 || pName.includes("VIBRAPHONE")) && decodedBuffers["sso_vibe_c4"]) mTbl = MS_VIBES;
-        else if ((p.id === 212 || pName.includes("MARIMBA")) && typeof MS_MARIMBA !== "undefined" && MS_MARIMBA.length && decodedBuffers[MS_MARIMBA[0].key]) mTbl = MS_MARIMBA;
-        else if ((p.id === 16 || p.id === 18 || pName.includes("CELESTA")) && typeof MS_CELESTA !== "undefined" && MS_CELESTA.length && decodedBuffers[MS_CELESTA[0].key]) mTbl = MS_CELESTA;
-        else if ((p.id === 214 || pName.includes("XYLOPHONE")) && typeof MS_XYLO !== "undefined" && MS_XYLO.length && decodedBuffers[MS_XYLO[0].key]) mTbl = MS_XYLO;
-        else if ((p.id === 215 || pName.includes("GLOCKENSPIEL")) && typeof MS_GLOCK !== "undefined" && MS_GLOCK.length && decodedBuffers[MS_GLOCK[0].key]) mTbl = MS_GLOCK;
+        if ((p.id === 213 || pName.includes("VIBRAPHONE")) && hasK250Sample("sso_vibe_c4")) mTbl = MS_VIBES;
+        else if ((p.id === 212 || pName.includes("MARIMBA")) && typeof MS_MARIMBA !== "undefined" && MS_MARIMBA.length && hasK250Sample(MS_MARIMBA[0].key)) mTbl = MS_MARIMBA;
+        else if ((p.id === 16 || p.id === 18 || pName.includes("CELESTA")) && typeof MS_CELESTA !== "undefined" && MS_CELESTA.length && hasK250Sample(MS_CELESTA[0].key)) mTbl = MS_CELESTA;
+        else if ((p.id === 214 || pName.includes("XYLOPHONE")) && typeof MS_XYLO !== "undefined" && MS_XYLO.length && hasK250Sample(MS_XYLO[0].key)) mTbl = MS_XYLO;
+        else if ((p.id === 215 || pName.includes("GLOCKENSPIEL")) && typeof MS_GLOCK !== "undefined" && MS_GLOCK.length && hasK250Sample(MS_GLOCK[0].key)) mTbl = MS_GLOCK;
         if (mTbl) {
           const sampleInfo = findClosestSample(mTbl, effMidi, mTbl[0].key);
           const ratio = Math.pow(2, (effMidi - sampleInfo.baseNote) / 12);
@@ -5481,7 +5617,7 @@ const K250_PRESETS = [
 
       // 12. Classical Harpsichord (Real Multi-Sampled Stereo Acoustic Harpsichord)
       } else if (type === "harpsichord") {
-        if (typeof MS_HARPSICHORD !== "undefined" && MS_HARPSICHORD.length && decodedBuffers[MS_HARPSICHORD[0].key]) {
+        if (typeof MS_HARPSICHORD !== "undefined" && MS_HARPSICHORD.length && hasK250Sample(MS_HARPSICHORD[0].key)) {
           const sampleInfo = findClosestSample(MS_HARPSICHORD, effMidi, MS_HARPSICHORD[0].key);
           const ratio = Math.pow(2, (effMidi - sampleInfo.baseNote) / 12);
           playSamplerVoice({
@@ -5497,7 +5633,7 @@ const K250_PRESETS = [
       } else if (type === "timpani") {
         const isGong = p.name.includes("GONG") || p.name.includes("TAM");
         if (isGong) {
-          const gKey = decodedBuffers["orch_gong"] ? "orch_gong" : "k2k_gong";
+          const gKey = hasK250Sample("orch_gong") ? "orch_gong" : "k2k_gong";
           playSamplerVoice({
             key: gKey, midiNote, pitchRatio: 1.0, velocity: velocity * 1.15,
             attack: p.att, decay: p.dec || 4.5, cutoff: p.cut || 9000, filterType: p.filt, res: p.res, detune: p.det,
@@ -5531,3 +5667,2077 @@ const K250_PRESETS = [
         play303Bass(effMidi, velocity, midiNote);
       }
     }
+
+    
+    // =========================================================================
+    // DEDICATED ACOUSTIC SOUND ENGINES (Hammond B3, Woodwinds, Basses, Mallets, Harpsichord)
+    // =========================================================================
+
+    // 0. Authentic Hammond B3 9-Drawbar Tonewheel & Rotary Leslie Organ Engine
+    function playHammondB3Voice(midiNote, effMidi, velocity, p) {
+      if (!audioCtx) initAudio();
+      const t0 = getAudioTime();
+      const freq = 440 * Math.pow(2, (effMidi - 69) / 12);
+      const isHeld = (typeof physicallyHeldKeys !== "undefined" && physicallyHeldKeys.has(midiNote)) || (typeof isSustainPedalDown !== "undefined" && isSustainPedalDown);
+      const heldDecay = isHeld ? Math.max(12.0, (p.dec || 3.5) * 3.5) : (p.dec || 3.5);
+      const name = p.name || "";
+
+      // Drawbar Harmonic Ratios: 16'(0.5), 5-1/3'(1.5), 8'(1.0), 4'(2.0), 2-2/3'(3.0), 2'(4.0), 1-3/5'(5.0), 1-1/3'(6.0), 1'(8.0)
+      const ratios = [1.0, 2.0, 1.5, 3.0, 4.0, 0.5, 5.0, 6.0, 8.0];
+      let weights = [0.42, 0.28, 0.22, 0.14, 0.10, 0.26, 0.05, 0.04, 0.03]; // Balanced Warm B3 (888400000)
+
+      if (name.includes("GOSPEL") || name.includes("FULL")) {
+        weights = [0.40, 0.34, 0.30, 0.24, 0.22, 0.32, 0.14, 0.12, 0.12];
+      } else if (name.includes("JIMMY") || name.includes("JAZZ")) {
+        weights = [0.45, 0.30, 0.35, 0.08, 0.04, 0.30, 0.02, 0.0, 0.0];
+      } else if (name.includes("MELLOW") || name.includes("BALLAD") || name.includes("PAD")) {
+        weights = [0.48, 0.22, 0.10, 0.12, 0.04, 0.28, 0.0, 0.0, 0.0];
+      } else if (name.includes("FARFISA") || name.includes("VOX")) {
+        weights = [0.38, 0.30, 0.15, 0.26, 0.20, 0.12, 0.16, 0.10, 0.08];
+      } else if (name.includes("ACCORDION") || name.includes("BANDONEON") || name.includes("HARMONICA") || name.includes("REED")) {
+        weights = [0.40, 0.28, 0.16, 0.22, 0.14, 0.18, 0.10, 0.06, 0.04];
+      }
+
+      const masterVoiceGain = audioCtx.createGain();
+      const att = Math.min(0.05, p.att || 0.008);
+      masterVoiceGain.gain.setValueAtTime(0.0001, t0);
+      masterVoiceGain.gain.linearRampToValueAtTime(0.45 * velocity, t0 + att);
+      if (isHeld) {
+        masterVoiceGain.gain.linearRampToValueAtTime(0.40 * velocity, t0 + heldDecay);
+        masterVoiceGain.gain.exponentialRampToValueAtTime(0.0001, t0 + heldDecay + 0.5);
+      } else {
+        masterVoiceGain.gain.exponentialRampToValueAtTime(0.32 * velocity, t0 + heldDecay * 0.75);
+        masterVoiceGain.gain.exponentialRampToValueAtTime(0.0001, t0 + heldDecay);
+      }
+
+      const voiceFilter = audioCtx.createBiquadFilter();
+      voiceFilter.type = "lowpass";
+      voiceFilter.frequency.setValueAtTime(p.cut || 8500, t0);
+      voiceFilter.Q.setValueAtTime(p.res || 1.1, t0);
+
+      masterVoiceGain.connect(voiceFilter);
+      voiceFilter.connect(getTrackBusNode(3));
+
+      // Leslie Rotary Vibrato LFO
+      const rotaryRate = name.includes("FAST") ? 6.4 : (name.includes("SLOW") ? 0.9 : 5.2);
+      const lfo = audioCtx.createOscillator();
+      const lfoGain = audioCtx.createGain();
+      lfo.frequency.setValueAtTime(rotaryRate, t0);
+      lfoGain.gain.setValueAtTime(name.includes("MUSETTE") ? 14 : 6.5, t0);
+      lfo.connect(lfoGain);
+      lfo.start(t0);
+      lfo.stop(t0 + heldDecay + 0.6);
+
+      const oscs = [];
+      ratios.forEach((r, idx) => {
+        const w = weights[idx];
+        if (w <= 0.001) return;
+        const oscFreq = freq * r;
+        if (oscFreq > 15000) return;
+        const osc = audioCtx.createOscillator();
+        osc.type = (name.includes("ACCORDION") || name.includes("HARMONICA")) && idx < 2 ? "sawtooth" : "sine";
+        osc.frequency.setValueAtTime(oscFreq, t0);
+        if (p.det) osc.detune.setValueAtTime(p.det, t0);
+        lfoGain.connect(osc.detune);
+
+        const hg = audioCtx.createGain();
+        hg.gain.setValueAtTime(w * 0.45, t0);
+        osc.connect(hg);
+        hg.connect(masterVoiceGain);
+        osc.start(t0);
+        osc.stop(t0 + heldDecay + 0.6);
+        oscs.push(osc);
+      });
+
+      // B3 Key-Click & 2nd/3rd Harmonic Percussion Transient
+      if (name.includes("2ND") || name.includes("3RD") || name.includes("PERC") || name.includes("B3")) {
+        const percRatio = name.includes("3RD") ? 3.0 : 2.0;
+        const percOsc = audioCtx.createOscillator();
+        const percGain = audioCtx.createGain();
+        percOsc.type = "sine";
+        percOsc.frequency.setValueAtTime(freq * percRatio, t0);
+        percGain.gain.setValueAtTime(0.22 * velocity, t0);
+        percGain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.16);
+        percOsc.connect(percGain);
+        percGain.connect(voiceFilter);
+        percOsc.start(t0);
+        percOsc.stop(t0 + 0.18);
+        oscs.push(percOsc);
+      }
+
+      const voice = new ActiveVoice({
+        note: midiNote,
+        src: oscs,
+        gain: masterVoiceGain,
+        filter: voiceFilter,
+        lfo,
+        stopTime: t0 + heldDecay + 0.6,
+        releaseTime: 0.10
+      });
+      registerActiveVoice(midiNote, voice, heldDecay + 0.8);
+    }
+
+    // 1. Woodwind Physical Model (Flute, Piccolo, Oboe, Clarinet, Bassoon)
+    // 1. Acoustic Woodwind Model (Warm Concert Flute, Piccolo, Pastoral Oboe, Clarinet, Bassoon)
+    function playWoodwindSynth(midiNote, effMidi, velocity, p) {
+      if (!audioCtx) initAudio();
+      const t0 = getAudioTime();
+      const freq = 440 * Math.pow(2, (effMidi - 69) / 12);
+      const isFlute = p.name.includes("FLUTE") || p.name.includes("PICCOLO") || p.name.includes("PAN") || p.name.includes("RECORDER");
+      const isDoubleReed = p.name.includes("OBOE") || p.name.includes("BASSOON") || p.name.includes("ENGLISH");
+      const isHeld = (typeof physicallyHeldKeys !== "undefined" && physicallyHeldKeys.has(midiNote)) || (typeof isSustainPedalDown !== "undefined" && isSustainPedalDown);
+
+      // Gentle breath onset transient (subtle airy chiff, never harsh noise)
+      const bufSize = Math.floor(audioCtx.sampleRate * 0.045);
+      const noiseBuf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+      const output = noiseBuf.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.35));
+
+      const noiseSrc = audioCtx.createBufferSource();
+      noiseSrc.buffer = noiseBuf;
+      const noiseFilter = audioCtx.createBiquadFilter();
+      noiseFilter.type = "bandpass";
+      noiseFilter.frequency.setValueAtTime(isFlute ? 1900 : 1250, t0);
+      noiseFilter.Q.setValueAtTime(2.6, t0);
+      const noiseGain = audioCtx.createGain();
+      noiseGain.gain.setValueAtTime((isFlute ? 0.022 : 0.012) * velocity, t0);
+      noiseGain.gain.exponentialRampToValueAtTime(0.0005, t0 + 0.045);
+
+      noiseSrc.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+      noiseGain.connect(getTrackBusNode(3));
+      noiseSrc.start(t0);
+
+      // Warm Acoustic Body Oscillators (blended triangle+sine base, gentle double-reed harmonic color)
+      const osc1 = audioCtx.createOscillator();
+      osc1.type = isFlute ? "sine" : "triangle";
+      osc1.frequency.setValueAtTime(freq, t0);
+
+      const osc2 = audioCtx.createOscillator();
+      osc2.type = isDoubleReed ? "sawtooth" : "sine";
+      osc2.frequency.setValueAtTime(isDoubleReed ? freq : freq * 2.0, t0);
+
+      const g1 = audioCtx.createGain();
+      const g2 = audioCtx.createGain();
+      g1.gain.setValueAtTime(isFlute ? 0.86 : (isDoubleReed ? 0.62 : 0.78), t0);
+      g2.gain.setValueAtTime(isFlute ? 0.14 : (isDoubleReed ? 0.24 : 0.20), t0);
+
+      // Subtle classical vibrato after warm expressive onset
+      const lfo = audioCtx.createOscillator();
+      const lfoGain = audioCtx.createGain();
+      lfo.frequency.setValueAtTime(4.9, t0);
+      lfoGain.gain.setValueAtTime(0, t0);
+      lfoGain.gain.setValueAtTime(0, t0 + 0.16);
+      lfoGain.gain.linearRampToValueAtTime(freq * 0.007, t0 + 0.55); // Gentle 0.7% vibrato
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc1.frequency);
+      lfoGain.connect(osc2.frequency);
+      lfo.start(t0);
+
+      const formantFilter = audioCtx.createBiquadFilter();
+      formantFilter.type = "peaking";
+      formantFilter.frequency.setValueAtTime(isDoubleReed ? 1150 : (isFlute ? 950 : 1050), t0);
+      formantFilter.Q.setValueAtTime(1.4, t0);
+      formantFilter.gain.setValueAtTime(isDoubleReed ? 4.2 : 1.5, t0);
+
+      const bodyFilter = audioCtx.createBiquadFilter();
+      bodyFilter.type = "lowpass";
+      bodyFilter.frequency.setValueAtTime(isFlute ? 4200 : (isDoubleReed ? 2750 : 3400), t0);
+      bodyFilter.Q.setValueAtTime(0.8, t0);
+
+      const voiceGain = audioCtx.createGain();
+      const att = Math.max(0.032, p.att || (isFlute ? 0.045 : 0.038));
+      const dec = isHeld ? Math.max(10.0, (p.dec || 2.0) * 3.5) : (p.dec || 2.0);
+      voiceGain.gain.setValueAtTime(0.0008, t0);
+      voiceGain.gain.linearRampToValueAtTime(0.24 * velocity, t0 + att);
+      voiceGain.gain.exponentialRampToValueAtTime(0.0008, t0 + dec);
+
+      osc1.connect(g1);
+      osc2.connect(g2);
+      g1.connect(formantFilter);
+      g2.connect(formantFilter);
+      formantFilter.connect(bodyFilter);
+      bodyFilter.connect(voiceGain);
+      voiceGain.connect(getTrackBusNode(3));
+
+      osc1.start(t0);
+      osc2.start(t0);
+      osc1.stop(t0 + dec + 0.12);
+      osc2.stop(t0 + dec + 0.12);
+      lfo.stop(t0 + dec + 0.12);
+
+      const voice = new ActiveVoice({
+        note: midiNote,
+        src: [osc1, osc2],
+        gain: voiceGain,
+        filter: bodyFilter,
+        lfo,
+        stopTime: t0 + dec + 0.12,
+        releaseTime: 0.14
+      });
+      registerActiveVoice(midiNote, voice, dec + 0.25);
+    }
+
+    // 2. Authentic Bass Engine (Upright, Electric, Slap, Fretless, Moog)
+    function playAuthenticBassVoice(midiNote, effMidi, velocity, p) {
+      if (!audioCtx) initAudio();
+      const t0 = getAudioTime();
+      const freq = 440 * Math.pow(2, (effMidi - 69) / 12);
+      const isUpright = p.name.includes("UPRIGHT") || p.id === 195 || p.id === 201 || p.id === 208;
+      const isSlap = p.name.includes("SLAP") || p.id === 199 || p.id === 200;
+      const isFretless = p.name.includes("FRETLESS") || p.id === 198;
+      const is808Sub = p.name.includes("808") || p.id === 205;
+      const isMoog = p.name.includes("MINIMOOG") || p.name.includes("SYNTH") || p.id === 202 || p.id === 207;
+
+      // Primary Pluck Oscillator
+      const osc = audioCtx.createOscillator();
+      osc.type = is808Sub ? "sine" : (isMoog ? "sawtooth" : (isUpright ? "triangle" : "sawtooth"));
+      if (is808Sub) {
+        osc.frequency.setValueAtTime(freq * 2.15, t0);
+        osc.frequency.exponentialRampToValueAtTime(freq, t0 + 0.022);
+      } else {
+        osc.frequency.setValueAtTime(freq, t0);
+      }
+
+      // Sub-Bass Oscillator (-1 octave)
+      const subOsc = audioCtx.createOscillator();
+      subOsc.type = "sine";
+      subOsc.frequency.setValueAtTime(freq * 0.5, t0);
+
+      // Resonant Lowpass Filter with dynamic pluck envelope
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.Q.setValueAtTime(isSlap ? 3.5 : (isMoog ? 4.0 : 2.0), t0);
+
+      const startCutoff = isSlap ? 4800 : (isMoog ? 3500 : (isUpright ? 1200 : 2500));
+      const endCutoff = isUpright ? 150 : 220;
+      filter.frequency.setValueAtTime(startCutoff, t0);
+      filter.frequency.exponentialRampToValueAtTime(endCutoff, t0 + (isSlap ? 0.35 : 0.45));
+
+      const oscs = [osc, subOsc];
+      // Slap Snap High Click
+      if (isSlap) {
+        const snapOsc = audioCtx.createOscillator();
+        const snapGain = audioCtx.createGain();
+        snapOsc.type = "triangle";
+        snapOsc.frequency.setValueAtTime(freq * 4.0, t0);
+        snapGain.gain.setValueAtTime(0.18 * velocity, t0);
+        snapGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.04);
+        snapOsc.connect(snapGain);
+        snapGain.connect(getTrackBusNode(3));
+        snapOsc.start(t0);
+        snapOsc.stop(t0 + 0.05);
+        oscs.push(snapOsc);
+      }
+
+      // Fretless Mwah Glide
+      if (isFretless) {
+        osc.frequency.setValueAtTime(freq * 0.98, t0);
+        osc.frequency.linearRampToValueAtTime(freq, t0 + 0.08);
+      }
+
+      const voiceGain = audioCtx.createGain();
+      const dec = isUpright ? 1.6 : (p.dec || 2.2);
+      voiceGain.gain.setValueAtTime(0.38 * velocity, t0);
+      voiceGain.gain.exponentialRampToValueAtTime(0.001, t0 + dec);
+
+      const subGain = audioCtx.createGain();
+      subGain.gain.setValueAtTime(0.32 * velocity, t0);
+      subGain.gain.exponentialRampToValueAtTime(0.001, t0 + dec * 0.9);
+
+      osc.connect(filter);
+      subOsc.connect(subGain);
+      filter.connect(voiceGain);
+      voiceGain.connect(getTrackBusNode(3));
+      subGain.connect(getTrackBusNode(3));
+
+      osc.start(t0);
+      subOsc.start(t0);
+      osc.stop(t0 + dec + 0.1);
+      subOsc.stop(t0 + dec + 0.1);
+
+      const voice = new ActiveVoice({
+        note: midiNote,
+        src: oscs,
+        gain: [voiceGain, subGain],
+        filter,
+        stopTime: t0 + dec + 0.1,
+        releaseTime: 0.10
+      });
+      registerActiveVoice(midiNote, voice, dec + 0.2);
+    }
+
+    // 3. Tuned Mallets (Marimba, Vibraphone, Glockenspiel, Celesta, Xylophone, Bells)
+    function playMalletSynth(midiNote, effMidi, velocity, p) {
+      if (!audioCtx) initAudio();
+      const t0 = getAudioTime();
+      const freq = 440 * Math.pow(2, (effMidi - 69) / 12);
+      const name = p.name || "";
+
+      const isBalafon = name.includes("BALAFON") || p.id === 217;
+      const isMarimbaVibes = name.includes("MARIMBA & VIBES") || p.id === 231;
+      const isMarimba = !isBalafon && (name.includes("MARIMBA") || p.id === 212);
+      const isVibes = name.includes("VIBRAPHONE") || isMarimbaVibes || p.id === 213;
+      const isGlock = name.includes("GLOCKENSPIEL") || name.includes("CELESTA") || name.includes("MUSIC BOX") || p.id === 16 || p.id === 18 || p.id === 215;
+      const isCrotales = name.includes("CROTALES") || p.id === 216;
+      const isXylo = name.includes("XYLOPHONE") || p.id === 214;
+      const isSleighBells = name.includes("SLEIGH BELLS") || p.id === 227;
+      const isWindChimes = name.includes("WIND CHIMES") || p.id === 228;
+      const isTriangle = name.includes("TRIANGLE") || p.id === 226;
+      const isImpact = name.includes("IMPACT") || p.id === 232;
+      const isKalimba = name.includes("KALIMBA") || p.id === 220;
+      const isSteel = name.includes("STEEL DRUM") || p.id === 218;
+      const isGamelan = name.includes("GAMELAN") || p.id === 219;
+      const isChimes = !isSleighBells && !isWindChimes && (name.includes("CHIMES") || name.includes("TUBULAR") || name.includes("BELLS") || p.id === 211 || p.id === 230);
+
+      const oscs = [];
+      const gains = [];
+      let vibLfo = null;
+
+      // Special 1: Concert Triangle (k2k_triangle + steel overtone shimmer)
+      if (isTriangle) {
+        if (hasK250Sample("k2k_triangle")) {
+          const ratio = Math.pow(2, Math.max(-5, Math.min(5, (midiNote - 60) * 0.4)) / 12);
+          playSamplerVoice({ key: "k2k_triangle", midiNote, pitchRatio: ratio, velocity: velocity * 1.15, attack: 0.001, decay: 2.2, cutoff: 16000, canLoop: false, releaseTime: 0.18 });
+        }
+        const triPartials = [1.0, 2.58, 4.18, 6.45];
+        const baseF = Math.max(1200, freq * 2.0);
+        triPartials.forEach((r, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(baseF * r, t0);
+          gain.gain.setValueAtTime((0.18 / (idx + 1)) * velocity, t0);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t0 + (2.1 / Math.sqrt(r)));
+          osc.connect(gain); gain.connect(getTrackBusNode(3));
+          osc.start(t0); osc.stop(t0 + 2.2);
+          oscs.push(osc); gains.push(gain);
+        });
+        registerActiveVoice(midiNote, new ActiveVoice({ note: midiNote, src: oscs, gain: gains, stopTime: t0 + 2.2, releaseTime: 0.16 }), 2.3);
+        return;
+      }
+
+      // Special 2: Sleigh Bells (Staggered 5-bell cluster + metallic rattle)
+      if (isSleighBells) {
+        if (hasK250Sample("k2k_rattle")) {
+          playSamplerVoice({ key: "k2k_rattle", midiNote, pitchRatio: 1.15, velocity: velocity * 0.85, attack: 0.001, decay: 0.65, cutoff: 16000, canLoop: false, releaseTime: 0.12 });
+        }
+        const bellOffsets = [0, 0.014, 0.029, 0.044, 0.060];
+        const bellFreqs = [2850, 3420, 4190, 5120, 6240];
+        bellOffsets.forEach((dt, i) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(bellFreqs[i] * (0.95 + ((effMidi % 7) * 0.02)), t0 + dt);
+          gain.gain.setValueAtTime(0.0001, t0);
+          gain.gain.setValueAtTime(0.14 * velocity, t0 + dt);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dt + 0.35);
+          osc.connect(gain); gain.connect(getTrackBusNode(3));
+          osc.start(t0 + dt); osc.stop(t0 + dt + 0.38);
+          oscs.push(osc); gains.push(gain);
+        });
+        registerActiveVoice(midiNote, new ActiveVoice({ note: midiNote, src: oscs, gain: gains, stopTime: t0 + 0.45, releaseTime: 0.12 }), 0.5);
+        return;
+      }
+
+      // Special 3: Wind Chimes Tree (Cascading pentatonic shimmer arpeggio)
+      if (isWindChimes) {
+        const cascade = [1.0, 1.125, 1.25, 1.5, 1.667, 2.0];
+        cascade.forEach((mult, i) => {
+          const dt = i * 0.024;
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(Math.min(7800, freq * 1.5 * mult), t0 + dt);
+          gain.gain.setValueAtTime(0.0001, t0);
+          gain.gain.setValueAtTime(0.16 * velocity, t0 + dt);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dt + 1.4);
+          osc.connect(gain); gain.connect(getTrackBusNode(3));
+          osc.start(t0 + dt); osc.stop(t0 + dt + 1.45);
+          oscs.push(osc); gains.push(gain);
+        });
+        registerActiveVoice(midiNote, new ActiveVoice({ note: midiNote, src: oscs, gain: gains, stopTime: t0 + 1.65, releaseTime: 0.16 }), 1.75);
+        return;
+      }
+
+      // Special 4: Big Cinematic Impact (Sub-boom drop + Orchestral Drum slam)
+      if (isImpact) {
+        if (hasK250Sample("k2k_orchdrum")) {
+          playSamplerVoice({ key: "k2k_orchdrum", midiNote, pitchRatio: 0.85, velocity: velocity * 1.15, attack: 0.001, decay: 2.5, cutoff: 8000, canLoop: false, releaseTime: 0.25 });
+        }
+        const sub = audioCtx.createOscillator();
+        const subGain = audioCtx.createGain();
+        sub.type = "sine";
+        sub.frequency.setValueAtTime(115, t0);
+        sub.frequency.exponentialRampToValueAtTime(34, t0 + 0.55);
+        subGain.gain.setValueAtTime(0.55 * velocity, t0);
+        subGain.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.8);
+        sub.connect(subGain); subGain.connect(getTrackBusNode(3));
+        sub.start(t0); sub.stop(t0 + 1.85);
+        oscs.push(sub); gains.push(subGain);
+        registerActiveVoice(midiNote, new ActiveVoice({ note: midiNote, src: oscs, gain: gains, stopTime: t0 + 1.85, releaseTime: 0.25 }), 1.95);
+        return;
+      }
+
+      // Tuned Bar & Bell Partials
+      const partials = isMarimbaVibes ? [1.0, 3.0, 4.0] :
+                       isMarimba ? [1.0, 4.0] :
+                       isBalafon ? [1.0, 2.02, 3.98, 5.85] :
+                       isVibes ? [1.0, 3.0, 5.0] :
+                       isCrotales ? [1.0, 2.756, 5.404, 8.93] :
+                       isGlock ? [1.0, 2.76, 5.4] :
+                       isXylo ? [1.0, 3.0, 6.0] :
+                       isChimes ? [1.0, 2.76, 5.4, 8.9] :
+                       isSteel ? [1.0, 2.0, 3.0, 4.15] :
+                       isGamelan ? [1.0, 1.53, 2.41, 3.88] :
+                       isKalimba ? [1.0, 2.92, 6.2] : [1.0, 3.0];
+
+      const dec = isXylo ? 0.42 : (isBalafon ? 0.65 : (isMarimba ? 0.9 : (isKalimba ? 1.1 : (isGamelan ? 2.8 : (isVibes ? 2.5 : (isChimes || isCrotales ? 3.5 : 1.8))))));
+
+      partials.forEach((ratio, idx) => {
+        const osc = audioCtx.createOscillator();
+        osc.type = (isGamelan && idx > 0) ? "triangle" : "sine";
+        osc.frequency.setValueAtTime(freq * ratio, t0);
+
+        const gain = audioCtx.createGain();
+        const partVol = (idx === 0 ? 0.38 : (0.22 / (idx + 1))) * velocity;
+        gain.gain.setValueAtTime(partVol, t0);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + (dec / Math.sqrt(ratio)));
+
+        // Vibraphone Motor Tremolo (4.8 Hz LFO)
+        if (isVibes && idx === 0) {
+          vibLfo = audioCtx.createOscillator();
+          const lfoGain = audioCtx.createGain();
+          vibLfo.frequency.setValueAtTime(4.8, t0);
+          lfoGain.gain.setValueAtTime(partVol * 0.35, t0);
+          vibLfo.connect(lfoGain);
+          lfoGain.connect(gain.gain);
+          vibLfo.start(t0);
+          vibLfo.stop(t0 + dec + 0.1);
+        }
+
+        osc.connect(gain);
+        gain.connect(getTrackBusNode(3));
+        osc.start(t0);
+        osc.stop(t0 + dec + 0.1);
+        oscs.push(osc);
+        gains.push(gain);
+      });
+
+      // Balafon mirliton buzz or Kalimba thumb-pluck click
+      if (isBalafon || isKalimba) {
+        const nBuf = get808NoiseBuffer();
+        if (nBuf) {
+          const nSrc = audioCtx.createBufferSource();
+          nSrc.buffer = nBuf;
+          const bp = audioCtx.createBiquadFilter();
+          bp.type = "bandpass";
+          bp.frequency.setValueAtTime(Math.min(6000, freq * (isBalafon ? 2.4 : 4.2)), t0);
+          bp.Q.setValueAtTime(isBalafon ? 3.5 : 2.2, t0);
+          const nGain = audioCtx.createGain();
+          nGain.gain.setValueAtTime((isBalafon ? 0.14 : 0.12) * velocity, t0);
+          nGain.gain.exponentialRampToValueAtTime(0.0001, t0 + (isBalafon ? 0.055 : 0.014));
+          nSrc.connect(bp); bp.connect(nGain); nGain.connect(getTrackBusNode(3));
+          nSrc.start(t0); nSrc.stop(t0 + 0.07);
+          oscs.push(nSrc); gains.push(nGain);
+        }
+      }
+
+      const voice = new ActiveVoice({
+        note: midiNote,
+        src: oscs,
+        gain: gains,
+        lfo: vibLfo,
+        stopTime: t0 + dec + 0.1,
+        releaseTime: 0.16
+      });
+      registerActiveVoice(midiNote, voice, dec + 0.2);
+    }
+
+    // 3b. Orchestral Concert Harp (Warm Pluck Fundamental + Shimmer Overtones)
+    function playHarpVoice(midiNote, effMidi, velocity, p) {
+      if (!audioCtx) initAudio();
+      const t0 = getAudioTime();
+      const freq = 440 * Math.pow(2, (effMidi - 69) / 12);
+      const dec = Math.max(1.4, Math.min(3.2, p.dec || 2.4));
+
+      const osc1 = audioCtx.createOscillator();
+      osc1.type = "sine";
+      osc1.frequency.setValueAtTime(freq, t0);
+
+      const osc2 = audioCtx.createOscillator();
+      osc2.type = "triangle";
+      osc2.frequency.setValueAtTime(freq * 2.0, t0);
+
+      const osc3 = audioCtx.createOscillator();
+      osc3.type = "sine";
+      osc3.frequency.setValueAtTime(freq * 3.0, t0);
+
+      const g1 = audioCtx.createGain();
+      const g2 = audioCtx.createGain();
+      const g3 = audioCtx.createGain();
+      g1.gain.setValueAtTime(0.0001, t0);
+      g1.gain.linearRampToValueAtTime(0.36 * velocity, t0 + 0.005);
+      g1.gain.exponentialRampToValueAtTime(0.0001, t0 + dec);
+
+      g2.gain.setValueAtTime(0.0001, t0);
+      g2.gain.linearRampToValueAtTime(0.16 * velocity, t0 + 0.004);
+      g2.gain.exponentialRampToValueAtTime(0.0001, t0 + dec * 0.42);
+
+      g3.gain.setValueAtTime(0.0001, t0);
+      g3.gain.linearRampToValueAtTime(0.06 * velocity, t0 + 0.003);
+      g3.gain.exponentialRampToValueAtTime(0.0001, t0 + dec * 0.16);
+
+      const bodyFilter = audioCtx.createBiquadFilter();
+      bodyFilter.type = "lowpass";
+      bodyFilter.frequency.setValueAtTime(Math.min(4400, freq * 7.5), t0);
+      bodyFilter.frequency.exponentialRampToValueAtTime(Math.max(420, freq * 1.8), t0 + dec * 0.65);
+      bodyFilter.Q.setValueAtTime(0.9, t0);
+
+      osc1.connect(g1);
+      osc2.connect(g2);
+      osc3.connect(g3);
+      g1.connect(bodyFilter);
+      g2.connect(bodyFilter);
+      g3.connect(bodyFilter);
+      bodyFilter.connect(getTrackBusNode(3));
+
+      osc1.start(t0); osc2.start(t0); osc3.start(t0);
+      osc1.stop(t0 + dec + 0.08);
+      osc2.stop(t0 + dec + 0.08);
+      osc3.stop(t0 + dec + 0.08);
+
+      const voice = new ActiveVoice({
+        note: midiNote,
+        src: [osc1, osc2, osc3],
+        gain: [g1, g2, g3],
+        filter: bodyFilter,
+        stopTime: t0 + dec + 0.08,
+        releaseTime: 0.16
+      });
+      registerActiveVoice(midiNote, voice, dec + 0.15, "k250");
+    }
+
+    // 3B. K250 Bowed String Ensemble Engine (Multi-Zone IFFT Loop matched to K250 Grand Strings)
+    const k250StringBufCache = new Map();
+    const K250_STRING_ZONES = [36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80, 84];
+
+    function ifftInPlace(re, im) {
+      const n = re.length;
+      for (let i = 1, j = 0; i < n; i++) {
+        let bit = n >> 1;
+        for (; j & bit; bit >>= 1) j ^= bit;
+        j ^= bit;
+        if (i < j) {
+          let tr = re[i]; re[i] = re[j]; re[j] = tr;
+          let ti = im[i]; im[i] = im[j]; im[j] = ti;
+        }
+      }
+      for (let len = 2; len <= n; len <<= 1) {
+        const half = len >> 1;
+        const ang = (2 * Math.PI) / len; // positive sign for inverse DFT
+        const wLenRe = Math.cos(ang);
+        const wLenIm = Math.sin(ang);
+        for (let i = 0; i < n; i += len) {
+          let wRe = 1.0, wIm = 0.0;
+          for (let j = 0; j < half; j++) {
+            const uRe = re[i + j], uIm = im[i + j];
+            const vRe = re[i + j + half] * wRe - im[i + j + half] * wIm;
+            const vIm = re[i + j + half] * wIm + im[i + j + half] * wRe;
+            re[i + j] = uRe + vRe;
+            im[i + j] = uIm + vIm;
+            re[i + j + half] = uRe - vRe;
+            im[i + j + half] = uIm - vIm;
+            const nxtRe = wRe * wLenRe - wIm * wLenIm;
+            wIm = wRe * wLenIm + wIm * wLenRe;
+            wRe = nxtRe;
+          }
+        }
+      }
+    }
+
+    function getK250StringBuffer(zoneMidi, variant, sr) {
+      const cacheKey = `${zoneMidi}_${variant}_${sr}`;
+      if (k250StringBufCache.has(cacheKey)) return k250StringBufCache.get(cacheKey);
+
+      const N = 131072; // ~2.73s @ 48kHz -> 0.366 Hz bin resolution, zero loop seam
+      const df = sr / N;
+      const re = new Float64Array(N);
+      const im = new Float64Array(N);
+      const baseFreq = 440 * Math.pow(2, (zoneMidi - 69) / 12);
+
+      const detunesCents = variant === "grand"
+        ? [-15.5, -10.4, -6.1, -2.0, 2.0, 6.1, 10.4, 15.5]
+        : [-11.5, -6.8, -2.2, 2.2, 6.8, 11.5];
+      const maxHarmFreq = variant === "cello" ? 6800 : 12200;
+
+      const bodyGain = (fHz) => {
+        // Sculpted K250 string bridge + wood formant envelope matching 023_Grand_Strings.mp3
+        let g = 1.0;
+        if (variant === "cello") {
+          const chest = Math.exp(-Math.pow((Math.log2(Math.max(40, fHz) / 230)) / 0.95, 2));
+          const bridge = Math.exp(-Math.pow((Math.log2(Math.max(40, fHz) / 1450)) / 0.85, 2));
+          g *= (0.75 + 0.95 * chest + 0.45 * bridge) / (1.0 + Math.pow(fHz / 3400, 2.2));
+        } else if (variant === "violin") {
+          const wood = Math.exp(-Math.pow((Math.log2(Math.max(40, fHz) / 560)) / 0.85, 2));
+          const bridge = Math.exp(-Math.pow((Math.log2(Math.max(40, fHz) / 2900)) / 0.85, 2));
+          const lowCut = Math.min(1.0, Math.pow(fHz / 210, 1.35));
+          g *= lowCut * (0.68 + 0.55 * wood + 1.45 * bridge) / (1.0 + Math.pow(fHz / 6500, 2.0));
+        } else {
+          const warmth = Math.exp(-Math.pow((Math.log2(Math.max(40, fHz) / 520)) / 0.95, 2));
+          const bridge = Math.exp(-Math.pow((Math.log2(Math.max(40, fHz) / 2850)) / 0.90, 2));
+          const lowTaper = Math.min(1.0, 0.45 + 0.55 * Math.min(1.0, fHz / 220));
+          g *= lowTaper * (0.65 + 0.55 * warmth + 1.45 * bridge) / (1.0 + Math.pow(fHz / 6400, 2.0));
+        }
+        return g;
+      };
+
+      const nyquistLimit = sr * 0.44;
+      for (let v = 0; v < detunesCents.length; v++) {
+        const fPlayer = baseFreq * Math.pow(2, detunesCents[v] / 1200);
+        const maxH = Math.min(48, Math.floor(Math.min(maxHarmFreq, nyquistLimit) / fPlayer));
+        for (let k = 1; k <= maxH; k++) {
+          const hkFreq = k * fPlayer;
+          const bin = Math.round(hkFreq / df);
+          if (bin <= 0 || bin >= (N >> 1)) continue;
+          const amp = (1.0 / Math.pow(k, 0.82)) * bodyGain(hkFreq);
+          const phase = ((v * 2.3999632 + k * 1.6180339 + zoneMidi * 0.47) % (2 * Math.PI));
+          const halfAmp = amp * 0.5;
+          const c = halfAmp * Math.cos(phase);
+          const s = halfAmp * Math.sin(phase);
+          re[bin] += c;
+          im[bin] += s;
+          re[N - bin] += c;
+          im[N - bin] -= s;
+        }
+      }
+
+      ifftInPlace(re, im);
+
+      // Peak-normalize steady-state periodic waveform for uniform dynamic headroom
+      let peak = 1e-6;
+      for (let i = 0; i < N; i++) {
+        const a = Math.abs(re[i]);
+        if (a > peak) peak = a;
+      }
+      const norm = 0.55 / peak;
+
+      const attackSamples = Math.round(sr * 0.14);
+      const buf = audioCtx.createBuffer(1, attackSamples + N, sr);
+      const out = buf.getChannelData(0);
+
+      // Smooth bow attack into periodic loop: wrapped from end of periodBuf so attack->loop has C1 continuity
+      let seed = (zoneMidi * 4999 + 131) & 0xFFFF;
+      let rosinLp = 0;
+      for (let i = 0; i < attackSamples; i++) {
+        const tFrac = i / attackSamples;
+        const env = 0.5 - 0.5 * Math.cos(Math.PI * tFrac);
+        const pIdx = (N - (attackSamples - i)) % N;
+        seed = (seed * 16807) % 2147483647;
+        const rnd = (seed / 1073741823.5) - 1.0;
+        rosinLp = rosinLp * 0.55 + rnd * 0.45;
+        const rosinEnv = Math.sin(Math.PI * tFrac) * Math.exp(-tFrac * 3.5);
+        out[i] = re[pIdx] * norm * env + rosinLp * 0.032 * rosinEnv;
+      }
+      for (let i = 0; i < N; i++) {
+        out[attackSamples + i] = re[i] * norm;
+      }
+
+      if (k250StringBufCache.size > 48) k250StringBufCache.clear();
+      k250StringBufCache.set(cacheKey, buf);
+      return buf;
+    }
+
+    function playK250StringVoice(midiNote, effMidi, velocity, p) {
+      if (!audioCtx) initAudio();
+      const t0 = getAudioTime();
+      const pName = (p && p.name) || "";
+      const variant = (pName.includes("CELLO") || pName.includes("BASS") || pName.includes("VIOLA"))
+        ? "cello"
+        : ((pName.includes("VIOLIN") || pName.includes("FIDDLE")) ? "violin" : "grand");
+
+      let zoneMidi = K250_STRING_ZONES[0];
+      let minDiff = Math.abs(effMidi - zoneMidi);
+      for (let i = 1; i < K250_STRING_ZONES.length; i++) {
+        const d = Math.abs(effMidi - K250_STRING_ZONES[i]);
+        if (d < minDiff) { minDiff = d; zoneMidi = K250_STRING_ZONES[i]; }
+      }
+
+      const buf = getK250StringBuffer(zoneMidi, variant, audioCtx.sampleRate);
+      const pitchRatio = Math.pow(2, (effMidi - zoneMidi) / 12);
+
+      const src = audioCtx.createBufferSource();
+      src.buffer = buf;
+      src.playbackRate.setValueAtTime(pitchRatio, t0);
+      src.loop = true;
+      src.loopStart = 0.14;
+      src.loopEnd = buf.duration;
+
+      const totalDetune = (p.det || 0) + (typeof globalPitchBendCents === "number" ? globalPitchBendCents : 0);
+      if (totalDetune !== 0) src.detune.setValueAtTime(totalDetune, t0);
+
+      const effAttack = Math.max(0.016, (p.att || 0.045) * 0.55 * (typeof envAttackMult === "number" ? envAttackMult : 1.0));
+      const maxHold = 14.0;
+      const effVel = Math.max(0.05, Math.min(1.4, velocity)) * 0.86;
+
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.linearRampToValueAtTime(effVel, t0 + effAttack);
+      gain.gain.linearRampToValueAtTime(effVel * 0.88, t0 + maxHold);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + maxHold + 0.6);
+
+      let lastNode = gain;
+      let filterNode = null;
+      const cut = p.cut || 14000;
+      if (cut < 17500) {
+        filterNode = audioCtx.createBiquadFilter();
+        filterNode.type = p.filt || "lowpass";
+        filterNode.frequency.setValueAtTime(cut, t0);
+        filterNode.Q.setValueAtTime(p.res || 0.85, t0);
+        gain.connect(filterNode);
+        lastNode = filterNode;
+      }
+
+      const modDepthCents = (typeof globalModWheel === "number" ? globalModWheel : 0) * 32;
+      const vibR = (p.vibR && p.vibR > 0) ? p.vibR : 4.8;
+      const vibD = ((p.vibD && p.vibD > 0) ? p.vibD : 8) + modDepthCents;
+      const lfoNode = audioCtx.createOscillator();
+      const lfoGain = audioCtx.createGain();
+      lfoNode.frequency.setValueAtTime(vibR, t0);
+      lfoGain.gain.setValueAtTime(vibD, t0);
+      lfoNode.connect(lfoGain);
+      lfoGain.connect(src.detune);
+      lfoNode.start(t0);
+      lfoNode.stop(t0 + maxHold + 0.7);
+
+      src.connect(gain);
+      lastNode.connect(getTrackBusNode(3));
+      src.start(t0);
+      src.stop(t0 + maxHold + 0.7);
+
+      const voice = new ActiveVoice({
+        note: midiNote,
+        src,
+        gain,
+        filter: filterNode,
+        lfo: lfoNode,
+        stopTime: t0 + maxHold + 0.7,
+        releaseTime: 0.28
+      });
+      registerActiveVoice(midiNote, voice, maxHold + 0.8, "k250");
+      return voice;
+    }
+
+    // 4. Classical Harpsichord (Physical Karplus-Strong Plucked String + Soundboard Resonator)
+    const harpsichordBufCache = new Map();
+    function getHarpsichordStringBuffer(freq, variant, sr) {
+      const cacheKey = `${Math.round(freq * 100)}_${variant}_${sr}`;
+      if (harpsichordBufCache.has(cacheKey)) return harpsichordBufCache.get(cacheKey);
+      const dur = variant === "lute" ? 1.55 : 2.15;
+      const len = Math.floor(sr * dur);
+      const buf = audioCtx.createBuffer(1, len, sr);
+      const out = buf.getChannelData(0);
+
+      const renderString = (f, scale, damping) => {
+        const period = Math.max(4, sr / f);
+        const pInt = Math.floor(period);
+        const frac = period - pInt;
+        const line = new Float32Array(pInt + 2);
+        // Bright quill plectrum pluck excitation (~1/8 bridge position comb) preserving 3-11 kHz wire brilliance
+        const combLag = Math.max(2, Math.round(pInt * 0.13));
+        let lp = 0;
+        let seed = (Math.round(f * 131) + 977) & 0xFFFF;
+        for (let i = 0; i <= pInt; i++) {
+          seed = (seed * 16807) % 2147483647;
+          const rnd = (seed / 1073741823.5) - 1.0;
+          lp = lp * 0.12 + rnd * 0.88;
+          line[i] = lp * Math.sin((Math.PI * (i + 1)) / (pInt + 2));
+        }
+        for (let i = pInt; i >= combLag; i--) {
+          line[i] -= 0.56 * line[i - combLag];
+        }
+        let idx = 0;
+        let prev = line[pInt - 1];
+        for (let n = 0; n < len; n++) {
+          const nextIdx = (idx + 1) % pInt;
+          const cur = line[idx] * (1 - frac) + line[nextIdx] * frac;
+          const filt = damping * (0.76 * cur + 0.24 * prev);
+          out[n] += cur * scale;
+          prev = cur;
+          line[idx] = filt;
+          idx = nextIdx;
+        }
+      };
+
+      const damp8 = variant === "lute" ? 0.9942 : 0.9978;
+      renderString(freq, 0.54, damp8);
+      if (variant === "coupled") {
+        renderString(freq * 2.0, 0.30, 0.9966); // Crisp 4-foot coupled octave wire rank
+      } else if (variant !== "lute") {
+        renderString(freq * 2.0, 0.11, 0.9948); // Acoustic soundboard octave bloom
+      }
+
+      // Subtle crisp 3ms quill jack transient click for Baroque articulation
+      const clickLen = Math.min(len, Math.floor(sr * 0.0035));
+      let cSeed = (Math.round(freq * 71) + 313) & 0xFFFF;
+      let cPrev = 0;
+      for (let i = 0; i < clickLen; i++) {
+        cSeed = (cSeed * 16807) % 2147483647;
+        const r = (cSeed / 1073741823.5) - 1.0;
+        const hp = r - 0.72 * cPrev;
+        cPrev = r;
+        const win = Math.sin((Math.PI * i) / clickLen) * Math.exp(-i / (sr * 0.0011));
+        out[i] += hp * 0.11 * win;
+      }
+
+      // Smooth 1.2ms onset & tail fadeout
+      const fadeIn = Math.min(len, Math.floor(sr * 0.0012));
+      for (let i = 0; i < fadeIn; i++) out[i] *= (i / fadeIn);
+      const fadeOut = Math.min(len, Math.floor(sr * 0.14));
+      for (let i = 0; i < fadeOut; i++) out[len - 1 - i] *= (i / fadeOut);
+
+      if (harpsichordBufCache.size > 160) harpsichordBufCache.clear();
+      harpsichordBufCache.set(cacheKey, buf);
+      return buf;
+    }
+
+    function playHarpsichordVoice(midiNote, effMidi, velocity, p) {
+      if (!audioCtx) initAudio();
+      const t0 = getAudioTime();
+      const freq = 440 * Math.pow(2, (effMidi - 69) / 12);
+      const pName = (p && p.name) || "";
+      const variant = pName.includes("LUTE") ? "lute" : ((pName.includes("8+4") || (p && p.id === 13)) ? "coupled" : "eight");
+      const dur = variant === "lute" ? 1.55 : 2.15;
+
+      const src = audioCtx.createBufferSource();
+      src.buffer = getHarpsichordStringBuffer(freq, variant, audioCtx.sampleRate);
+
+      const hpFilter = audioCtx.createBiquadFilter();
+      hpFilter.type = "highpass";
+      hpFilter.frequency.setValueAtTime(110, t0);
+
+      const bodyFilter = audioCtx.createBiquadFilter();
+      bodyFilter.type = "peaking";
+      bodyFilter.frequency.setValueAtTime(380, t0);
+      bodyFilter.Q.setValueAtTime(0.95, t0);
+      bodyFilter.gain.setValueAtTime(3.2, t0);
+
+      const quillFilter = audioCtx.createBiquadFilter();
+      quillFilter.type = "peaking";
+      quillFilter.frequency.setValueAtTime(2050, t0);
+      quillFilter.Q.setValueAtTime(1.05, t0);
+      quillFilter.gain.setValueAtTime(2.6, t0);
+
+      const lpFilter = audioCtx.createBiquadFilter();
+      lpFilter.type = "lowpass";
+      const dynBright = 0.55 + 0.45 * Math.min(1.2, velocity);
+      lpFilter.frequency.setValueAtTime(Math.min(14500, Math.max(7200, freq * 18.0) * dynBright), t0);
+      lpFilter.frequency.exponentialRampToValueAtTime(Math.max(2400, Math.min(6200, freq * 4.8)), t0 + dur * 0.68);
+      lpFilter.Q.setValueAtTime(0.7, t0);
+
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.linearRampToValueAtTime(1.08 * velocity, t0 + 0.002);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+
+      src.connect(hpFilter);
+      hpFilter.connect(bodyFilter);
+      bodyFilter.connect(quillFilter);
+      quillFilter.connect(lpFilter);
+      lpFilter.connect(gain);
+      gain.connect(getTrackBusNode(3));
+
+      src.start(t0);
+      src.stop(t0 + dur + 0.04);
+
+      const voice = new ActiveVoice({
+        note: midiNote,
+        src,
+        gain,
+        filter: lpFilter,
+        stopTime: t0 + dur + 0.04,
+        releaseTime: 0.085
+      });
+      registerActiveVoice(midiNote, voice, dur + 0.1, "k250");
+    }
+
+    // 5. Acoustic Drum Kits, TR-909 & Specialized Percussion Engines
+    let active909OpenHatGain = null;
+
+    function playAcousticDrumKitVoice(midiNote, effMidi, velocity, p) {
+      if (!audioCtx) initAudio();
+      const t = getAudioTime();
+      const pc = ((effMidi % 12) + 12) % 12;
+      const vel = Math.max(0.1, Math.min(1.4, velocity));
+      const name = p.name || "";
+
+      const triggerSample = (key, pitchRatio = 1.0, dec = p.dec || 2.0, cut = p.cut || 14000, vScale = 1.0) => {
+        const k = hasK250Sample(key) ? key : "drum_kick";
+        playSamplerVoice({
+          key: k, midiNote, pitchRatio, velocity: vel * vScale,
+          attack: 0.001, decay: dec, cutoff: cut, res: p.res || 1.0,
+          canLoop: false, releaseTime: 0.12
+        });
+      };
+
+      const isBlack = [1, 3, 6, 8, 10].includes(pc);
+
+      // A. Orchestral & Marching Bass Drum (100% Pure K250 Gran Cassa + Warm Low Bass Drum Layer) - ID 221
+      if (p.id === 221 || name.includes("GRAN CASSA")) {
+        const key = hasK250Sample("vsco_gran_cassa") ? "vsco_gran_cassa" : ((pc % 2 === 0) ? "k2k_orchdrum" : "k2k_bassdrumrum");
+        const ratio = 0.88 + (pc * 0.014);
+        playSamplerVoice({
+          key, midiNote, pitchRatio: ratio, velocity: vel * 1.48,
+          attack: 0.001, decay: isBlack ? 0.95 : 3.5, cutoff: isBlack ? 2200 : 4200, res: 0.7,
+          canLoop: false, naturalSustain: true,
+          releaseTime: isBlack ? 0.45 : 0.95
+        });
+        if (!isBlack && hasK250Sample("k2k_bassdrumrum")) {
+          // Deep sampled K250 bass drum low weight
+          playSamplerVoice({
+            key: "k2k_bassdrumrum", midiNote, pitchRatio: 0.68, velocity: vel * 0.82,
+            attack: 0.002, decay: 1.4, cutoff: 650, res: 0.65,
+            canLoop: false, naturalSustain: true, releaseTime: 0.65
+          });
+        }
+        return;
+      }
+
+      // B. Marching & Concert Field Snare + Tenor Quads (100% Pure K250 Sampled Battery) - ID 222
+      if (p.id === 222 || name.includes("FIELD DRUM")) {
+        let sKey = "sonor_snare";
+        let sRatio = 1.06 + (pc * 0.012);
+        let sCut = 15200;
+        let sVs = 1.48;
+        let sDec = 1.35;
+        let isTenor = false;
+        if (pc === 1 || pc === 3) {
+          sKey = "sonor_snare_soft"; sRatio = pc === 1 ? 1.10 : 1.20; sVs = 1.18; sDec = 0.85;
+        } else if (pc === 5 || pc === 6) {
+          sKey = "sonor_tom_lo"; sRatio = pc === 5 ? 0.86 : 0.98; sCut = 10500; sVs = 1.48; sDec = 1.20;
+          isTenor = true;
+        } else if (pc === 8 || pc === 9 || pc === 10) {
+          sKey = "sonor_tom_hi"; sRatio = pc === 8 ? 0.96 : (pc === 9 ? 1.12 : 1.28); sCut = 12000; sVs = 1.46; sDec = 1.10;
+          isTenor = true;
+        } else if (pc === 7 || pc === 11) {
+          sKey = "sonor_snare"; sRatio = 1.16; sCut = 16200; sVs = 1.56;
+        }
+        const finalKey = hasK250Sample(sKey) ? sKey : "k2k_snare1";
+        playSamplerVoice({
+          key: finalKey, midiNote, pitchRatio: sRatio, velocity: vel * sVs,
+          attack: 0.001, decay: sDec, cutoff: sCut, res: 0.7,
+          canLoop: false, naturalSustain: true, releaseTime: 0.28
+        });
+        if (!isTenor && pc !== 1 && pc !== 3 && hasK250Sample("k2k_snare1")) {
+          // Crisp sampled K250 field snare snap transient layer
+          playSamplerVoice({
+            key: "k2k_snare1", midiNote, pitchRatio: 1.22, velocity: vel * 0.56,
+            attack: 0.001, decay: 0.45, cutoff: 14000, res: 0.7,
+            canLoop: false, naturalSustain: true, releaseTime: 0.14
+          });
+        }
+        return;
+      }
+
+      // C. Piatti Crash Cymbals (Real VSCO Piatti + Sonor Crash) - ID 223
+      if (p.id === 223 || name.includes("PIATTI")) {
+        const key = (pc === 11 && hasK250Sample("sonor_crash")) ? "sonor_crash"
+          : (hasK250Sample("vsco_piatti") ? "vsco_piatti" : "k2k_cymbal1");
+        const ratio = 0.94 + (pc * 0.014);
+        playSamplerVoice({
+          key, midiNote, pitchRatio: ratio, velocity: vel * 1.12,
+          attack: 0.002, decay: isBlack ? 1.25 : 3.80, cutoff: 15500, res: 0.7,
+          canLoop: false, naturalSustain: true, releaseTime: isBlack ? 0.40 : 1.15
+        });
+        return;
+      }
+
+      // D. Castanets & Spanish Wood - ID 224
+      if (p.id === 224 || name.includes("CASTANETS")) {
+        const hits = isBlack ? [0, 0.048] : [0]; // Double Flamenco clack on black keys
+        const baseFreq = pc === 2 || pc === 7 ? 2150 : (pc === 4 || pc === 9 ? 980 : 1480);
+        const oscs = [];
+        const gains = [];
+        hits.forEach((dt, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(baseFreq * (1 + idx * 0.06), t + dt);
+          osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.65, t + dt + 0.035);
+          gain.gain.setValueAtTime(0.001, t);
+          gain.gain.setValueAtTime(vel * 0.88, t + dt);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t + dt + 0.145);
+          osc.connect(gain); gain.connect(getTrackBusNode(3));
+          osc.start(t + dt); osc.stop(t + dt + 0.155);
+          oscs.push(osc); gains.push(gain);
+
+          const nBuf = get808NoiseBuffer();
+          if (nBuf) {
+            const nSrc = audioCtx.createBufferSource(); nSrc.buffer = nBuf;
+            const bp = audioCtx.createBiquadFilter();
+            bp.type = "bandpass"; bp.frequency.setValueAtTime(baseFreq * 1.35, t + dt); bp.Q.setValueAtTime(2.6, t + dt);
+            const nGain = audioCtx.createGain();
+            nGain.gain.setValueAtTime(0.001, t);
+            nGain.gain.setValueAtTime(vel * 0.72, t + dt);
+            nGain.gain.exponentialRampToValueAtTime(0.0001, t + dt + 0.058);
+            nSrc.connect(bp); bp.connect(nGain); nGain.connect(getTrackBusNode(3));
+            nSrc.start(t + dt); nSrc.stop(t + dt + 0.065);
+            oscs.push(nSrc); gains.push(nGain);
+          }
+        });
+        registerActiveVoice(midiNote, new ActiveVoice({ note: midiNote, src: oscs, gain: gains, stopTime: t + 0.18, releaseTime: 0.05 }), 0.2);
+        return;
+      }
+
+      // E. Orchestral Tambourine - ID 225
+      if (p.id === 225 || name.includes("TAMBOURINE")) {
+        const sagats = ["k25_sagat1", "k25_sagat2", "k25_sagat3"];
+        if (isBlack) {
+          triggerSample("k2k_rattle", 1.18, 0.55, 16000, 1.0);
+        } else {
+          triggerSample(sagats[pc % sagats.length], 1.1 + (pc * 0.02), 0.75, 16000, 0.95);
+          triggerSample("k2k_shaker", 1.15, 0.45, 16000, 0.8);
+        }
+        const nBuf = get808NoiseBuffer();
+        if (nBuf) {
+          const nSrc = audioCtx.createBufferSource(); nSrc.buffer = nBuf;
+          const hp = audioCtx.createBiquadFilter();
+          hp.type = "highpass"; hp.frequency.setValueAtTime(6200, t);
+          const nGain = audioCtx.createGain();
+          nGain.gain.setValueAtTime(vel * 0.36, t);
+          nGain.gain.exponentialRampToValueAtTime(0.0001, t + (isBlack ? 0.24 : 0.11));
+          nSrc.connect(hp); hp.connect(nGain); nGain.connect(getTrackBusNode(3));
+          nSrc.start(t); nSrc.stop(t + 0.28);
+          registerActiveVoice(midiNote, new ActiveVoice({ note: midiNote, src: nSrc, gain: nGain, stopTime: t + 0.28, releaseTime: 0.06 }), 0.3);
+        }
+        return;
+      }
+
+      // F. TR-909 Dance Kit - ID 239 (Authentic Hybrid Analog + Crisp PCM House Kit)
+      if (p.id === 239 || name.includes("909")) {
+        const role909 = [1, 10, 2, 5, 7, 3, 8, 4, 9, 11, 6, 3][pc];
+        const oscs = [], gains = [];
+        if (role909 === 1) { // 909 Kick (hard pitch snap + punchy attack click)
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(175, t);
+          osc.frequency.exponentialRampToValueAtTime(52, t + 0.015);
+          osc.frequency.exponentialRampToValueAtTime(42, t + 0.32);
+          gain.gain.setValueAtTime(vel * 0.85, t);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.36);
+          osc.connect(gain); gain.connect(getTrackBusNode(3));
+          osc.start(t); osc.stop(t + 0.38);
+          oscs.push(osc); gains.push(gain);
+        } else if (role909 === 2) { // 909 Snare (bright crisp white noise + dual shell)
+          const osc = audioCtx.createOscillator();
+          const oGain = audioCtx.createGain();
+          osc.type = "triangle"; osc.frequency.setValueAtTime(205, t);
+          osc.frequency.exponentialRampToValueAtTime(140, t + 0.06);
+          oGain.gain.setValueAtTime(vel * 0.42, t);
+          oGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+          osc.connect(oGain); oGain.connect(getTrackBusNode(3));
+          osc.start(t); osc.stop(t + 0.14);
+          oscs.push(osc); gains.push(oGain);
+          const nBuf = get808NoiseBuffer();
+          if (nBuf) {
+            const nSrc = audioCtx.createBufferSource(); nSrc.buffer = nBuf;
+            const hp = audioCtx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.setValueAtTime(2900, t);
+            const nGain = audioCtx.createGain();
+            nGain.gain.setValueAtTime(vel * 0.55, t);
+            nGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.19);
+            nSrc.connect(hp); hp.connect(nGain); nGain.connect(getTrackBusNode(3));
+            nSrc.start(t); nSrc.stop(t + 0.22);
+            oscs.push(nSrc); gains.push(nGain);
+          }
+        } else if (role909 === 3 || role909 === 4) { // 909 CH / OH with choke
+          if (role909 === 3 && active909OpenHatGain) {
+            try {
+              active909OpenHatGain.gain.cancelScheduledValues(t);
+              active909OpenHatGain.gain.setValueAtTime(Math.max(0.0001, active909OpenHatGain.gain.value), t);
+              active909OpenHatGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.01);
+            } catch (e) {}
+            active909OpenHatGain = null;
+          }
+          const nBuf = get808NoiseBuffer();
+          if (nBuf) {
+            const nSrc = audioCtx.createBufferSource(); nSrc.buffer = nBuf;
+            const hp = audioCtx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.setValueAtTime(7200, t);
+            const nGain = audioCtx.createGain();
+            const dur = role909 === 4 ? 0.34 : 0.055;
+            nGain.gain.setValueAtTime(vel * 0.45, t);
+            nGain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+            nSrc.connect(hp); hp.connect(nGain); nGain.connect(getTrackBusNode(3));
+            nSrc.start(t); nSrc.stop(t + dur + 0.03);
+            if (role909 === 4) active909OpenHatGain = nGain;
+            oscs.push(nSrc); gains.push(nGain);
+          }
+        } else if (role909 === 5) { // 909 House Clap
+          triggerSample("k25_clap1", 1.08, 0.45, 16000, 1.1);
+          return;
+        } else if (role909 === 7 || role909 === 8 || role909 === 9) { // 909 Toms
+          const baseF = role909 === 7 ? 115 : (role909 === 8 ? 165 : 230);
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(baseF * 1.65, t);
+          osc.frequency.exponentialRampToValueAtTime(baseF, t + 0.16);
+          gain.gain.setValueAtTime(vel * 0.62, t);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+          osc.connect(gain); gain.connect(getTrackBusNode(3));
+          osc.start(t); osc.stop(t + 0.30);
+          oscs.push(osc); gains.push(gain);
+        } else { // 909 Ride / Crash / Rim
+          triggerSample(role909 === 11 ? "k2k_ride" : "k2k_clap", role909 === 10 ? 1.45 : 1.12, 0.85, 16000, 0.95);
+          return;
+        }
+        registerActiveVoice(midiNote, new ActiveVoice({ note: midiNote, src: oscs, gain: gains, stopTime: t + 0.45, releaseTime: 0.08 }), 0.5);
+        return;
+      }
+
+      // G. Latin Congas & Bongos - ID 241 (Uses embedded k25_* hand-percussion + resonant Conga/Bongo membrane)
+      if (p.id === 241 || name.includes("CONGAS") || name.includes("BONGOS")) {
+        const latinBank = [
+          { key: "k25_dohola1", ratio: 0.92, f0: 210, f1: 142 },
+          { key: "k25_dohola2", ratio: 1.08, f0: 295, f1: 205 },
+          { key: "k25_davol1", ratio: 0.88, f0: 175, f1: 118 },
+          { key: "k25_dof1", ratio: 1.05, f0: 260, f1: 185 },
+          { key: "k25_zarb1", ratio: 1.12, f0: 340, f1: 240 },
+          { key: "k25_rek1", ratio: 1.0, f0: 410, f1: 310 },
+          { key: "k25_tabla1rak", ratio: 1.06, f0: 380, f1: 280 },
+          { key: "k2k_cowbell", ratio: 1.0, f0: 0, f1: 0 },
+          { key: "k25_dohola3", ratio: 1.22, f0: 320, f1: 225 },
+          { key: "k2k_shaker", ratio: 1.05, f0: 0, f1: 0 },
+          { key: "k25_zarb3", ratio: 1.28, f0: 460, f1: 340 },
+          { key: "k25_sagat1", ratio: 1.0, f0: 0, f1: 0 }
+        ];
+        const entry = latinBank[pc];
+        triggerSample(entry.key, entry.ratio, 1.4, 9500, 1.9);
+        if (entry.f0 > 0) {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(entry.f0, t);
+          osc.frequency.exponentialRampToValueAtTime(entry.f1, t + 0.045);
+          gain.gain.setValueAtTime(vel * 0.45, t);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.34);
+          const lp = audioCtx.createBiquadFilter();
+          lp.type = "lowpass"; lp.frequency.setValueAtTime(2200, t);
+          osc.connect(lp); lp.connect(gain); gain.connect(getTrackBusNode(3));
+          osc.start(t); osc.stop(t + 0.36);
+          registerActiveVoice(midiNote, new ActiveVoice({ note: midiNote, src: osc, gain, filter: lp, stopTime: t + 0.36, releaseTime: 0.08 }), 0.4);
+        }
+        return;
+      }
+
+      // H. Electronic Percussion Kit (Simmons SDS-V / Electro) - ID 240
+      if (p.id === 240 || name.includes("ELECTRONIC PERCUSSION")) {
+        if (pc === 0 || pc === 4 || pc === 6 || pc === 8) {
+          // Pitch-swept Simmons Hex-Pad Toms
+          const fStart = pc === 0 ? 160 : (pc === 4 ? 260 : (pc === 6 ? 360 : 490));
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(fStart, t);
+          osc.frequency.exponentialRampToValueAtTime(fStart * 0.36, t + 0.22);
+          gain.gain.setValueAtTime(vel * 0.58, t);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+          osc.connect(gain); gain.connect(getTrackBusNode(3));
+          osc.start(t); osc.stop(t + 0.30);
+          registerActiveVoice(midiNote, new ActiveVoice({ note: midiNote, src: osc, gain, stopTime: t + 0.30, releaseTime: 0.06 }), 0.35);
+          return;
+        }
+        const electroBank = ["k2k_spacetom", "k2k_spacesnr", "k2k_tomshaker", "k2k_spacesnr", "k2k_spacetom", "k2k_tomshaker", "k2k_spacetom", "k2k_hihat2", "k2k_spacetom", "k2k_clap", "k2k_cymbal2", "k2k_hihat2"];
+        triggerSample(electroBank[pc], 1.08, 1.5, 13000, 1.05);
+        return;
+      }
+
+      // I. 80s Gated Reverb Snare Kit - ID 237
+      if (p.id === 237 || name.includes("GATED REVERB")) {
+        if (pc === 2 || pc === 5) { // Signature 80s Gated Snare!
+          triggerSample("k2k_spacesnr", 1.0, 1.4, 15000, 1.05);
+          const nBuf = get808NoiseBuffer();
+          if (nBuf) {
+            const nSrc = audioCtx.createBufferSource(); nSrc.buffer = nBuf;
+            const bp = audioCtx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.setValueAtTime(1650, t); bp.Q.setValueAtTime(0.9, t);
+            const nGain = audioCtx.createGain();
+            nGain.gain.setValueAtTime(vel * 0.42, t);
+            nGain.gain.linearRampToValueAtTime(vel * 0.36, t + 0.16); // flat gated sustain
+            nGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.195); // hard gate slam
+            nSrc.connect(bp); bp.connect(nGain); nGain.connect(getTrackBusNode(3));
+            nSrc.start(t); nSrc.stop(t + 0.21);
+            registerActiveVoice(midiNote, new ActiveVoice({ note: midiNote, src: nSrc, gain: nGain, stopTime: t + 0.21, releaseTime: 0.04 }), 0.25);
+          }
+          return;
+        }
+        const gatedBank = ["drum_kick", "k25_clap1", "k2k_spacesnr", "k25_clap2", "k2k_spacetom", "k2k_spacesnr", "k2k_spacetom", "k2k_hihat1", "k2k_spacetom", "k2k_cymbal1", "k25_clap3", "k2k_hihat2"];
+        triggerSample(gatedBank[pc], 1.0, 1.8, 16000, 1.05);
+        return;
+      }
+
+      // J. Real Stereo Jazz Kit & Brushes (SamsSonor Studio Kit + VSCO Brush) - ID 236
+      if (p.id === 236 || name.includes("JAZZ BRUSH")) {
+        const jazzMap = [
+          { key: "sonor_kick",       dec: 1.05, cut: 8500,  vs: 1.25 }, // 0 C: Punchy 20" Jazz Kick
+          { key: "sonor_snare_soft", dec: 0.70, cut: 11000, vs: 0.90 }, // 1 C#: Snare ghost / sidestick
+          { key: "sonor_snare",      dec: 0.85, cut: 13000, vs: 1.02 }, // 2 D: Crisp Snare backbeat
+          { key: "vsco_brush",       dec: 0.65, cut: 12000, vs: 1.10 }, // 3 D#: Swish brush sweep
+          { key: "sonor_snare_soft", dec: 0.75, cut: 10500, vs: 0.95 }, // 4 E: Soft snare accent
+          { key: "sonor_tom_lo",     dec: 1.05, cut: 9000,  vs: 1.08 }, // 5 F: Floor tom
+          { key: "sonor_hh_closed",  dec: 0.55, cut: 14000, vs: 0.95 }, // 6 F#: Tight Hi-Hat
+          { key: "sonor_ride",       dec: 3.80, cut: 15500, vs: 1.08 }, // 7 G: Shimmering Jazz Ride Cymbal
+          { key: "sonor_hh_pedal",   dec: 0.45, cut: 14000, vs: 1.05 }, // 8 G#: Classic 2&4 Hi-Hat Pedal Chick!
+          { key: "sonor_tom_hi",     dec: 0.95, cut: 10000, vs: 1.05 }, // 9 A: Rack tom
+          { key: "sonor_hh_open",    dec: 1.80, cut: 15000, vs: 0.92 }, // 10 A#: Open Hi-Hat wash
+          { key: (effMidi >= 68 ? "sonor_ridebell" : "sonor_crash"), dec: 3.60, cut: 16000, vs: 1.02 } // 11 B: Crash / Ride Bell
+        ];
+        const jm = jazzMap[pc];
+        const k = hasK250Sample(jm.key) ? jm.key : "drum_kick";
+        playSamplerVoice({
+          key: k, midiNote, pitchRatio: 1.0, velocity: vel * jm.vs,
+          attack: 0.001, decay: jm.dec, cutoff: jm.cut,
+          canLoop: false, naturalSustain: true, releaseTime: 0.18
+        });
+        return;
+      }
+
+      // K. Studio Tight Pop Kit - ID 234
+      if (p.id === 234 || name.includes("STUDIO TIGHT POP")) {
+        const popBank = ["drum_kick", "k2k_clap", "k2k_snare2", "k2k_shaker", "drum_tom", "k2k_hihat2", "drum_tom", "k2k_hihat2", "drum_tom", "drum_cymbal", "k2k_cowbell", "k2k_ride"];
+        triggerSample(popBank[pc], 1.06, 0.75, 13000, 1.05);
+        return;
+      }
+
+      // L. Rock Power Arena Drums - ID 235
+      if (p.id === 235 || name.includes("ROCK POWER ARENA")) {
+        const arenaBank = ["k2k_bassdrumrum", "k2k_spacesnr", "k2k_snare3", "k25_clap1", "k2k_tom2", "k2k_hihat1", "k2k_tom1", "k2k_hihat1", "k2k_orchdrum", "k2k_cymbal2", "k2k_cowbell", "k2k_cymbal1"];
+        triggerSample(arenaBank[pc], (pc === 4 || pc === 6) ? 0.88 : 1.0, 3.2, 16000, 1.15);
+        return;
+      }
+
+      // M. Orchestral Percussion Full Battery - ID 242
+      if (p.id === 242 || name.includes("ORCHESTRAL PERCUSSION")) {
+        const orchBank = ["k2k_orchdrum", "k2k_rattle", "k2k_snare1", "k2k_shaker", "k2k_tom1", "k2k_triangle", "k2k_tom2", "k2k_gong", "orch_timpani", "k2k_cymbal1", "k2k_cowbell", "k2k_cymbal2"];
+        triggerSample(orchBank[pc], 1.0, 3.6, 16000, 1.1);
+        return;
+      }
+
+      // N. West Room Acoustic Drum Kit (ID 233 & ID 250 Acoustic Drums/Bass Split)
+      const westRoomBank = [
+        "sonor_kick", "k2k_clap", "sonor_snare", "sonor_snare_soft",
+        "sonor_tom_lo", "sonor_hh_closed", "sonor_hh_closed", "sonor_ride",
+        "sonor_hh_pedal", "sonor_tom_hi", "sonor_hh_open", "sonor_crash"
+      ];
+      const wKey = hasK250Sample(westRoomBank[pc]) ? westRoomBank[pc] : "drum_kick";
+      playSamplerVoice({
+        key: wKey, midiNote, pitchRatio: 1.0, velocity: vel * (pc === 0 ? 1.22 : 1.02),
+        attack: 0.001, decay: (pc === 7 || pc === 11) ? 3.8 : 1.4, cutoff: p.cut || 15500,
+        canLoop: false, naturalSustain: true, releaseTime: 0.16
+      });
+    }
+
+    // True 6-Operator / 32-Algorithm Yamaha DX7 FM Core + .SYX Parser/Exporter
+    function parseDx7SyxBytes(bytes) {
+      if (!bytes || bytes.length < 163) return [];
+      const parsed = [];
+      const parseVcedOpBase = (buf, off) => {
+        const coarse = buf[off + 18] & 0x1F;
+        const fine = buf[off + 19] & 0x63;
+        const detune = ((buf[off + 20] & 0x0F) - 7) * 2;
+        const level = Math.max(0.05, Math.min(1.0, (buf[off + 16] & 0x7F) / 99));
+        const r1 = Math.max(10, buf[off] & 0x7F);
+        const dec = Math.max(0.08, Math.min(3.5, (105 - r1) / 32));
+        const modeOsc = (buf[off + 17] & 0x01);
+        const baseRatio = modeOsc ? 1.0 : (coarse === 0 ? 0.5 : coarse);
+        return { ratio: Number((baseRatio * (1 + fine * 0.01)).toFixed(3)), level, dec, detune };
+      };
+
+      // VMEM 32-Voice Dump (4104 bytes: F0 43 00 09 20 00 ... ck F7)
+      if (bytes.length >= 4100 && bytes[0] === 0xF0 && bytes[3] === 0x09) {
+        const dataStart = 6;
+        for (let v = 0; v < 32; v++) {
+          const base = dataStart + v * 128;
+          if (base + 128 > bytes.length) break;
+          const ops = [];
+          // DX7 stores OP6..OP1 reversed
+          for (let opIdx = 5; opIdx >= 0; opIdx--) {
+            const off = base + (5 - opIdx) * 17;
+            const r1 = bytes[off] & 0x63;
+            const level = Math.max(0.05, Math.min(1.0, (bytes[off + 14] & 0x63) / 99));
+            const modeDet = bytes[off + 12] || 0;
+            const coarse = (bytes[off + 15] >> 1) & 0x1F;
+            const fine = bytes[off + 16] & 0x63;
+            const baseRatio = coarse === 0 ? 0.5 : coarse;
+            const detune = (((modeDet >> 3) & 0x0F) - 7) * 2;
+            ops[opIdx] = {
+              ratio: Number((baseRatio * (1 + fine * 0.01)).toFixed(3)),
+              level,
+              dec: Math.max(0.08, Math.min(3.5, (105 - r1) / 32)),
+              detune
+            };
+          }
+          const alg = Math.max(1, Math.min(32, (bytes[base + 110] & 0x1F) + 1));
+          const feedback = bytes[base + 111] & 0x07;
+          let name = "";
+          for (let c = 0; c < 10; c++) {
+            const ch = bytes[base + 118 + c] & 0x7F;
+            name += (ch >= 32 && ch <= 126) ? String.fromCharCode(ch) : " ";
+          }
+          parsed.push({ name: name.trim() ? name : ("SYX VMEM " + (v + 1)), alg, feedback, modDepth: 1.0, ops });
+        }
+        return parsed;
+      }
+
+      // VCED Single Voice Dump (163 bytes: F0 43 00 00 01 1B ... ck F7)
+      if (bytes.length >= 161 && bytes[0] === 0xF0) {
+        const start = 6;
+        const ops = [];
+        for (let opIdx = 5; opIdx >= 0; opIdx--) {
+          ops[opIdx] = parseVcedOpBase(bytes, start + (5 - opIdx) * 21);
+        }
+        const alg = Math.max(1, Math.min(32, (bytes[start + 134] & 0x1F) + 1));
+        const feedback = bytes[start + 135] & 0x07;
+        let name = "";
+        for (let c = 0; c < 10; c++) {
+          const ch = bytes[start + 145 + c] & 0x7F;
+          name += (ch >= 32 && ch <= 126) ? String.fromCharCode(ch) : " ";
+        }
+        parsed.push({ name: name.trim() ? name : "SYX VCED", alg, feedback, modDepth: 1.0, ops });
+      }
+      return parsed;
+    }
+
+    function buildDx7VcedSyxBytes(patch) {
+      const p = patch || dx7Bank[activeDx7PatchIdx] || dx7Bank[0];
+      const out = new Uint8Array(163);
+      out[0] = 0xF0; out[1] = 0x43; out[2] = 0x00; out[3] = 0x00; out[4] = 0x01; out[5] = 0x1B;
+      const body = out.subarray(6, 161);
+      for (let rev = 0; rev < 6; rev++) {
+        const opIdx = 5 - rev;
+        const op = (p.ops && p.ops[opIdx]) ? p.ops[opIdx] : { ratio: 1, level: 0.8, dec: 1.0, detune: 0 };
+        const off = rev * 21;
+        body[off] = Math.max(20, Math.min(99, Math.round(105 - (op.dec || 1.0) * 32)));
+        body[off + 1] = 85; body[off + 2] = 75; body[off + 3] = 65;
+        body[off + 4] = 99; body[off + 5] = 99; body[off + 6] = 99; body[off + 7] = 0;
+        body[off + 16] = Math.max(0, Math.min(99, Math.round((op.level ?? 0.8) * 99)));
+        body[off + 17] = 0;
+        const ratio = Math.max(0.5, op.ratio || 1.0);
+        const coarse = ratio < 0.75 ? 0 : Math.min(31, Math.floor(ratio));
+        const base = coarse === 0 ? 0.5 : coarse;
+        const fine = Math.max(0, Math.min(99, Math.round(((ratio / base) - 1) * 100)));
+        body[off + 18] = coarse & 0x1F;
+        body[off + 19] = fine & 0x7F;
+        body[off + 20] = Math.max(0, Math.min(14, Math.round((op.detune || 0) / 2 + 7)));
+      }
+      body[134] = Math.max(0, Math.min(31, (p.alg || 1) - 1));
+      body[135] = Math.max(0, Math.min(7, p.feedback || 0));
+      body[136] = 1; // Osc key sync
+      const nm = ((p.name || "FM1 PATCH").padEnd(10, " ")).slice(0, 10);
+      for (let c = 0; c < 10; c++) body[145 + c] = nm.charCodeAt(c) & 0x7F;
+      let sum = 0;
+      for (let i = 0; i < 155; i++) sum += body[i];
+      out[161] = (-sum) & 0x7F;
+      out[162] = 0xF7;
+      return out;
+    }
+
+    function renderDx7AlgDiagram() {
+      const box = document.getElementById("dx7-alg-diagram");
+      const sel = document.getElementById("select-dx7-patch");
+      const algInp = document.getElementById("input-dx7-alg");
+      const fbInp = document.getElementById("input-dx7-fb");
+      const patch = dx7Bank[activeDx7PatchIdx] || dx7Bank[0];
+      if (!patch) return;
+      if (sel) {
+        if (sel.options.length !== dx7Bank.length) {
+          sel.innerHTML = "";
+          dx7Bank.forEach((pt, idx) => {
+            const opt = document.createElement("option");
+            opt.value = idx;
+            opt.textContent = `${String(idx + 1).padStart(2, "0")}: ${pt.name.trim()} (A${pt.alg})`;
+            sel.appendChild(opt);
+          });
+        }
+        sel.value = String(activeDx7PatchIdx);
+      }
+      if (algInp) algInp.value = patch.alg;
+      if (fbInp) fbInp.value = patch.feedback;
+      const spec = DX7_ALGORITHMS[(patch.alg - 1 + 32) % 32];
+      const edgesTxt = spec.edges.length ? spec.edges.map(e => `${e[0]}->${e[1]}`).join("  ") : "PARALLEL ADDITIVE (6 CARRIERS)";
+      if (box) {
+        box.textContent = `ALG ${String(spec.id).padStart(2, "0")}/32  OUT:[${spec.carriers.join(",")}]  FB:OP${spec.fbOp}(${patch.feedback})  |  ${edgesTxt}`;
+      }
+      if (tracks[0]) {
+        tracks[0].preset = `DX7 ${patch.name.trim()} (ALG ${patch.alg})`;
+      }
+    }
+
+    function playFmSynth(midiNote, velocity = 1.0, trackKeyNote = null, meta = null) {
+      if (!audioCtx) initAudio();
+      const freq = 440 * Math.pow(2, (midiNote - 69) / 12);
+      const t = getAudioTime();
+      const voiceNote = (trackKeyNote !== null) ? trackKeyNote : midiNote;
+      const accentBoost = (meta && meta.accent) ? 1.25 : 1.0;
+      const vel = Math.min(1.5, velocity * accentBoost);
+      const effAtt = 0.002 * (typeof envAttackMult === "number" ? envAttackMult : 1.0);
+      const effDec = (meta && meta.decSec !== undefined) ? meta.decSec : (1.6 * (typeof envDecayMult === "number" ? envDecayMult : 1.0));
+      const prevFreq = (lastGlideFreqByTrack[0] > 0) ? lastGlideFreqByTrack[0] : freq;
+      const glideSec = (meta && meta.slide) ? 0.06 : ((typeof globalGlideMs === "number" && globalGlideMs > 0) ? globalGlideMs / 1000 : 0);
+      lastGlideFreqByTrack[0] = freq;
+
+      const patch = (meta && meta.patchIdx !== undefined && dx7Bank[meta.patchIdx]) ? dx7Bank[meta.patchIdx] : (dx7Bank[activeDx7PatchIdx] || dx7Bank[0]);
+      const algSpec = DX7_ALGORITHMS[((patch.alg || 5) - 1 + 32) % 32];
+      const modBright = 1 + ((typeof globalModWheel === "number" ? globalModWheel : 0) * 0.85) + (meta && meta.accent ? 0.35 : 0);
+
+      const opOscs = {};
+      const allSrcs = [];
+      let maxStopDur = effAtt + effDec + 0.14;
+
+      for (let i = 1; i <= 6; i++) {
+        const opSpec = (patch.ops && patch.ops[i - 1]) ? patch.ops[i - 1] : { ratio: 1, level: 0.7, dec: 1.0, detune: 0 };
+        const osc = audioCtx.createOscillator();
+        osc.type = "sine";
+        const ratio = Math.max(0.25, opSpec.ratio || 1.0);
+        const targetF = freq * ratio;
+        if (glideSec > 0 && prevFreq !== freq) {
+          osc.frequency.setValueAtTime(prevFreq * ratio, t);
+          osc.frequency.exponentialRampToValueAtTime(targetF, t + glideSec);
+        } else {
+          osc.frequency.setValueAtTime(targetF, t);
+        }
+        const det = (opSpec.detune || 0) + (typeof globalPitchBendCents === "number" ? globalPitchBendCents : 0);
+        if (det !== 0) osc.detune.setValueAtTime(det, t);
+        opOscs[i] = { osc, spec: opSpec, targetF };
+        allSrcs.push(osc);
+      }
+
+      // Connect DX7 modulator edges (srcOp -> dstOp.frequency)
+      algSpec.edges.forEach(([srcNum, dstNum]) => {
+        const srcObj = opOscs[srcNum];
+        const dstObj = opOscs[dstNum];
+        if (!srcObj || !dstObj) return;
+        const modGain = audioCtx.createGain();
+        const peakDev = dstObj.targetF * (srcObj.spec.level || 0.5) * 1.65 * (patch.modDepth || 1.0) * vel * modBright;
+        const mDec = Math.max(0.08, (srcObj.spec.dec || 0.6) * (typeof envDecayMult === "number" ? envDecayMult : 1.0));
+        modGain.gain.setValueAtTime(Math.max(1.0, peakDev), t);
+        modGain.gain.exponentialRampToValueAtTime(Math.max(0.5, peakDev * 0.04), t + mDec);
+        srcObj.osc.connect(modGain);
+        modGain.connect(dstObj.osc.frequency);
+      });
+
+      // Operator Feedback loop on designated fbOp
+      const fbLevel = (patch.feedback || 0) / 7;
+      if (fbLevel > 0.05 && opOscs[algSpec.fbOp]) {
+        const fbNode = opOscs[algSpec.fbOp];
+        const fbGain = audioCtx.createGain();
+        fbGain.gain.setValueAtTime(fbNode.targetF * fbLevel * 0.32, t);
+        fbNode.osc.connect(fbGain);
+        fbGain.connect(fbNode.osc.frequency);
+      }
+
+      // Carrier Summing Amp + Optional Per-Step Cutoff/Pan P-Locks
+      const carrierGain = audioCtx.createGain();
+      carrierGain.gain.setValueAtTime(0.0001, t);
+      const peakAmp = (vel * 0.36) / Math.max(1, Math.sqrt(algSpec.carriers.length));
+      carrierGain.gain.linearRampToValueAtTime(peakAmp, t + Math.max(0.002, effAtt));
+      carrierGain.gain.exponentialRampToValueAtTime(0.001, t + effAtt + effDec);
+
+      let outDest = getTrackBusNode(0);
+      if (meta && meta.panLock !== null && meta.panLock !== undefined && audioCtx.createStereoPanner) {
+        const pLock = audioCtx.createStereoPanner();
+        pLock.pan.setValueAtTime(Math.max(-1, Math.min(1, meta.panLock)), t);
+        pLock.connect(outDest);
+        outDest = pLock;
+      }
+      if (meta && meta.cutoffLock !== null && meta.cutoffLock !== undefined) {
+        const cFilt = audioCtx.createBiquadFilter();
+        cFilt.type = "lowpass";
+        const hz = 180 * Math.pow(80, Math.max(0, Math.min(100, meta.cutoffLock)) / 100);
+        cFilt.frequency.setValueAtTime(Math.min(16000, hz), t);
+        cFilt.Q.setValueAtTime(2.8, t);
+        cFilt.connect(outDest);
+        outDest = cFilt;
+      }
+
+      algSpec.carriers.forEach(cNum => {
+        const cObj = opOscs[cNum];
+        if (!cObj) return;
+        const cIndGain = audioCtx.createGain();
+        cIndGain.gain.setValueAtTime(Math.max(0.2, cObj.spec.level || 0.85), t);
+        cObj.osc.connect(cIndGain);
+        cIndGain.connect(carrierGain);
+      });
+      carrierGain.connect(outDest);
+
+      allSrcs.forEach(o => { o.start(t); o.stop(t + maxStopDur); });
+
+      const voice = new ActiveVoice({
+        note: voiceNote,
+        src: allSrcs,
+        gain: carrierGain,
+        stopTime: t + maxStopDur,
+        releaseTime: 0.12
+      });
+      registerActiveVoice(voiceNote, voice, maxStopDur + 0.1, "fm");
+    }
+
+    // TB-303 Acid Bass with Sub-Oscillator & Resonant Envelope (with Slide + Accent)
+    function play303Bass(midiNote, velocity = 1.0, trackKeyNote = null, meta = null) {
+      if (!audioCtx) initAudio();
+      const freq = 440 * Math.pow(2, (midiNote - 69) / 12);
+      const t = getAudioTime();
+      const voiceNote = (trackKeyNote !== null) ? trackKeyNote : midiNote;
+      const prevFreq = (lastGlideFreqByTrack[1] > 0) ? lastGlideFreqByTrack[1] : freq;
+      const doSlide = Boolean(meta && meta.slide) || (typeof globalGlideMs === "number" && globalGlideMs > 0);
+      const slideSec = (meta && meta.slide) ? 0.065 : (typeof globalGlideMs === "number" ? globalGlideMs / 1000 : 0);
+      lastGlideFreqByTrack[1] = freq;
+
+      // Sawtooth core
+      const osc = audioCtx.createOscillator();
+      osc.type = "sawtooth";
+      if (doSlide && slideSec > 0 && prevFreq !== freq) {
+        osc.frequency.setValueAtTime(prevFreq, t);
+        osc.frequency.exponentialRampToValueAtTime(freq, t + slideSec);
+      } else {
+        osc.frequency.setValueAtTime(freq, t);
+      }
+
+      // Warm Sub-Oscillator (-1 octave sine)
+      const sub = audioCtx.createOscillator();
+      sub.type = "sine";
+      if (doSlide && slideSec > 0 && prevFreq !== freq) {
+        sub.frequency.setValueAtTime(prevFreq * 0.5, t);
+        sub.frequency.exponentialRampToValueAtTime(freq * 0.5, t + slideSec);
+      } else {
+        sub.frequency.setValueAtTime(freq * 0.5, t);
+      }
+      if (typeof globalPitchBendCents === "number" && globalPitchBendCents !== 0) {
+        osc.detune.setValueAtTime(globalPitchBendCents, t);
+        sub.detune.setValueAtTime(globalPitchBendCents, t);
+      }
+
+      const isAccent = Boolean(meta && meta.accent) || velocity >= 0.95;
+      const modBoost = (typeof globalModWheel === "number" ? globalModWheel : 0);
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.Q.setValueAtTime(Math.min(18, (isAccent ? 12.2 : 7.5) + modBoost * 4.5), t); // Responsive 303 accent resonance
+
+      const decMult = (typeof envDecayMult === "number" ? envDecayMult : 1.0);
+      const attMult = (typeof envAttackMult === "number" ? envAttackMult : 1.0);
+      const effAtt = Math.max(0.001, 0.002 * attMult);
+      const effVel = Math.min(1.5, velocity * (meta && meta.accent ? 1.25 : 1.0));
+
+      const lockCutHz = (meta && meta.cutoffLock !== null && meta.cutoffLock !== undefined)
+        ? 180 * Math.pow(65, Math.max(0, Math.min(100, meta.cutoffLock)) / 100)
+        : null;
+      const startCutoff = lockCutHz !== null
+        ? Math.min(9500, lockCutHz)
+        : Math.min(7800, (freq * (isAccent ? 8.5 : 4.8)) + (effVel * (isAccent ? 3200 : 1800)) + (modBoost * 2400));
+      const filterDecay = (isAccent ? 0.34 : 0.22) * decMult;
+      const ampDecay = (isAccent ? 0.42 : 0.28) * decMult;
+      filter.frequency.setValueAtTime(startCutoff, t);
+      filter.frequency.exponentialRampToValueAtTime(Math.max(105, freq * 1.4), t + filterDecay);
+
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.linearRampToValueAtTime(effVel * 0.42, t + effAtt);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + effAtt + ampDecay);
+
+      const subGain = audioCtx.createGain();
+      subGain.gain.setValueAtTime(0.0001, t);
+      subGain.gain.linearRampToValueAtTime(effVel * 0.28, t + effAtt);
+      subGain.gain.exponentialRampToValueAtTime(0.001, t + effAtt + ampDecay);
+
+      let outBus = getTrackBusNode(1);
+      if (meta && meta.panLock !== null && meta.panLock !== undefined && audioCtx.createStereoPanner) {
+        const pLock = audioCtx.createStereoPanner();
+        pLock.pan.setValueAtTime(Math.max(-1, Math.min(1, meta.panLock)), t);
+        pLock.connect(outBus);
+        outBus = pLock;
+      }
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(outBus);
+
+      sub.connect(subGain);
+      subGain.connect(outBus);
+
+      const stopDur = effAtt + Math.max(0.45 * decMult, ampDecay + 0.08);
+      osc.start(t); sub.start(t);
+      osc.stop(t + stopDur); sub.stop(t + stopDur);
+
+      const voice = new ActiveVoice({
+        note: voiceNote,
+        src: [osc, sub],
+        gain: [gain, subGain],
+        filter,
+        stopTime: t + stopDur,
+        releaseTime: 0.08
+      });
+      registerActiveVoice(voiceNote, voice, stopDur + 0.05, "bass303");
+    }
+
+    // ==========================================
+    // ROLAND TR-808 ANALOG SYNTHESIS ENGINE
+    // Complete 11-Instrument Authentic Circuit Emulation
+    // ==========================================
+    let noiseBuffer808 = null;
+    function get808NoiseBuffer() {
+      if (noiseBuffer808) return noiseBuffer808;
+      if (!audioCtx) return null;
+      const len = Math.floor(audioCtx.sampleRate * 2.0);
+      noiseBuffer808 = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+      const data = noiseBuffer808.getChannelData(0);
+      for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+      return noiseBuffer808;
+    }
+
+    // 808 Metallic 6-Oscillator Cluster (Schmitt-Trigger Inverter Matrix)
+    // Tuned frequencies from Roland TR-808 service manual:
+    // 205.3 Hz, 304.4 Hz, 369.6 Hz, 422.3 Hz, 538.7 Hz, 800.0 Hz
+    function create808MetalCluster(t, duration) {
+      const freqs = [205.3, 304.4, 369.6, 422.3, 538.7, 800.0];
+      const clusterGain = audioCtx.createGain();
+      clusterGain.gain.setValueAtTime(0.18, t);
+
+      freqs.forEach(f => {
+        const osc = audioCtx.createOscillator();
+        osc.type = "square";
+        osc.frequency.setValueAtTime(f, t);
+        osc.connect(clusterGain);
+        osc.start(t);
+        osc.stop(t + duration);
+      });
+      return clusterGain;
+    }
+
+    // Universal Mapper: MIDI notes, Instrument Strings, or Numbers -> 808 Type (1-11)
+    function resolve808DrumType(input) {
+      if (typeof input === "string") {
+        const s = input.toUpperCase();
+        if (s.includes("BD") || s.includes("KICK")) return 1;
+        if (s.includes("SD") || s.includes("SNARE")) return 2;
+        if (s.includes("CH") || s.includes("CLOSED")) return 3;
+        if (s.includes("OH") || s.includes("OPEN")) return 4;
+        if (s.includes("CP") || s.includes("CLAP")) return 5;
+        if (s.includes("CB") || s.includes("COWBELL")) return 6;
+        if (s.includes("LT") || s.includes("LOW TOM")) return 7;
+        if (s.includes("MT") || s.includes("MID TOM")) return 8;
+        if (s.includes("HT") || s.includes("HI TOM")) return 9;
+        if (s.includes("RS") || s.includes("RIM")) return 10;
+        if (s.includes("CY") || s.includes("CYMBAL")) return 11;
+      }
+
+      const n = parseInt(input);
+      if (isNaN(n)) return 1;
+
+      // Direct 1-11 enum
+      if (n >= 1 && n <= 11) return n;
+
+      // Standard General MIDI mapping (Channel 10 percussion standard)
+      if (n === 35 || n === 36) return 1;  // Bass Drum 1 & 2
+      if (n === 37) return 10;             // Side Stick / Rimshot
+      if (n === 38 || n === 40) return 2;  // Snare Drum 1 & 2
+      if (n === 39) return 5;              // Hand Clap
+      if (n === 41 || n === 43) return 7;  // Low Floor Tom / Low Tom
+      if (n === 42 || n === 44) return 3;  // Closed Hi-Hat / Pedal Hat
+      if (n === 45 || n === 47) return 8;  // Mid Tom / Low-Mid Tom
+      if (n === 46) return 4;              // Open Hi-Hat
+      if (n === 48 || n === 50) return 9;  // High-Mid Tom / High Tom
+      if (n === 49 || n === 57) return 11; // Crash Cymbal 1 & 2
+      if (n === 51 || n === 59) return 11; // Ride Cymbal 1 & 2
+      if (n === 56) return 6;              // Cowbell
+
+      // Octave chromatic keyboard mapping (Piano keys C through B)
+      const pitchClass = ((n % 12) + 12) % 12;
+      const chromaticMap = [
+        1,  // C:  808 Bass Drum (Sub Boom Kick)
+        10, // C#: 808 Rimshot
+        2,  // D:  808 Snare Drum
+        5,  // D#: 808 Hand Clap
+        7,  // E:  808 Low Tom
+        3,  // F:  808 Closed Hi-Hat
+        8,  // F#: 808 Mid Tom
+        4,  // G:  808 Open Hi-Hat
+        9,  // G#: 808 High Tom
+        11, // A:  808 Cymbal
+        6,  // A#: 808 Cowbell
+        3   // B:  808 Closed Hi-Hat
+      ];
+      return chromaticMap[pitchClass];
+    }
+
+    let active808OpenHatGain = null;
+    let active808KickOsc = null;
+    let active808KickGain = null;
+    let SaturationCurve808 = null;
+
+    function get808SaturationCurve() {
+      if (SaturationCurve808) return SaturationCurve808;
+      const samples = 2048;
+      const curve = new Float32Array(samples);
+      for (let i = 0; i < samples; i++) {
+        const x = (i * 2) / (samples - 1) - 1;
+        curve[i] = Math.tanh(1.5 * x);
+      }
+      SaturationCurve808 = curve;
+      return SaturationCurve808;
+    }
+
+    function play808Drum(typeInput, velocity = 1.0) {
+      if (!audioCtx) initAudio();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const t = getAudioTime();
+      const type = resolve808DrumType(typeInput);
+      const vel = Math.max(0.1, Math.min(1.5, velocity));
+
+      // 1: 808 BASS DRUM (Bridged-T Analog Sub Boom with Saturated Punch)
+      if (type === 1) {
+        triggerSidechainDuck(t);
+        if (active808KickGain) {
+          try {
+            active808KickGain.gain.cancelScheduledValues(t);
+            active808KickGain.gain.setValueAtTime(Math.max(0.0001, active808KickGain.gain.value), t);
+            active808KickGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.008);
+          } catch (e) {}
+        }
+        if (active808KickOsc) {
+          try { active808KickOsc.stop(t + 0.01); } catch (e) {}
+        }
+
+        const osc = audioCtx.createOscillator();
+        const shaper = audioCtx.createWaveShaper();
+        shaper.curve = get808SaturationCurve();
+        const gain = audioCtx.createGain();
+
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(138, t);
+        osc.frequency.exponentialRampToValueAtTime(58, t + 0.018);
+        osc.frequency.exponentialRampToValueAtTime(46.2, t + 0.45);
+
+        // Crisp 4ms beater transient click
+        const click = audioCtx.createOscillator();
+        const clickGain = audioCtx.createGain();
+        click.type = "triangle";
+        click.frequency.setValueAtTime(950, t);
+        click.frequency.exponentialRampToValueAtTime(140, t + 0.005);
+        clickGain.gain.setValueAtTime(vel * 0.28, t);
+        clickGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.006);
+        click.connect(clickGain);
+        clickGain.connect(getTrackBusNode(2));
+        click.start(t); click.stop(t + 0.01);
+
+        // Saturated 808 sub tail
+        gain.gain.setValueAtTime(0.001, t);
+        gain.gain.linearRampToValueAtTime(vel * 0.92, t + 0.002);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.62);
+
+        osc.connect(shaper);
+        shaper.connect(gain);
+        gain.connect(getTrackBusNode(2));
+        osc.start(t); osc.stop(t + 0.66);
+
+        active808KickOsc = osc;
+        active808KickGain = gain;
+
+      // 2: 808 SNARE DRUM (Tight Dual Bridged-T Shell + Crisp High-Passed Wires)
+      } else if (type === 2) {
+        const t1 = audioCtx.createOscillator();
+        const t2 = audioCtx.createOscillator();
+        const toneGain = audioCtx.createGain();
+        t1.frequency.setValueAtTime(210, t);
+        t1.frequency.exponentialRampToValueAtTime(180, t + 0.012);
+        t2.frequency.setValueAtTime(355, t);
+        t2.frequency.exponentialRampToValueAtTime(330, t + 0.012);
+
+        toneGain.gain.setValueAtTime(vel * 0.38, t);
+        toneGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.10);
+        t1.connect(toneGain); t2.connect(toneGain);
+        toneGain.connect(getTrackBusNode(2));
+        t1.start(t); t2.start(t);
+        t1.stop(t + 0.12); t2.stop(t + 0.12);
+
+        // Crisp high-passed snare wires with upper presence peak
+        const noiseBuf = get808NoiseBuffer();
+        if (noiseBuf) {
+          const noise = audioCtx.createBufferSource();
+          noise.buffer = noiseBuf;
+          const hp = audioCtx.createBiquadFilter();
+          hp.type = "highpass";
+          hp.frequency.setValueAtTime(2400, t);
+
+          const peak = audioCtx.createBiquadFilter();
+          peak.type = "peaking";
+          peak.frequency.setValueAtTime(4500, t);
+          peak.Q.setValueAtTime(1.2, t);
+          peak.gain.setValueAtTime(3.0, t);
+
+          const noiseGain = audioCtx.createGain();
+          noiseGain.gain.setValueAtTime(vel * 0.48, t);
+          noiseGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.17);
+
+          noise.connect(hp);
+          hp.connect(peak);
+          peak.connect(noiseGain);
+          noiseGain.connect(getTrackBusNode(2));
+          noise.start(t);
+          noise.stop(t + 0.20);
+        }
+
+      // 3: 808 CLOSED HI-HAT (CH — Chokes Active Open Hi-Hat)
+      } else if (type === 3) {
+        if (active808OpenHatGain) {
+          try {
+            if (active808OpenHatGain.gain.cancelAndHoldAtTime) {
+              active808OpenHatGain.gain.cancelAndHoldAtTime(t);
+            } else {
+              active808OpenHatGain.gain.cancelScheduledValues(t);
+              active808OpenHatGain.gain.setValueAtTime(Math.max(0.0001, active808OpenHatGain.gain.value), t);
+            }
+            active808OpenHatGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.010);
+          } catch (e) {}
+          active808OpenHatGain = null;
+        }
+
+        const cluster = create808MetalCluster(t, 0.075);
+        const bp = audioCtx.createBiquadFilter();
+        bp.type = "bandpass";
+        bp.frequency.setValueAtTime(7000, t);
+        bp.Q.setValueAtTime(0.7, t);
+
+        const hp = audioCtx.createBiquadFilter();
+        hp.type = "highpass";
+        hp.frequency.setValueAtTime(5400, t);
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.005, t);
+        gain.gain.linearRampToValueAtTime(vel * 1.45, t + 0.0015);
+        gain.gain.exponentialRampToValueAtTime(vel * 0.28, t + 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.068);
+
+        cluster.connect(bp);
+        bp.connect(hp);
+        hp.connect(gain);
+        gain.connect(getTrackBusNode(2));
+
+      // 4: 808 OPEN HI-HAT (OH — Gate-Hold + RC Decay, Registered for CH Choke)
+      } else if (type === 4) {
+        if (active808OpenHatGain) {
+          try {
+            if (active808OpenHatGain.gain.cancelAndHoldAtTime) {
+              active808OpenHatGain.gain.cancelAndHoldAtTime(t);
+            } else {
+              active808OpenHatGain.gain.cancelScheduledValues(t);
+              active808OpenHatGain.gain.setValueAtTime(Math.max(0.0001, active808OpenHatGain.gain.value), t);
+            }
+            active808OpenHatGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.010);
+          } catch (e) {}
+        }
+
+        const cluster = create808MetalCluster(t, 0.56);
+        const bp = audioCtx.createBiquadFilter();
+        bp.type = "bandpass";
+        bp.frequency.setValueAtTime(7000, t);
+        bp.Q.setValueAtTime(0.65, t);
+
+        const hp = audioCtx.createBiquadFilter();
+        hp.type = "highpass";
+        hp.frequency.setValueAtTime(4800, t);
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.005, t);
+        gain.gain.linearRampToValueAtTime(vel * 1.35, t + 0.0018);
+        gain.gain.linearRampToValueAtTime(vel * 0.92, t + 0.085);
+        gain.gain.setTargetAtTime(0.0001, t + 0.085, 0.085);
+
+        cluster.connect(bp);
+        bp.connect(hp);
+        hp.connect(gain);
+        gain.connect(getTrackBusNode(2));
+        active808OpenHatGain = gain;
+
+      // 5: 808 HAND CLAP (CP — Discrete 3-Strike Micro-Flam + Reverberant Tail)
+      } else if (type === 5) {
+        const noiseBuf = get808NoiseBuffer();
+        if (noiseBuf) {
+          const bp = audioCtx.createBiquadFilter();
+          bp.type = "bandpass";
+          bp.frequency.setValueAtTime(1350, t);
+          bp.Q.setValueAtTime(1.2, t);
+
+          const peak = audioCtx.createBiquadFilter();
+          peak.type = "peaking";
+          peak.frequency.setValueAtTime(2800, t);
+          peak.Q.setValueAtTime(1.1, t);
+          peak.gain.setValueAtTime(3.0, t);
+
+          const noise = audioCtx.createBufferSource();
+          noise.buffer = noiseBuf;
+          noise.connect(bp);
+          bp.connect(peak);
+
+          // 3 distinct crisp micro-flam strikes
+          [0, 0.011, 0.022].forEach((offset, idx) => {
+            const burstGain = audioCtx.createGain();
+            const burstLevel = vel * (idx === 2 ? 0.46 : 0.38);
+            burstGain.gain.setValueAtTime(0.0001, t + offset);
+            burstGain.gain.linearRampToValueAtTime(burstLevel, t + offset + 0.001);
+            burstGain.gain.exponentialRampToValueAtTime(0.0001, t + offset + 0.009);
+            peak.connect(burstGain);
+            burstGain.connect(getTrackBusNode(2));
+          });
+
+          // Diffused reverberant tail
+          const tailGain = audioCtx.createGain();
+          tailGain.gain.setValueAtTime(0.0001, t + 0.028);
+          tailGain.gain.linearRampToValueAtTime(vel * 0.34, t + 0.032);
+          tailGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+          peak.connect(tailGain);
+          tailGain.connect(getTrackBusNode(2));
+
+          noise.start(t);
+          noise.stop(t + 0.28);
+        }
+
+      // 6: 808 COWBELL (CB — 540/800 Hz Dual Square Two-Stage Decay)
+      } else if (type === 6) {
+        const osc1 = audioCtx.createOscillator();
+        const osc2 = audioCtx.createOscillator();
+        osc1.type = "square";
+        osc2.type = "square";
+        osc1.frequency.setValueAtTime(540, t);
+        osc2.frequency.setValueAtTime(800, t);
+
+        const bp = audioCtx.createBiquadFilter();
+        bp.type = "bandpass";
+        bp.frequency.setValueAtTime(720, t);
+        bp.Q.setValueAtTime(2.4, t);
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(vel * 0.65, t);
+        gain.gain.exponentialRampToValueAtTime(vel * 0.28, t + 0.018);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.24);
+
+        osc1.connect(bp);
+        osc2.connect(bp);
+        bp.connect(gain);
+        gain.connect(getTrackBusNode(2));
+
+        osc1.start(t); osc2.start(t);
+        osc1.stop(t + 0.27); osc2.stop(t + 0.27);
+
+      // 7: 808 LOW TOM (LT)
+      } else if (type === 7) {
+        const osc = audioCtx.createOscillator();
+        const shaper = audioCtx.createWaveShaper();
+        shaper.curve = get808SaturationCurve();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(135, t);
+        osc.frequency.exponentialRampToValueAtTime(72, t + 0.014);
+        osc.frequency.exponentialRampToValueAtTime(64, t + 0.28);
+
+        gain.gain.setValueAtTime(vel * 0.72, t);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.36);
+
+        osc.connect(shaper);
+        shaper.connect(gain);
+        gain.connect(getTrackBusNode(2));
+        osc.start(t); osc.stop(t + 0.40);
+
+      // 8: 808 MID TOM (MT)
+      } else if (type === 8) {
+        const osc = audioCtx.createOscillator();
+        const shaper = audioCtx.createWaveShaper();
+        shaper.curve = get808SaturationCurve();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(195, t);
+        osc.frequency.exponentialRampToValueAtTime(112, t + 0.014);
+        osc.frequency.exponentialRampToValueAtTime(98, t + 0.24);
+
+        gain.gain.setValueAtTime(vel * 0.68, t);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.32);
+
+        osc.connect(shaper);
+        shaper.connect(gain);
+        gain.connect(getTrackBusNode(2));
+        osc.start(t); osc.stop(t + 0.36);
+
+      // 9: 808 HIGH TOM (HT)
+      } else if (type === 9) {
+        const osc = audioCtx.createOscillator();
+        const shaper = audioCtx.createWaveShaper();
+        shaper.curve = get808SaturationCurve();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(275, t);
+        osc.frequency.exponentialRampToValueAtTime(165, t + 0.014);
+        osc.frequency.exponentialRampToValueAtTime(145, t + 0.20);
+
+        gain.gain.setValueAtTime(vel * 0.65, t);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+
+        osc.connect(shaper);
+        shaper.connect(gain);
+        gain.connect(getTrackBusNode(2));
+        osc.start(t); osc.stop(t + 0.32);
+
+      // 10: 808 RIM SHOT (RS — Dual Bridged-T 480 + 1680 Hz Click)
+      } else if (type === 10) {
+        const osc1 = audioCtx.createOscillator();
+        const osc2 = audioCtx.createOscillator();
+        const osc2Gain = audioCtx.createGain();
+        osc1.type = "triangle";
+        osc2.type = "square";
+        osc1.frequency.setValueAtTime(480, t);
+        osc2.frequency.setValueAtTime(1680, t);
+        osc2Gain.gain.setValueAtTime(0.55, t);
+
+        const bp = audioCtx.createBiquadFilter();
+        bp.type = "bandpass";
+        bp.frequency.setValueAtTime(1550, t);
+        bp.Q.setValueAtTime(2.0, t);
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(vel * 1.35, t);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.032);
+
+        osc1.connect(bp);
+        osc2.connect(osc2Gain);
+        osc2Gain.connect(bp);
+        bp.connect(gain);
+        gain.connect(getTrackBusNode(2));
+        osc1.start(t); osc2.start(t);
+        osc1.stop(t + 0.045); osc2.stop(t + 0.045);
+
+      // 11: 808 CYMBAL (CY)
+      } else if (type === 11) {
+        const cluster = create808MetalCluster(t, 1.35);
+        const bp = audioCtx.createBiquadFilter();
+        bp.type = "bandpass";
+        bp.frequency.setValueAtTime(6600, t);
+        bp.Q.setValueAtTime(0.60, t);
+
+        const hp = audioCtx.createBiquadFilter();
+        hp.type = "highpass";
+        hp.frequency.setValueAtTime(4600, t);
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.005, t);
+        gain.gain.linearRampToValueAtTime(vel * 1.25, t + 0.002);
+        gain.gain.setTargetAtTime(0.0001, t + 0.06, 0.26);
+
+        cluster.connect(bp);
+        bp.connect(hp);
+        hp.connect(gain);
+        gain.connect(getTrackBusNode(2));
+      }
+    }
+
+    // ==========================================
+    // EXPANDED CUSTOM FIRMWARE DSP ENGINES (TRK 5-8)
+    // Track 4: VA Poly (OberVave/FM-106), Track 5: TR-909,
+    // Track 6: C64 SID 6581, Track 7: Breakbeat Slicer & Granular Cloud
+    // ==========================================
