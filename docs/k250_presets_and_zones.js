@@ -5371,7 +5371,7 @@ let activeDx7PatchIdx = 0;
       } else if (type === "horns") {
         const pName = (p && p.name) || "";
         const isTuba = pName.includes("TUBA") || p.id === 112 || p.id === 133;
-        const isHarmon = pName.includes("HARMON") || pName.includes("MILES") || p.id === 108;
+        const isHarmon = pName.includes("HARMON") || pName.includes("MILES") || pName.includes("CUP MUTED") || p.id === 108 || p.id === 109;
         const isStab = pName.includes("STAB") || pName.includes("TIGHT") || pName.includes("HIT") || p.id === 115 || p.id === 116 || p.id === 118 || p.id === 130;
         const isTrombone = !isTuba && (pName.includes("TROMBONE") || pName.includes("EUPHONIUM") || pName.includes("BRASS SECTION") || p.id === 110 || p.id === 111 || p.id === 128);
         const isJazzTpt = !isTrombone && (pName.includes("CUP") || pName.includes("FLUGEL") || pName.includes("JAZZ") || p.id === 109 || p.id === 113);
@@ -5409,7 +5409,7 @@ let activeDx7PatchIdx = 0;
       // 4. Woodwinds & Reeds (Real Multi-Sampled Flutes, Oboes, Clarinets, Bassoons, Saxophones)
       } else if (type === "winds") {
         const pName = (p && p.name) || "";
-        const isSax = pName.includes("SAX") || p.id >= 150;
+        const isSax = pName.includes("SAX") || (p.id >= 150 && p.id <= 154);
         if (isSax) {
           const sampleInfo = findClosestSample(MS_SAX, effMidi, "weresax_d3");
           const ratio = Math.pow(2, (effMidi - sampleInfo.baseNote) / 12);
@@ -5423,9 +5423,9 @@ let activeDx7PatchIdx = 0;
         } else {
           let zoneTable = MS_FLUTE;
           let fallback = "vsco_flt_c4";
-          if (pName.includes("PICCOLO") || p.id === 138 || p.id === 149) {
+          if (pName.includes("PICCOLO") || pName.includes("WHISTLE") || p.id === 138 || p.id === 149 || p.id === 157) {
             zoneTable = MS_PICCOLO; fallback = "vsco_picc_c5";
-          } else if (pName.includes("OBOE") || pName.includes("ENGLISH")) {
+          } else if (pName.includes("OBOE") || pName.includes("ENGLISH") || pName.includes("BAGPIPE")) {
             zoneTable = MS_OBOE; fallback = "vsco_obo_d4";
           } else if (pName.includes("CLARINET")) {
             zoneTable = MS_CLARINET; fallback = "vsco_clar_d4";
@@ -5513,11 +5513,12 @@ let activeDx7PatchIdx = 0;
       } else if (type === "guitar") {
         let gTable = MS_GTR_FULL;
         const isJazzGtr = p.name.includes("JAZZ") || p.id === 189;
-        const isAcGtr = p.name.includes("NYLON") || p.name.includes("CLASSICAL") || p.name.includes("ACOUSTIC") || p.name.includes("12-STRING") || p.id === 185 || p.id === 186 || p.id === 187 || p.id === 188 || p.id === 193;
+        const isAcGtr = p.id === 185 || p.id === 186 || p.id === 187 || p.name.includes("NYLON") || p.name.includes("CLASSICAL");
         const isDist = p.name.includes("OVERDRIVEN") || p.name.includes("DISTORTED") || p.id === 191 || p.id === 192;
         if (isJazzGtr && typeof MS_GTR_JAZZ !== "undefined") gTable = MS_GTR_JAZZ;
         else if (isAcGtr && typeof MS_GTR_ACOUSTIC !== "undefined") gTable = MS_GTR_ACOUSTIC;
-        else if ((isDist || p.name.includes("ROCK") || p.name.includes("STRAT")) && typeof MS_GTR_ELECTRIC !== "undefined") gTable = MS_GTR_ELECTRIC;
+        else if ((p.name.includes("STRAT") || p.id === 188 || p.id === 193) && typeof MS_GTR_FULL !== "undefined") gTable = MS_GTR_FULL;
+        else if ((isDist || p.name.includes("ROCK")) && typeof MS_GTR_ELECTRIC !== "undefined") gTable = MS_GTR_ELECTRIC;
         else if (p.name.includes("HARM") || p.id === 194) gTable = MS_GTR_HARM;
         else if (p.name.includes("MUTED") || p.id === 190) gTable = MS_GTR_MUTE;
 
@@ -5576,6 +5577,20 @@ let activeDx7PatchIdx = 0;
             detune: (p.det || 0) + (sampleInfo.tune || 0),
             canLoop: false, naturalSustain: true, releaseTime: 0.26
           });
+        } else if ((p.id >= 196 && p.id <= 200) || p.id === 206) {
+          const bMidi = effMidi + 12;
+          const sampleInfo = findClosestSample(MS_GTR_ELECTRIC, bMidi, "bg_el_e3");
+          const ratio = Math.pow(2, (effMidi - sampleInfo.baseNote) / 12);
+          const isSlap = pName.includes("SLAP") || pName.includes("POP");
+          const isFretless = pName.includes("FRETLESS");
+          playSamplerVoice({
+            key: sampleInfo.key, midiNote, pitchRatio: ratio, velocity: velocity * 1.15,
+            attack: isFretless ? 0.018 : 0.002, decay: Math.max(p.dec || 2.8, 2.4),
+            cutoff: isSlap ? 7200 : (isFretless ? 3200 : 4200), res: isSlap ? 2.4 : (isFretless ? 2.0 : 1.0),
+            detune: (p.det || 0) + (sampleInfo.tune || 0),
+            vibratoRate: isFretless ? 4.8 : 0, vibratoDepth: isFretless ? 7 : 0,
+            canLoop: false, naturalSustain: true, releaseTime: 0.24
+          });
         } else {
           playAuthenticBassVoice(midiNote, effMidi, velocity, p);
         }
@@ -5596,10 +5611,10 @@ let activeDx7PatchIdx = 0;
         const pName = (p && p.name) || "";
         let mTbl = null;
         if ((p.id === 213 || pName.includes("VIBRAPHONE")) && hasK250Sample("sso_vibe_c4")) mTbl = MS_VIBES;
-        else if ((p.id === 212 || pName.includes("MARIMBA")) && typeof MS_MARIMBA !== "undefined" && MS_MARIMBA.length && hasK250Sample(MS_MARIMBA[0].key)) mTbl = MS_MARIMBA;
+        else if ((p.id === 212 || p.id === 217 || pName.includes("MARIMBA") || pName.includes("BALAFON")) && typeof MS_MARIMBA !== "undefined" && MS_MARIMBA.length && hasK250Sample(MS_MARIMBA[0].key)) mTbl = MS_MARIMBA;
         else if ((p.id === 16 || p.id === 18 || pName.includes("CELESTA")) && typeof MS_CELESTA !== "undefined" && MS_CELESTA.length && hasK250Sample(MS_CELESTA[0].key)) mTbl = MS_CELESTA;
         else if ((p.id === 214 || pName.includes("XYLOPHONE")) && typeof MS_XYLO !== "undefined" && MS_XYLO.length && hasK250Sample(MS_XYLO[0].key)) mTbl = MS_XYLO;
-        else if ((p.id === 215 || pName.includes("GLOCKENSPIEL")) && typeof MS_GLOCK !== "undefined" && MS_GLOCK.length && hasK250Sample(MS_GLOCK[0].key)) mTbl = MS_GLOCK;
+        else if ((p.id === 215 || p.id === 216 || pName.includes("GLOCKENSPIEL") || pName.includes("CROTALES")) && typeof MS_GLOCK !== "undefined" && MS_GLOCK.length && hasK250Sample(MS_GLOCK[0].key)) mTbl = MS_GLOCK;
         if (mTbl) {
           const sampleInfo = findClosestSample(mTbl, effMidi, mTbl[0].key);
           const ratio = Math.pow(2, (effMidi - sampleInfo.baseNote) / 12);

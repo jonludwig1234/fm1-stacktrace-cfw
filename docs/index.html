@@ -405,7 +405,7 @@
     .drawer, .drawer.env-mode { grid-template-columns: 1fr; }
   }
 </style>
-  <script src="k250_presets_and_zones.js?v=3"></script>
+  <script src="k250_presets_and_zones.js?v=4"></script>
 </head>
 <body>
 
@@ -1046,7 +1046,11 @@ function triggerK250Buffer(buf, opts, ctx) {
 
   const src = audioCtx.createBufferSource();
   src.buffer = buf;
-  src.playbackRate.setValueAtTime(Math.max(0.125, Math.min(8, opts.pitchRatio || 1)), now);
+  // Keep every instrument musical & audible from any keyboard octave (preserve exact pitch class)
+  let pr = opts.pitchRatio || 1;
+  while (pr > 3.5) pr *= 0.5;
+  while (pr < 0.28) pr *= 2.0;
+  src.playbackRate.setValueAtTime(pr, now);
   const detuneCents = (opts.detune || 0) + ((m[3] / 100) * 28);
   src.detune.setValueAtTime(detuneCents, now);
   if (opts.canLoop && buf.duration > 0.65) {
@@ -1116,7 +1120,15 @@ function triggerK250Buffer(buf, opts, ctx) {
   } else {
     src.connect(filter);
   }
-  filter.connect(gain);
+  if (opts.rockDistFx) {
+    const dist = audioCtx.createWaveShaper();
+    dist.curve = makeDriveCurve(72, 0);
+    dist.oversample = '2x';
+    filter.connect(dist);
+    dist.connect(gain);
+  } else {
+    filter.connect(gain);
+  }
   gain.connect(masterGain);
   src.start(now);
 

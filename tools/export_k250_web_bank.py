@@ -85,6 +85,52 @@ def replace_decoded_buffers(code_str):
 
 zones_and_engines = replace_decoded_buffers(zones_and_engines)
 
+# Patch instrument routing bugs discovered during full 256-preset ROM audit:
+# 1. Woodwinds 155-160 (Clarinet/Flute, Oboe/Eng Horn, Tin Whistle, Quena, Bagpipes, Ocarina)
+#    were misrouted to Saxophone because of `|| p.id >= 150`.
+zones_and_engines = zones_and_engines.replace(
+    'const isSax = pName.includes("SAX") || p.id >= 150;',
+    'const isSax = pName.includes("SAX") || (p.id >= 150 && p.id <= 154);'
+)
+zones_and_engines = zones_and_engines.replace(
+    'if (pName.includes("PICCOLO") || p.id === 138 || p.id === 149) {',
+    'if (pName.includes("PICCOLO") || pName.includes("WHISTLE") || p.id === 138 || p.id === 149 || p.id === 157) {'
+)
+zones_and_engines = zones_and_engines.replace(
+    '} else if (pName.includes("OBOE") || pName.includes("ENGLISH")) {',
+    '} else if (pName.includes("OBOE") || pName.includes("ENGLISH") || pName.includes("BAGPIPE")) {'
+)
+# 2. Guitars: 188 (Clean Strat) & 193 (12-String Rickenbacker) were misrouted to Acoustic Guitar
+#    instead of real sampled Electric Guitar (emily_gtr_* / MS_GTR_FULL), and 194 to MS_GTR_HARM (emily_soft_*).
+zones_and_engines = zones_and_engines.replace(
+    'const isAcGtr = p.name.includes("NYLON") || p.name.includes("CLASSICAL") || p.name.includes("ACOUSTIC") || p.name.includes("12-STRING") || p.id === 185 || p.id === 186 || p.id === 187 || p.id === 188 || p.id === 193;',
+    'const isAcGtr = p.id === 185 || p.id === 186 || p.id === 187 || p.name.includes("NYLON") || p.name.includes("CLASSICAL");'
+)
+zones_and_engines = zones_and_engines.replace(
+    'else if ((isDist || p.name.includes("ROCK") || p.name.includes("STRAT")) && typeof MS_GTR_ELECTRIC !== "undefined") gTable = MS_GTR_ELECTRIC;',
+    'else if ((p.name.includes("STRAT") || p.id === 188 || p.id === 193) && typeof MS_GTR_FULL !== "undefined") gTable = MS_GTR_FULL;\n        else if ((isDist || p.name.includes("ROCK")) && typeof MS_GTR_ELECTRIC !== "undefined") gTable = MS_GTR_ELECTRIC;'
+)
+# 3. Brass: 109 (Cup Muted Trumpet) uses real Harmon/Muted Trumpet multi-samples (MS_TRUMPET_HARMON).
+zones_and_engines = zones_and_engines.replace(
+    'const isHarmon = pName.includes("HARMON") || pName.includes("MILES") || p.id === 108;',
+    'const isHarmon = pName.includes("HARMON") || pName.includes("MILES") || pName.includes("CUP MUTED") || p.id === 108 || p.id === 109;'
+)
+# 4. Electric Basses (196-200, 206): use real sampled electric bass (MS_GTR_ELECTRIC pitched -1 oct)
+#    instead of pure oscillator fallback.
+zones_and_engines = zones_and_engines.replace(
+    '        } else {\n          playAuthenticBassVoice(midiNote, effMidi, velocity, p);\n        }',
+    '        } else if ((p.id >= 196 && p.id <= 200) || p.id === 206) {\n          const bMidi = effMidi + 12;\n          const sampleInfo = findClosestSample(MS_GTR_ELECTRIC, bMidi, "bg_el_e3");\n          const ratio = Math.pow(2, (effMidi - sampleInfo.baseNote) / 12);\n          const isSlap = pName.includes("SLAP") || pName.includes("POP");\n          const isFretless = pName.includes("FRETLESS");\n          playSamplerVoice({\n            key: sampleInfo.key, midiNote, pitchRatio: ratio, velocity: velocity * 1.15,\n            attack: isFretless ? 0.018 : 0.002, decay: Math.max(p.dec || 2.8, 2.4),\n            cutoff: isSlap ? 7200 : (isFretless ? 3200 : 4200), res: isSlap ? 2.4 : (isFretless ? 2.0 : 1.0),\n            detune: (p.det || 0) + (sampleInfo.tune || 0),\n            vibratoRate: isFretless ? 4.8 : 0, vibratoDepth: isFretless ? 7 : 0,\n            canLoop: false, naturalSustain: true, releaseTime: 0.24\n          });\n        } else {\n          playAuthenticBassVoice(midiNote, effMidi, velocity, p);\n        }'
+)
+# 5. Mallets: 216 (Crotales) -> MS_GLOCK, 217 (Balafon) -> MS_MARIMBA, 231 (Marimba & Vibes Duet) -> both!
+zones_and_engines = zones_and_engines.replace(
+    'else if ((p.id === 212 || pName.includes("MARIMBA")) && typeof MS_MARIMBA !== "undefined" && MS_MARIMBA.length && hasK250Sample(MS_MARIMBA[0].key)) mTbl = MS_MARIMBA;',
+    'else if ((p.id === 212 || p.id === 217 || pName.includes("MARIMBA") || pName.includes("BALAFON")) && typeof MS_MARIMBA !== "undefined" && MS_MARIMBA.length && hasK250Sample(MS_MARIMBA[0].key)) mTbl = MS_MARIMBA;'
+)
+zones_and_engines = zones_and_engines.replace(
+    'else if ((p.id === 215 || pName.includes("GLOCKENSPIEL")) && typeof MS_GLOCK !== "undefined" && MS_GLOCK.length && hasK250Sample(MS_GLOCK[0].key)) mTbl = MS_GLOCK;',
+    'else if ((p.id === 215 || p.id === 216 || pName.includes("GLOCKENSPIEL") || pName.includes("CROTALES")) && typeof MS_GLOCK !== "undefined" && MS_GLOCK.length && hasK250Sample(MS_GLOCK[0].key)) mTbl = MS_GLOCK;'
+)
+
 out_js = os.path.join(DOCS_DIR, 'k250_presets_and_zones.js')
 with open(out_js, 'w', encoding='utf-8') as f:
     f.write('// Auto-extracted Kurzweil K250 256-Preset, 675-Sample Zone Tables & Voice Engines\n')
