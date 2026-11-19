@@ -405,7 +405,7 @@
     .drawer, .drawer.env-mode { grid-template-columns: 1fr; }
   }
 </style>
-  <script src="k250_presets_and_zones.js"></script>
+  <script src="k250_presets_and_zones.js?v=3"></script>
 </head>
 <body>
 
@@ -1058,10 +1058,13 @@ function triggerK250Buffer(buf, opts, ctx) {
   const filter = audioCtx.createBiquadFilter();
   filter.type = opts.filterType || 'lowpass';
   const baseCut = opts.cutoff || 14000;
-  const macroScale = 0.15 + Math.pow(m[0] / 100, 1.5) * 1.45;
-  const effCut = Math.max(180, Math.min(19000, baseCut * macroScale));
+  const pDef = PRESETS[t.presetIdx];
+  const defCutPct = (pDef && pDef.m) ? pDef.m[0] : 75;
+  const cutRatio = Math.pow(4, (m[0] - defCutPct) / 50);
+  const effCut = Math.max(180, Math.min(19500, baseCut * cutRatio));
   filter.frequency.setValueAtTime(effCut, now);
-  filter.Q.setValueAtTime(Math.max(0.5, (opts.res || 1.0) + (m[1] / 100) * 6), now);
+  const defResPct = (pDef && pDef.m) ? pDef.m[1] : 15;
+  filter.Q.setValueAtTime(Math.max(0.5, (opts.res || 1.0) + Math.max(0, (m[1] - defResPct) / 100) * 8), now);
 
   let lfoOsc = null;
   if (state.lfo.depth > 0 || (opts.vibratoDepth && opts.vibratoRate)) {
@@ -1075,7 +1078,7 @@ function triggerK250Buffer(buf, opts, ctx) {
       lfoOsc.connect(lfoGain);
       lfoGain.connect(src.detune);
     } else {
-      lfoGain.gain.setValueAtTime((state.lfo.depth / 100) * effCut * 0.35, now);
+      lfoGain.gain.setValueAtTime((state.lfo.depth / 100) * effCut * 0.25, now);
       lfoOsc.connect(lfoGain);
       lfoGain.connect(filter.frequency);
     }
@@ -1084,8 +1087,9 @@ function triggerK250Buffer(buf, opts, ctx) {
 
   const gain = audioCtx.createGain();
   const vel = Math.max(0.05, Math.min(1.25, opts.velocity ?? 0.8));
-  const peakGain = Math.max(0.001, vel * 0.85 * (t.vol / 100));
-  const atk = Math.max(0.002, (opts.attack ?? 0.006) + (state.env.a / 100) * 0.12);
+  const peakGain = Math.max(0.001, vel * 0.88 * (t.vol / 100));
+  const envAtkOffset = Math.max(0, ((state.env.a - 12) / 88) * 0.25);
+  const atk = Math.max(0.001, (opts.attack ?? 0.004) + envAtkOffset);
   const rel = Math.max(0.04, (opts.releaseTime ?? 0.38) * (0.4 + (state.env.r / 100) * 1.4));
   const decScale = 0.35 + (m[2] / 100) * 1.15;
   const holdDur = Math.max(ctx.dur || 0.45, opts.naturalSustain ? Math.min(buf.duration, (opts.decay || 3.2) * decScale) : (ctx.dur || 0.55));
@@ -1094,13 +1098,30 @@ function triggerK250Buffer(buf, opts, ctx) {
   gain.gain.linearRampToValueAtTime(peakGain, now + atk);
 
   updateMasterFx();
-  src.connect(filter);
+  let src2 = null;
+  if (opts.stereoEnsemble && typeof audioCtx.createStereoPanner === 'function') {
+    src2 = audioCtx.createBufferSource();
+    src2.buffer = buf;
+    src2.playbackRate.setValueAtTime(Math.max(0.125, Math.min(8, opts.pitchRatio || 1)), now);
+    src2.detune.setValueAtTime(detuneCents + 7, now);
+    src.detune.setValueAtTime(detuneCents - 7, now);
+    if (src.loop) { src2.loop = true; src2.loopStart = src.loopStart; src2.loopEnd = src.loopEnd; }
+    const panL = audioCtx.createStereoPanner(); panL.pan.setValueAtTime(-0.45, now);
+    const panR = audioCtx.createStereoPanner(); panR.pan.setValueAtTime(0.45, now);
+    const ensScale = audioCtx.createGain(); ensScale.gain.setValueAtTime(0.68, now);
+    src.connect(panL); panL.connect(ensScale);
+    src2.connect(panR); panR.connect(ensScale);
+    ensScale.connect(filter);
+    src2.start(now);
+  } else {
+    src.connect(filter);
+  }
   filter.connect(gain);
   gain.connect(masterGain);
   src.start(now);
 
   const voice = {
-    src, filter, gain, lfoOsc,
+    src, src2, filter, gain, lfoOsc,
     _monoKey: window.__currentMonoKey || null,
     releaseTime: rel,
     isReleased: false,
@@ -1113,6 +1134,7 @@ function triggerK250Buffer(buf, opts, ctx) {
         gain.gain.setValueAtTime(Math.max(0.0001, gain.gain.value), tRel);
         gain.gain.exponentialRampToValueAtTime(0.0001, tRel + rt);
         src.stop(tRel + rt + 0.04);
+        if (src2) src2.stop(tRel + rt + 0.04);
         if (lfoOsc) lfoOsc.stop(tRel + rt + 0.04);
       } catch {}
     }
@@ -1135,6 +1157,7 @@ function triggerK250Buffer(buf, opts, ctx) {
     gain.gain.exponentialRampToValueAtTime(0.0001, noteEnd + rel);
     const stopAt = noteEnd + rel + 0.05;
     src.stop(stopAt);
+    if (src2) src2.stop(stopAt);
     if (lfoOsc) lfoOsc.stop(stopAt);
     src.onended = () => {
       voice.isReleased = true;
@@ -1228,6 +1251,33 @@ function playNote(midi, dur = 0.45, vel = 0.8, trackOverride = null, latch = fal
     return;
   }
 
+  if (t.eng === 'D808' && typeof play808Drum === 'function') {
+    window.__k250PlayCtx = { tIdx, dur, latch, midi };
+    updateMasterFx();
+    play808Drum(midi, vel * (t.vol / 100) * 1.15);
+    pulseTrack(tIdx, vel * (t.vol / 100));
+    document.getElementById('scopeVoiceInfo').textContent = `TR-808/909 · MIDI ${midi}`;
+    return;
+  }
+
+  if (t.eng === 'B303' && typeof play303Bass === 'function') {
+    window.__k250PlayCtx = { tIdx, dur, latch, midi };
+    updateMasterFx();
+    play303Bass(midi, vel * (t.vol / 100));
+    pulseTrack(tIdx, vel * (t.vol / 100));
+    document.getElementById('scopeVoiceInfo').textContent = `TB-303 · MIDI ${midi}`;
+    return;
+  }
+
+  if (t.eng === 'DX7' && typeof playFmSynth === 'function') {
+    window.__k250PlayCtx = { tIdx, dur, latch, midi };
+    updateMasterFx();
+    playFmSynth(midi, vel * (t.vol / 100));
+    pulseTrack(tIdx, vel * (t.vol / 100));
+    document.getElementById('scopeVoiceInfo').textContent = `DX7 FM · MIDI ${midi}`;
+    return;
+  }
+
   playSynthVoice(midi, dur, vel, tIdx, latch);
 }
 
@@ -1304,9 +1354,29 @@ function playSynthVoice(midi, dur, vel, tIdx, latch, waveOverride = null) {
 
 function auditionChord() {
   const t = TRACKS[state.track];
+  const p = PRESETS[t.presetIdx];
+  const kp = p && p.k250;
   const base = state.octave * 12;
-  const notes = t.eng === 'B303' ? [36 + base, 48 + base] : t.eng === 'D808' ? [36, 42, 48] : [60 + base, 64 + base, 67 + base, 71 + base];
-  notes.forEach((n, i) => setTimeout(() => playNote(Math.max(24, Math.min(108, n)), 0.55, 0.7), i * 28));
+  const isDrum = t.eng === 'D808' || (t.eng === 'K250' && kp && (kp.type === 'drums' || kp.type === 'timpani'));
+  const isBass = t.eng === 'B303' || (t.eng === 'K250' && kp && (kp.type === 'bass' || kp.type === '303'));
+  const isSplit = t.eng === 'K250' && kp && kp.type === 'split';
+  if (isDrum) {
+    // Rhythmic Kick -> Snare -> Hi-Hat -> Crash audition across any octave
+    const hits = [60 + base, 62 + base, 65 + base, 67 + base];
+    hits.forEach((n, i) => setTimeout(() => playNote(Math.max(24, Math.min(108, n)), 0.35, 0.88), i * 145));
+    return;
+  }
+  if (isSplit) {
+    setTimeout(() => playNote(45, 0.7, 0.85), 0);
+    [60, 64, 67].forEach((n, i) => setTimeout(() => playNote(n, 0.65, 0.78), 160 + i * 28));
+    return;
+  }
+  if (isBass) {
+    [36 + base, 43 + base, 48 + base].forEach((n, i) => setTimeout(() => playNote(Math.max(24, Math.min(96, n)), 0.45, 0.85), i * 130));
+    return;
+  }
+  const notes = [60 + base, 64 + base, 67 + base, 71 + base];
+  notes.forEach((n, i) => setTimeout(() => playNote(Math.max(24, Math.min(108, n)), 0.55, 0.75), i * 28));
 }
 
 // ---- Theme & Header Sync ----
