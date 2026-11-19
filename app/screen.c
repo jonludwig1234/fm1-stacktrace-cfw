@@ -315,6 +315,7 @@ static unsigned encoder_active(const int16_t values[7])
             return 1;
     return 0;
 }
+static uint32_t knob_flash_until[4];
 static void read_encoders(const struct fm1_controls *controls, uint32_t now, unsigned boundary)
 {
     /* Apply the first detent immediately. A continuing fast turn accelerates
@@ -326,8 +327,11 @@ static void read_encoders(const struct fm1_controls *controls, uint32_t now, uns
         if (!direction) continue;
         encoder_speed[i] = direction == encoder_direction[i] && now - encoder_time[i] <= 40U
             ? (uint8_t)clamp(encoder_speed[i] + 1, 1, 4) : 1;
+        if ((controls->buttons & BUTTON(HOME)) && i >= 2U && i <= 5U)
+            encoder_speed[i] = 4;
         encoder_direction[i] = (int8_t)direction;
         encoder_time[i] = now;
+        if (i >= 2U && i <= 5U) knob_flash_until[i - 2U] = now + 320U;
     }
 }
 #ifdef FM1_HOST_TEST
@@ -452,6 +456,8 @@ static void line(int x, int y, int end_x, int end_y, uint16_t color)
 #ifdef FM1_HOST_TEST
 static char web_knobs[4][2][16];
 #endif
+#include "ui_primitives.h"
+
 static void knob(unsigned col, const char *label, const char *value, uint16_t color)
 {
 #ifdef FM1_HOST_TEST
@@ -463,17 +469,23 @@ static void knob(unsigned col, const char *label, const char *value, uint16_t co
         memcpy(web_knobs[col][1], value, n);
     }
 #endif
-    if (paint_rendering && (paint_top >= 227 || paint_top + PAINT_ROWS <= 195)) return;
+    if (paint_rendering && (paint_top >= 229 || paint_top + PAINT_ROWS <= 192)) return;
+    unsigned hot = col < 4U && (int32_t)(knob_flash_until[col] - frame_time) > 0;
+    unsigned pct = ui_pct_from_text(value);
     uint32_t sig =
-        signature(signature(color, label, (unsigned)strlen(label)), value, (unsigned)strlen(value));
+        signature(signature(color ^ (hot ? 0x55AAU : 0U) ^ (pct << 16), label, (unsigned)strlen(label)),
+                  value, (unsigned)strlen(value));
     if (cache->foot_cache[col] == sig)
         return;
     cache->foot_cache[col] = sig;
-    unsigned x = 6 + 59 * col;
-    paint_fill(x, 195, 54, 32, BACK);
-    paint_fill(x, 195, 54, 2, color);
-    text(x, 200, label, 1, TEXT, BACK);
-    text(x, 212, value, strlen(value) <= 4 ? 2 : 1, color, BACK);
+    unsigned x = 5U + 58U * col;
+    unsigned w = 55U;
+    paint_fill(x, 192, w, 36, BACK);
+    if (hot) frame(x, 192, w, 36, color);
+    else paint_fill(x, 192, w, 2, color);
+    text(x + 2U, 196, label, 1, hot ? color : TEXT, BACK);
+    ui_progress_bar(x + 2U, 205, w - 4U, 4U, pct, color, PANEL);
+    text(x + 2U, 212, value, strlen(value) <= 4 ? 2 : 1, color, BACK);
 }
 static __attribute__((noinline)) void header(const struct groove_view *v)
 {
@@ -523,8 +535,11 @@ static __attribute__((noinline)) void header(const struct groove_view *v)
         if (first || active != was_active || (changed & (7U << 24)))
             paint_fill(80 + i * 16, 20, 12, 3, active ? GREEN : i * 16 < v->sequence_length ? PANEL : BACK);
     }
-    if (first || (changed & (1U << 22)))
-        text(142, 7, step_follow ? "FOLLOW" : "EDIT  ", 1, step_follow ? GREEN : AMBER, BACK);
+    if (first || (changed & (1U << 22))) {
+        char oct_lbl[4] = {'C', (char)('4' + clamp(octave, -2, 2)), ' ', 0};
+        text(142, 7, oct_lbl, 1, ACCENT, BACK);
+        text(142, 18, step_follow ? "FLW" : "EDT", 1, step_follow ? GREEN : AMBER, BACK);
+    }
     if (first || (changed & ((1U << 16) | (1U << 17) | (1U << 23) | (7U << 29)))) {
         uint16_t color = writing ? AMBER : PANEL;
         paint_fill(181, 7, 51, 16, color);
@@ -533,83 +548,136 @@ static __attribute__((noinline)) void header(const struct groove_view *v)
              : groove_arp_enabled(track) ? "ARP" : "LIVE", 1, writing ? BACK : TEXT, color);
     }
 }
+static unsigned tone_part(void);
 static __attribute__((noinline)) void overview(const struct groove_view v[8])
 {
-    if (paint_rendering && (paint_top >= 190 || paint_top + PAINT_ROWS <= 32)) return;
-    unsigned first = step_first(&v[track]);
+    if (paint_rendering && (paint_top >= 190 || paint_top + PAINT_ROWS <= 30)) return;
+    const struct groove_view *cur = &v[track];
+    unsigned first = step_first(cur);
     char project_name[13]; groove_project_name(project_name);
-    uint32_t title = signature(first / 16 | (step_follow << 3) | (cursor << 4) |
-        ((unsigned)v[track].sequence_length << 10), project_name, 12);
+    static const char *const eng_short[] = {"DX7", "303", "808", "PSG", "PLK", "SMP"};
+    static const char *const eng_full[]  = {"DX7 FM", "TB-303", "TR-808", "C64 PSG", "PLUCK", "SAMPLER"};
+    static const char *const chip_names[] = {"PSG YM", "PSG AY", "PSG NOI", "PSG MIX"};
+
+    /* Active track Hero Card (y=32..70) */
+    char hero_name[12] = {0};
+    uint8_t fm_p[156];
+    if (cur->type == GROOVE_DX7 && !groove_fm_copy(track, fm_p, NULL)) {
+        memcpy(hero_name, fm_p + 145, 10);
+        hero_name[10] = 0;
+    } else if (cur->type == GROOVE_303) {
+        strcpy(hero_name, cur->program ? "303 SQR" : "303 SAW");
+    } else if (cur->type == GROOVE_PSG) {
+        strcpy(hero_name, chip_names[cur->program & 3U]);
+    } else if (cur->type == GROOVE_PLUCK) {
+        strcpy(hero_name, "PLUCK");
+    } else if (cur->type == GROOVE_SAMPLE) {
+        strcpy(hero_name, "SAMPLER");
+    } else {
+        strcpy(hero_name, "808 KIT");
+    }
+
+    uint32_t title = signature(
+        (track << 0) | ((unsigned)cur->type << 4) | ((unsigned)cur->volume << 8) |
+        ((unsigned)cur->program << 16) | (first << 22) | ((unsigned)cur->modified << 29) |
+        ((unsigned)(octave + 2) << 26),
+        hero_name, 10);
     if (title != cache->title_cache) {
         cache->title_cache = title;
-        paint_fill(0, 32, 240, 13, BACK);
-        text(8, 35, project_name, 1, ACCENT, BACK);
-        text(86, 35, "OPEN " FM1_RELEASE_VERSION, 1, DIM, BACK);
-        text(146, 35, step_follow ? "PAGE" : "STEP", 1, DIM, BACK);
-        number(178, 35, step_follow ? first + 1 : cursor + 1, 2, 1, TEXT, BACK);
-        text(190, 35, step_follow ? "-" : "/", 1, DIM, BACK);
-        number(196, 35, step_follow ? first + 16 : v[track].sequence_length, 2, 1, TEXT, BACK);
+        paint_fill(0, 31, 240, 41, BACK);
+        frame(4, 32, 232, 38, PANEL);
+        /* Track badge [T1] */
+        paint_fill(8, 36, 26, 30, colors[track]);
+        text(11, 40, "T", 1, BACK, colors[track]);
+        number(17, 47, (int)track + 1, 1, 2, BACK, colors[track]);
+        /* Engine + project subtitle */
+        text(40, 36, cur->type < 6U ? eng_full[cur->type] : "SYNTH", 1, colors[track], BACK);
+        text(110, 36, project_name, 1, DIM, BACK);
+        /* Bold primary preset/patch name (scale=2) */
+        text(40, 49, hero_name, 2, TEXT, BACK);
+        /* Active track volume bar on right */
+        text(192, 36, "VOL", 1, DIM, BACK);
+        number(212, 36, cur->volume, 3, 1, TEXT, BACK);
+        ui_progress_bar(192, 48, 40, 6, (cur->volume * 100U) / 127U, colors[track], PANEL);
+        text(192, 58, cur->modified ? "MOD *" : "READY", 1, cur->modified ? AMBER : GREEN, BACK);
     }
-    static const char *const chip_names[] = {"PSG YM", "PSG AY", "PSG NOIS", "PSG MIX"};
-    for (unsigned t = 0; t < 8; ++t) {
-        unsigned y = 48 + 18 * t;
-        if (paint_rendering && (y >= paint_top + PAINT_ROWS || y + 16 <= paint_top)) continue;
-        uint32_t meta = v[t].program | ((uint32_t)v[t].volume << 7) | ((t == track) << 14) |
-                        ((uint32_t)v[t].modified << 15) | ((uint32_t)v[t].muted << 16) |
-                        ((uint32_t)v[t].solo << 17) | ((uint32_t)v[t].ready << 18) |
-                        ((uint32_t)v[t].type << 19) | ((uint32_t)midi_active[t] << 22) |
-                        ((uint32_t)groove_track_role(t) << 23);
+
+    /* Live Visual Strip (y=74..120): Left = Real-time ADSR curve, Right = 16-Step Playhead */
+    unsigned atk = 12U, dec = 58U, sus = 68U, rel = 44U;
+    if (cur->type == GROOVE_DX7) {
+        atk = (fm_p[0] * 100U) / 99U;
+        dec = (fm_p[1] * 100U) / 99U;
+        sus = (fm_p[6] * 100U) / 99U;
+        rel = (fm_p[3] * 100U) / 99U;
+    } else {
+        uint8_t tp[GROOVE_TONE_PARAMS] = {0};
+        if (!groove_tone_copy(track, tone_part(), tp)) {
+            atk = (tp[2] * 100U) / 127U;
+            dec = (tp[3] * 100U) / 127U;
+            sus = (tp[4] * 100U) / 127U;
+            rel = (tp[5] * 100U) / 127U;
+        }
+    }
+    uint32_t env_sig = atk | (dec << 7) | (sus << 14) | (rel << 21) | (track << 28);
+    if (env_sig != cache->middle_cache) {
+        cache->middle_cache = env_sig;
+        ui_adsr_graph(4, 74, 108, 46, atk, dec, sus, rel, colors[track]);
+        text(10, 77, "ENV", 1, DIM, BACK);
+        paint_fill(116, 74, 120, 46, BACK);
+        frame(116, 74, 120, 46, PANEL);
+        text(122, 77, "SEQ", 1, DIM, BACK);
+        number(146, 77, (int)first + 1, 2, 1, TEXT, BACK);
+        text(159, 77, "-", 1, DIM, BACK);
+        number(166, 77, (int)first + 16, 2, 1, TEXT, BACK);
+        text(184, 77, "/", 1, DIM, BACK);
+        number(192, 77, cur->sequence_length, 3, 1, DIM, BACK);
+    }
+    /* Live 16-step cells inside right visual card (y=90..114) */
+    for (unsigned i = 0; i < 16U; ++i) {
+        unsigned step = first + i;
+        unsigned enabled = step < cur->sequence_length;
+        unsigned on = enabled && (unsigned)((cur->active_steps >> step) & 1U);
+        unsigned head = cur->playing && cur->play_step == step;
+        unsigned selected = enabled && step == cursor;
+        uint32_t sig = on | (head << 1) | (selected << 2) | ((uint32_t)cur->audible << 3) | (enabled << 4);
+        if (sig == cache->cell_cache[0][i]) continue;
+        cache->cell_cache[0][i] = sig;
+        unsigned sx = 122U + i * 7U;
+        paint_fill(sx, 90, 5, 22, BACK);
+        if (head) paint_fill(sx, 90, 5, 3, GREEN);
+        paint_fill(sx, 95, 5, 13, on ? (cur->audible ? colors[track] : DIM) : (enabled ? PANEL : BACK));
+        if (selected) paint_fill(sx, 110, 5, 2, TEXT);
+    }
+
+    /* 8-Track Performance Strip (y=124..186): 8 vertical tiles with meters & Mute/Solo */
+    for (unsigned t = 0; t < 8U; ++t) {
+        unsigned tx = 4U + t * 29U;
+        unsigned tw = 27U;
+        uint32_t meta = ((t == track) ? 1U : 0U) | ((unsigned)v[t].muted << 1) |
+                        ((unsigned)v[t].solo << 2) | ((unsigned)v[t].type << 3) |
+                        ((unsigned)midi_active[t] << 7) | ((unsigned)v[t].volume << 8);
         if (meta != cache->row_cache[t]) {
             cache->row_cache[t] = meta;
-            paint_fill(5, y, 71, 16, BACK);
-            uint16_t bg = t == track ? colors[t] : PANEL;
-            paint_fill(6, y, 18, 16, bg);
-            number(12, y + 5, t + 1, 1, 1, t == track ? BACK : colors[t], bg);
-            paint_fill(7, y + 12, 3, 3, midi_active[t] ? GREEN : bg);
-            char fm_name[8]={0}; uint8_t patch[156];
-            if (v[t].type==GROOVE_DX7 && !groove_fm_copy(t,patch,NULL)) memcpy(fm_name,patch+145,7);
-            text(29, y + 1,
-                 !v[t].ready                  ? "ERROR"
-                 : v[t].type == GROOVE_DX7    ? fm_name
-                 : v[t].type == GROOVE_303    ? (v[t].program ? "303 SQR" : "303 SAW")
-                 : v[t].type == GROOVE_PSG    ? chip_names[v[t].program & 3U]
-                 : v[t].type == GROOVE_PLUCK  ? "PLUCK"
-                 : v[t].type == GROOVE_SAMPLE ? "SAMPLER"
-                                              : "808 KIT",
-                 1, colors[t], BACK);
-            text(29, y + 9,
-                 groove_track_role(t) == GROOVE_TRACK_OFF ? "OFF"
-                 : groove_track_role(t) == GROOVE_TRACK_PLAY ? (v[t].muted ? "P MUT" : v[t].solo ? "P SOLO" : "PLAY")
-                 : v[t].muted      ? "MUTE"
-                 : v[t].solo     ? "SOLO"
-                 : v[t].modified ? "EDITED"
-                                 : "",
-                 1, DIM, BACK);
-            number(214, y + 1, v[t].volume, 3, 1, t == track ? TEXT : DIM, BACK);
+            paint_fill(tx, 124, tw, 62, BACK);
+            frame(tx, 124, tw, 62, t == track ? colors[t] : PANEL);
+            uint16_t hdr_bg = t == track ? colors[t] : PANEL;
+            paint_fill(tx + 1, 125, tw - 2, 13, hdr_bg);
+            number(tx + 10, 128, (int)t + 1, 1, 1, t == track ? BACK : colors[t], hdr_bg);
+            if (midi_active[t]) paint_fill(tx + 3, 128, 3, 3, GREEN);
+            text(tx + 5, 141, v[t].type < 6U ? eng_short[v[t].type] : "SYN", 1,
+                 t == track ? TEXT : colors[t], BACK);
+            const char *badge = v[t].muted ? " M " : v[t].solo ? " S " : "   ";
+            uint16_t bbg = v[t].muted ? AMBER : v[t].solo ? GREEN : BACK;
+            text(tx + 5, 174, badge, 1, (v[t].muted || v[t].solo) ? BACK : DIM, bbg);
         }
-        for (unsigned i = 0; i < 16; ++i) {
-            unsigned step = first + i;
-            unsigned enabled = step < v[t].sequence_length;
-            unsigned on = enabled && (unsigned)((v[t].active_steps >> step) & 1U);
-            unsigned head = v[t].playing && v[t].play_step == step;
-            unsigned selected = enabled && t == track && step == cursor;
-            uint32_t sig = on | (head << 1) | (selected << 2) | ((uint32_t)v[t].audible << 3) | (enabled << 4);
-            if (sig == cache->cell_cache[t][i])
-                continue;
-            cache->cell_cache[t][i] = sig;
-            unsigned x = 80 + i * 8;
-            paint_fill(x, y + 3, 6, 11, selected ? TEXT : BACK);
-            paint_fill(x + 1, y + 5, 4, 8, on ? (v[t].audible ? colors[t] : DIM) : enabled ? PANEL : BACK);
-            if (head)
-                paint_fill(x, y + 3, 6, 2, GREEN);
-        }
-        unsigned meter = v[t].audible ? (v[t].level * 14 + 63) / 127 : 0;
-        unsigned meter_signature = meter | (v[t].level >= 124 ? 16U : 0U);
-        if (meter_signature != cache->meter_cache[t]) {
-            cache->meter_cache[t] = meter_signature;
-            paint_fill(216, y + 11, 14, 3, PANEL);
-            if (meter)
-                paint_fill(216, y + 11, meter, 3, v[t].level >= 124 ? AMBER : colors[t]);
+        /* Live proportional level meter inside each track tile (y=153..169) */
+        unsigned meter = v[t].audible ? (v[t].level * 100U) / 127U : 0U;
+        unsigned meter_sig = meter | (v[t].level >= 124 ? 256U : 0U);
+        if (meter_sig != cache->meter_cache[t]) {
+            cache->meter_cache[t] = meter_sig;
+            ui_progress_bar(tx + 3, 155, tw - 6, 5, (v[t].volume * 100U) / 127U, PANEL, BACK);
+            ui_progress_bar(tx + 3, 162, tw - 6, 6, meter,
+                            v[t].level >= 124 ? AMBER : colors[t], PANEL);
         }
     }
 }
@@ -1630,9 +1698,9 @@ static void draw_page_body(const struct fm1_ble_status *ble)
         uint32_t strip = parameter | (seq_page << 10) | ((unsigned)v->type << 13);
         if (cache->seq_cache != strip) {
             cache->seq_cache = strip;
-            paint_fill(0, 184, 240, 11, BACK);
-            text(8, 186, parameter ? groove_lock_parameter_name(track, parameter - 1) : seq_pages[seq_page], 1, ACCENT, BACK);
-            if (!parameter) text(174, 186, "ALGO PAGE", 1, DIM, BACK);
+            paint_fill(0, 183, 240, 9, BACK);
+            text(8, 184, parameter ? groove_lock_parameter_name(track, parameter - 1) : seq_pages[seq_page], 1, ACCENT, BACK);
+            if (!parameter) text(174, 184, "ALGO PAGE", 1, DIM, BACK);
         }
     }
     for (unsigned col = 0; col < 4; ++col) {
@@ -1792,6 +1860,20 @@ static void draw_page_body(const struct fm1_ble_status *ble)
 static void draw_page(const struct fm1_ble_status *ble)
 {
     draw_page_body(ble);
+    if (!boot_active) {
+        if (notice && (int32_t)(frame_time - notice_until) < 0)
+            ui_toast_bar(notice, ACCENT);
+        if (page == ACTIONS && action_confirm) {
+            ui_confirm_modal("CONFIRM ACTION", actions[action],
+                             "UNDO REMAINS AVAILABLE", "SAVE: YES", "HOME: NO");
+        } else if (page == BLE && ble_forget == 1) {
+            ui_confirm_modal("FORGET BLE BONDS", "CLEAR SAVED BLE KEYS?",
+                             "PEER MUST RE-PAIR", "SAVE: YES", "HOME: NO");
+        } else if (page == PROJECT && project_reload) {
+            ui_confirm_modal("DISCARD CHANGES", "LOAD WITHOUT SAVING?",
+                             "UNSAVED EDITS LOST", "SAVE: YES", "HOME: NO");
+        }
+    }
     if (boot_active || (paint_rendering && paint_top >= 30)) return;
     uint32_t since = 0;
     unsigned active = 1;
@@ -2225,9 +2307,13 @@ static int apply_controls(const struct fm1_controls *controls, uint32_t now,
         if (pressed & BUTTON(HOME)) {
             if (page == ACTIONS && action_confirm) action_confirm = 0;
             else if (page == BLE && ble_forget == 1) ble_forget = 0;
+            else if (page == PROJECT && project_reload) project_reload = 0;
             else if (page == OVERVIEW) {
-                preset_refresh(); project_result = 0; page = PRESET_BROWSER;
-            } else page = OVERVIEW;
+                notice = NULL;
+                saved_cache.shown_page = ~0U;
+            } else {
+                page = OVERVIEW;
+            }
         } else if (pressed & BUTTON(SEQ)) {
             page = STEPS; seq_page = 0; step_follow = 1; cache->shown_page = ~0U;
         } else if (pressed & BUTTON(FX)) {
@@ -2412,13 +2498,14 @@ static int apply_controls(const struct fm1_controls *controls, uint32_t now,
                 memset(key_note, 0xff, sizeof key_note); project_keys = 0; writing = 0; page = OVERVIEW;
             } else if (action == 20) { page = CFW_LAB; cfw_tab = 0; }
             else if (action == 21) { page = CFW_LAB; cfw_tab = 1; }
-            else if (action == 22) {
+            else if (action == 22) { page = CFW_LAB; cfw_tab = 3; }
+            else if (action == 23) { page = CFW_LAB; cfw_tab = 2; }
+            else if (action == 24) { open_subpage(EFFECTS); effects_page = 4; }
+            else {
                 unsigned nl = cfw_seq_length_get(track) > 64U ? 64U : 128U;
                 cfw_seq_length_set(track, nl);
                 cursor %= nl;
-            } else if (action == 23) { page = CFW_LAB; cfw_tab = 2; }
-            else if (action == 24) { open_subpage(EFFECTS); effects_page = 4; }
-            else { page = CFW_LAB; cfw_tab = 3; }
+            }
             notice = r == -3 ? "COPY MATCHING STEP / PAGE / TRACK FIRST"
                 : r == -2 ? "CHORD / LOCK TABLE FULL" : r ? "UNAVAILABLE / INCOMPATIBLE"
                 : operation == 2 ? "STEP COPIED - CHOOSE DESTINATION"
