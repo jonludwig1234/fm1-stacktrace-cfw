@@ -646,13 +646,13 @@ const DEF_IDX = [
 
 const TRACKS = [
   { id:0, label:'T1', eng:'K250', presetIdx:DEF_IDX[0], vol:90, mute:false, solo:false, peak:0, macros:[...PRESETS[DEF_IDX[0]].m], abSlot:'A', snapshotB:null, steps:make128Steps([1,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0]) },
-  { id:1, label:'T2', eng:'K250', presetIdx:DEF_IDX[1], vol:86, mute:false, solo:false, peak:0, macros:[...PRESETS[DEF_IDX[1]].m], abSlot:'A', snapshotB:null, steps:make128Steps([1,0,1,0,0,0,1,0,1,0,0,1,0,1,0,0]) },
-  { id:2, label:'T3', eng:'K250', presetIdx:DEF_IDX[2], vol:92, mute:false, solo:false, peak:0, macros:[...PRESETS[DEF_IDX[2]].m], abSlot:'A', snapshotB:null, steps:make128Steps([1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1]) },
-  { id:3, label:'T4', eng:'K250', presetIdx:DEF_IDX[3], vol:86, mute:false, solo:false, peak:0, macros:[...PRESETS[DEF_IDX[3]].m], abSlot:'A', snapshotB:null, steps:make128Steps([1,0,0,1,0,0,1,0,0,0,1,0,1,0,0,0]) },
-  { id:4, label:'T5', eng:'K250', presetIdx:DEF_IDX[4], vol:84, mute:false, solo:false, peak:0, macros:[...PRESETS[DEF_IDX[4]].m], abSlot:'A', snapshotB:null, steps:make128Steps([1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0]) },
-  { id:5, label:'T6', eng:'K250', presetIdx:DEF_IDX[5], vol:80, mute:false, solo:false, peak:0, macros:[...PRESETS[DEF_IDX[5]].m], abSlot:'A', snapshotB:null, steps:make128Steps([0,0,1,0,0,0,1,0,0,0,1,0,0,1,1,0]) },
-  { id:6, label:'T7', eng:'K250', presetIdx:DEF_IDX[6], vol:78, mute:false, solo:false, peak:0, macros:[...PRESETS[DEF_IDX[6]].m], abSlot:'A', snapshotB:null, steps:make128Steps([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]) },
-  { id:7, label:'T8', eng:'K250', presetIdx:DEF_IDX[7], vol:80, mute:false, solo:false, peak:0, macros:[...PRESETS[DEF_IDX[7]].m], abSlot:'A', snapshotB:null, steps:make128Steps([0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0]) }
+  { id:1, label:'T2', eng:'B303', presetIdx:DEF_IDX[1], vol:86, mute:false, solo:false, peak:0, macros:[44,78,66,42], abSlot:'A', snapshotB:null, steps:make128Steps([1,0,1,0,0,0,1,0,1,0,0,1,0,1,0,0]) },
+  { id:2, label:'T3', eng:'D808', presetIdx:DEF_IDX[2], vol:92, mute:false, solo:false, peak:0, macros:[78,50,44,36], abSlot:'A', snapshotB:null, steps:make128Steps([1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1]) },
+  { id:3, label:'T4', eng:'VA',   presetIdx:DEF_IDX[3], vol:86, mute:false, solo:false, peak:0, macros:[74,38,76,54], abSlot:'A', snapshotB:null, steps:make128Steps([1,0,0,1,0,0,1,0,0,0,1,0,1,0,0,0]) },
+  { id:4, label:'T5', eng:'DX7',  presetIdx:DEF_IDX[4], vol:84, mute:false, solo:false, peak:0, macros:[82,58,74,30], abSlot:'A', snapshotB:null, steps:make128Steps([1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0]) },
+  { id:5, label:'T6', eng:'SID',  presetIdx:DEF_IDX[5], vol:80, mute:false, solo:false, peak:0, macros:[68,52,48,66], abSlot:'A', snapshotB:null, steps:make128Steps([0,0,1,0,0,0,1,0,0,0,1,0,0,1,1,0]) },
+  { id:6, label:'T7', eng:'GRAN', presetIdx:DEF_IDX[6], vol:78, mute:false, solo:false, peak:0, macros:[66,72,88,62], abSlot:'A', snapshotB:null, steps:make128Steps([1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]) },
+  { id:7, label:'T8', eng:'K250', presetIdx:DEF_IDX[3], vol:84, mute:false, solo:false, peak:0, macros:[...PRESETS[DEF_IDX[3]].m], abSlot:'A', snapshotB:null, steps:make128Steps([0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0]) }
 ];
 
 // Compact authentic showcase demo motifs for instant browser jukebox playback
@@ -697,7 +697,7 @@ const DEMOS = [
   ]}
 ];
 
-const STORAGE_KEY = 'fm1_stacktrace_session_v2';
+const STORAGE_KEY = 'fm1_stacktrace_session_v3';
 let undoStack = [];
 
 let state = {
@@ -1590,10 +1590,12 @@ function renderTracks() {
   dock.innerHTML = TRACKS.map((t, i) => {
     const eng = ENGINES[t.eng];
     const dim = anySolo ? !t.solo : t.mute;
+    const p = PRESETS[t.presetIdx];
+    const shortLabel = (t.eng === 'K250' && p) ? `K250 ${p.cat}` : eng.name;
     return `
-      <div class="track-pill ${i===state.track?'active':''}" tabindex="0" role="button" data-t="${i}" style="${dim?'opacity:0.42':''}">
+      <div class="track-pill ${i===state.track?'active':''}" tabindex="0" role="button" data-t="${i}" style="${dim?'opacity:0.42':''}" title="${t.label}: ${eng.name}${p ? ' — ' + p.name : ''}">
         <span class="t-dot" data-tdot="${i}" style="background:${eng.color};color:${eng.color}"></span>
-        <span>${t.label} · ${eng.name}</span>
+        <span>${t.label} · ${shortLabel}</span>
       </div>`;
   }).join('');
   dock.querySelectorAll('.track-pill').forEach(el => {
