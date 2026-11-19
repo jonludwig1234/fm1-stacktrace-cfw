@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FM-1 Stack Trace — Unified UI Prototype (Web Workstation + 240×240 Hardware LCD)</title>
+<style>
+  :root {
+    --bg-canvas: #0b0f14;
+    --bg-surface: #121821;
+    --bg-elevated: #171f2b;
+    --bg-hover: #1e2938;
+    --border: rgba(255, 255, 255, 0.07);
+    --border-strong: rgba(255, 255, 255, 0.14);
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent: #f59e0b;
+    --accent-soft: rgba(245, 158, 11, 0.15);
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  body {
+    background: var(--bg-canvas);
+    color: var(--text-primary);
+    font-family: var(--sans);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
+  }
+
+  /* ---- Top Bar ---- */
+  .topbar {
+    height: 50px;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .brand-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+  }
+  .cmd-trigger {
+    flex: 1;
+    max-width: 380px;
+    height: 32px;
+    background: var(--bg-canvas);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .cmd-trigger:hover { border-color: var(--border-strong); background: #0e141c; }
+  .kbd {
+    font-family: var(--mono);
+    font-size: 11px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-strong);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--text-secondary);
+  }
+  .transport {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn {
+    height: 30px;
+    padding: 0 11px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.12s;
+  }
+  .btn:hover { background: var(--bg-hover); border-color: var(--border-strong); }
+  .btn.active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .btn.play-active {
+    background: rgba(34, 197, 94, 0.16);
+    border-color: #22c55e;
+    color: #4ade80;
+  }
+  .bpm-pill {
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 0 10px;
+    height: 30px;
+    background: var(--bg-canvas);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: ns-resize;
+  }
+  .hw-badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 0 10px;
+    height: 30px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    background: rgba(56, 189, 248, 0.1);
+    color: #38bdf8;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .hw-badge .led { width: 7px; height: 7px; border-radius: 50%; background: #38bdf8; box-shadow: 0 0 8px #38bdf8; }
+
+  /* ---- Main Workspace Grid ---- */
+  .main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 260px 1fr 300px;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .main.hw-hidden {
+    grid-template-columns: 260px 1fr 0px;
+  }
+
+  /* ---- Left Preset Browser ---- */
+  .browser {
+    background: var(--bg-surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .browser-head {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .search-input {
+    width: 100%;
+    height: 32px;
+    background: var(--bg-canvas);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0 10px;
+    color: var(--text-primary);
+    font-size: 12px;
+    outline: none;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .cat-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .pill {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 99px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .pill:hover { color: var(--text-primary); border-color: var(--border-strong); }
+  .pill.active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .audition-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-secondary);
+    padding-top: 2px;
+  }
+  .preset-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px;
+  }
+  .preset-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 9px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    gap: 8px;
+    border: 1px solid transparent;
+    margin-bottom: 2px;
+    transition: background 0.1s;
+  }
+  .preset-item:hover { background: var(--bg-elevated); }
+  .preset-item.active {
+    background: var(--accent-soft);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+  .preset-num { font-family: var(--mono); font-size: 11px; color: var(--text-muted); width: 26px; flex-shrink: 0; }
+  .preset-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+  .preset-cat { font-size: 10px; color: var(--text-muted); font-family: var(--mono); }
+  .star-btn {
+    background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 13px; padding: 0 2px;
+  }
+  .star-btn.fav { color: #fbbf24; }
+
+  /* ---- Center Instrument Stage ---- */
+  .stage {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 16px 20px;
+    gap: 14px;
+    overflow-y: auto;
+  }
+  .stage-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .track-identity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .engine-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 11px;
+    border-radius: var(--radius-sm);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    position: relative;
+  }
+  .preset-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .stage-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Hero Row: Scope + 4 Macro Arcs */
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.35fr;
+    gap: 14px;
+    align-items: stretch;
+  }
+  .card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .card-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  #scopeCanvas {
+    width: 100%;
+    height: 148px;
+    background: var(--bg-canvas);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    display: block;
+  }
+  .macros-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    align-items: center;
+    flex: 1;
+  }
+  .macro-knob {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 6px;
+    border-radius: var(--radius-md);
+    background: var(--bg-canvas);
+    border: 1px solid var(--border);
+    cursor: ns-resize;
+    transition: border-color 0.12s;
+  }
+  .macro-knob:hover, .macro-knob.dragging { border-color: var(--accent); }
+  .macro-knob svg { width: 72px; height: 72px; overflow: visible; }
+  .macro-name { font-size: 11px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.05em; }
+  .macro-val { font-family: var(--mono); font-size: 12px; color: var(--text-primary); font-weight: 600; }
+
+  /* Quick Contextual Strip */
+  .quick-strip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .drawer {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    display: none;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  .drawer.open { display: grid; }
+  .slider-col { display: flex; flex-direction: column; gap: 6px; }
+  .slider-top { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-secondary); }
+  .slider-top span:last-child { font-family: var(--mono); color: var(--text-primary); }
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  /* Engine Picker Popover */
+  .engine-popover {
+    position: fixed;
+    top: 108px;
+    left: 280px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    padding: 12px;
+    width: 380px;
+    display: none;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    z-index: 50;
+  }
+  .engine-popover.open { display: grid; }
+  .eng-opt {
+    padding: 9px 10px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    transition: all 0.12s;
+  }
+  .eng-opt:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+  .eng-opt-title { font-weight: 700; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+  .eng-opt-desc { font-size: 11px; color: var(--text-muted); }
+
+  /* ---- Right Hardware 240x240 LCD Mirror ---- */
+  .hw-panel {
+    background: #0d121a;
+    border-left: 1px solid var(--border);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    overflow-y: auto;
+  }
+  .main.hw-hidden .hw-panel { display: none; }
+  .bezel {
+    background: #05070a;
+    padding: 12px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.8), 0 10px 28px rgba(0,0,0,0.5);
+  }
+  #hwLcd {
+    width: 240px;
+    height: 240px;
+    display: block;
+    border-radius: 6px;
+    image-rendering: pixelated;
+  }
+  .hw-controls-hint {
+    width: 264px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .hw-btn-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+  }
+  .hw-key {
+    height: 26px;
+    border-radius: 4px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-strong);
+    color: var(--text-secondary);
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .hw-key.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  .hw-enc-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  /* ---- Track Dock & Bottom Performance/Seq/Mixer Dock ---- */
+  .track-dock {
+    height: 40px;
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .track-pill {
+    flex: 1;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-canvas);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .track-pill:hover { border-color: var(--border-strong); color: var(--text-primary); }
+  .track-pill.active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--text-primary);
+  }
+  .t-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+  .bottom-dock {
+    height: 152px;
+    background: var(--bg-canvas);
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  .dock-bar {
+    height: 32px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-surface);
+  }
+  .dock-tabs { display: flex; gap: 6px; }
+  .dock-content {
+    flex: 1;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+  }
+
+  /* Keybed */
+  .keybed {
+    display: flex;
+    position: relative;
+    height: 98px;
+    width: 100%;
+    max-width: 820px;
+    gap: 3px;
+  }
+  .w-key {
+    flex: 1;
+    background: #e2e8f0;
+    border-radius: 0 0 6px 6px;
+    border: 1px solid #94a3b8;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 6px;
+    color: #475569;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    transition: background 0.06s;
+  }
+  .w-key.pressed, .w-key:active { background: var(--accent); color: #0b0f14; }
+  .b-key {
+    position: absolute;
+    width: 5.2%;
+    height: 60%;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 0 0 5px 5px;
+    z-index: 5;
+    cursor: pointer;
+    top: 0;
+  }
+  .b-key.pressed, .b-key:active { background: var(--accent); }
+
+  /* 16-Step Sequencer View */
+  .seq-grid {
+    display: grid;
+    grid-template-columns: repeat(16, 1fr);
+    gap: 6px;
+    width: 100%;
+    max-width: 920px;
+  }
+  .step-pad {
+    height: 76px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 4px;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .step-pad.on {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--text-primary);
+  }
+  .step-pad.playing { box-shadow: 0 0 0 2px #fff; }
+  .step-led { width: 100%; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.08); }
+  .step-pad.on .step-led { background: var(--accent); }
+
+  /* 8-Bus Mixer View */
+  .mixer-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 10px;
+    width: 100%;
+    max-width: 920px;
+  }
+  .mix-ch {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .mix-ch-name { font-size: 11px; font-weight: 700; }
+
+  /* Command Palette Modal */
+  .cmd-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px);
+    display: none; align-items: flex-start; justify-content: center; padding-top: 90px; z-index: 100;
+  }
+  .cmd-backdrop.open { display: flex; }
+  .cmd-modal {
+    width: 520px; background: var(--bg-elevated); border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+  }
+  .cmd-modal input {
+    width: 100%; height: 46px; background: transparent; border: none; border-bottom: 1px solid var(--border);
+    padding: 0 16px; color: var(--text-primary); font-size: 14px; outline: none;
+  }
+  .cmd-results { max-height: 300px; overflow-y: auto; padding: 6px; }
+</style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-dot" id="brandDot"></span>
+      <span>FM-1 STACK TRACE</span>
+      <span style="color:var(--text-muted);font-weight:500;">// UNIFIED STUDIO</span>
+    </div>
+
+    <div class="cmd-trigger" id="cmdTrigger" title="Quick jump to any preset, demo, or engine">
+      <span>Search 256 presets, engines, or demos...</span>
+      <span class="kbd">/ or ⌘K</span>
+    </div>
+
+    <div class="transport">
+      <button class="btn" id="playBtn">▶ PLAY</button>
+      <div class="bpm-pill" id="bpmPill" title="Click to nudge BPM">
+        <span style="color:var(--text-muted)">BPM</span>
+        <strong id="bpmVal">124</strong>
+      </div>
+      <div class="hw-badge" id="hwToggle" title="Toggle 240×240 Hardware LCD Live Mirror">
+        <span class="led"></span>
+        <span>HW LCD</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main 3-Zone Studio -->
+  <main class="main" id="mainGrid">
+    <!-- Left: Collapsible Preset Browser -->
+    <aside class="browser">
+      <div class="browser-head">
+        <input type="text" class="search-input" id="browserSearch" placeholder="Filter presets (↑ / ↓ to audition)..." />
+        <div class="cat-pills" id="catPills"></div>
+        <div class="audition-row">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+            <input type="checkbox" id="autoAudition" checked />
+            <span>Auto-audition on select</span>
+          </label>
+          <span id="presetCount" style="font-family:var(--mono)"></span>
+        </div>
+      </div>
+      <div class="preset-list" id="presetList"></div>
+    </aside>
+
+    <!-- Center: Uncluttered Instrument Stage -->
+    <section class="stage">
+      <div class="stage-header">
+        <div class="track-identity">
+          <button class="engine-badge" id="engineBadge">
+            <span id="engineBadgeText">VA POLY</span>
+            <span style="opacity:0.7">▾</span>
+          </button>
+          <div>
+            <div class="preset-title" id="heroPresetName">042 · Blade SuperSaw</div>
+            <div style="font-size:11px;color:var(--text-secondary)" id="heroPresetMeta">Track 4 · PAD · Zero-menu 4-macro sculpt</div>
+          </div>
+        </div>
+        <div class="stage-actions">
+          <button class="btn" id="abBtn" title="Toggle A/B Patch Compare">A / B</button>
+          <button class="btn" id="mutateBtn" title="Subtle ±15% patch mutation">🎲 Mutate</button>
+          <button class="btn" id="resetBtn" title="Reset macros to preset defaults">↺ Reset</button>
+          <button class="btn" id="auditionNowBtn" title="Play chord preview">♪ Audition</button>
+        </div>
+      </div>
+
+      <!-- Hero Row: Live Scope + 4 Hardware-Parity Macros -->
+      <div class="hero-grid">
+        <div class="card">
+          <div class="card-label">
+            <span>Live Oscilloscope</span>
+            <span id="scopeVoiceInfo" style="font-family:var(--mono);color:var(--text-secondary)">READY</span>
+          </div>
+          <canvas id="scopeCanvas" width="420" height="148"></canvas>
+        </div>
+
+        <div class="card">
+          <div class="card-label">
+            <span>4 Hero Macros (1:1 Hardware Encoders 2–5)</span>
+            <span style="font-family:var(--mono);color:var(--text-muted)">Drag vertically</span>
+          </div>
+          <div class="macros-grid" id="macrosGrid"></div>
+        </div>
+      </div>
+
+      <!-- Contextual Quick Strip (Progressive Disclosure) -->
+      <div class="quick-strip" id="quickStrip">
+        <button class="btn" data-drawer="env">ENV (ADSR)</button>
+        <button class="btn" data-drawer="lfo">LFO MOD</button>
+        <button class="btn" data-drawer="fx">GRIT &amp; PUNCH FX</button>
+        <button class="btn" data-drawer="demos">5 DEMO SONGS</button>
+      </div>
+
+      <!-- Single Contextual Drawer -->
+      <div class="drawer" id="contextDrawer"></div>
+    </section>
+
+    <!-- Right: Live 240x240 Hardware LCD Mirror -->
+    <aside class="hw-panel">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;color:var(--text-secondary);text-transform:uppercase;">
+        FM-1 240×240 LCD Mirror
+      </div>
+      <div class="bezel">
+        <canvas id="hwLcd" width="240" height="240"></canvas>
+      </div>
+      <div class="hw-controls-hint">
+        <div style="font-size:11px;color:var(--text-secondary);font-weight:600;">Hardware Workspaces (4 Keys)</div>
+        <div class="hw-btn-row" id="hwPageBtns">
+          <button class="hw-key active" data-hw="HOME">HOME</button>
+          <button class="hw-key" data-hw="SEQ">SEQ</button>
+          <button class="hw-key" data-hw="FX">FX</button>
+          <button class="hw-key" data-hw="EDIT">EDIT</button>
+        </div>
+        <div class="hw-enc-row">
+          <span>ENC1: Preset HUD</span>
+          <div style="display:flex;gap:4px;">
+            <button class="hw-key" style="padding:0 7px" id="enc1Prev">◀</button>
+            <button class="hw-key" style="padding:0 7px" id="enc1Next">▶</button>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--text-muted);line-height:1.4;">
+          15×16px DMA-band aligned. Turning any web macro or pressing ENC1 updates the 240×240 LCD live with auto-dismissing Preset HUD.
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Unified Engine Picker Popover -->
+  <div class="engine-popover" id="enginePopover"></div>
+
+  <!-- 8-Track Dock -->
+  <div class="track-dock" id="trackDock"></div>
+
+  <!-- Bottom Dock: Switchable KEYS / 16-STEP SEQ / 8-BUS MIXER -->
+  <footer class="bottom-dock">
+    <div class="dock-bar">
+      <div class="dock-tabs">
+        <button class="btn active" data-dock="keys">1 · KEYS &amp; PADS</button>
+        <button class="btn" data-dock="seq">2 · 16/128-STEP SEQ</button>
+        <button class="btn" data-dock="mix">3 · 8-BUS MIXER</button>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);font-family:var(--mono)">
+        Keys: A W S E D F T G Y H U J K · ↑/↓ Audition Presets · / Search
+      </div>
+    </div>
+    <div class="dock-content" id="dockContent"></div>
+  </footer>
+
+  <!-- Command Palette Modal -->
+  <div class="cmd-backdrop" id="cmdBackdrop">
+    <div class="cmd-modal">
+      <input type="text" id="cmdInput" placeholder="Jump to preset, engine, or demo (Esc to close)..." />
+      <div class="cmd-results" id="cmdResults"></div>
+    </div>
+  </div>
+
+<script>
+// ---- Engine Definitions (Semantic Color System shared by Web + 240x240 LCD) ----
+const ENGINES = {
+  DX7:  { id:'DX7',  name:'DX7 FM',     color:'#38BDF8', soft:'rgba(56,189,248,0.16)',  desc:'6-Op FM classic keys, bells & brass', wave:'sine',     macros:['BRIGHT','FM IDX','DECAY','DETUNE'] },
+  VA:   { id:'VA',   name:'VA POLY',    color:'#F59E0B', soft:'rgba(245,158,11,0.16)',  desc:'Dual-DCO SuperSaw + resonant SVF',   wave:'sawtooth', macros:['CUTOFF','RESO','DECAY','DETUNE'] },
+  B303: { id:'B303', name:'TB-303',     color:'#A3E635', soft:'rgba(163,230,53,0.16)',  desc:'Acid mono bassline + accent/slide',  wave:'sawtooth', macros:['CUTOFF','RESO','ENV MOD','DECAY'] },
+  D808: { id:'D808', name:'TR-808/909', color:'#FB7185', soft:'rgba(251,113,133,0.16)', desc:'Analog/PCM hybrid drum kit',         wave:'triangle', macros:['PUNCH','TONE','DECAY','DRIVE'] },
+  SID:  { id:'SID',  name:'C64 SID',    color:'#A78BFA', soft:'rgba(167,139,250,0.16)', desc:'6581 pulse/tri + chiptune arp',      wave:'square',   macros:['PW','RESO','DECAY','ARP SPD'] },
+  GRAN: { id:'GRAN', name:'GRANULAR',   color:'#2DD4BF', soft:'rgba(45,212,191,0.16)',  desc:'Real-time stereo scatter cloud',     wave:'triangle', macros:['GRAIN','SCATTER','DECAY','MORPH'] }
+};
+
+const PRESETS = [
+  { num:'001', name:'Steinway Concert Grand', cat:'KEYS',  eng:'DX7',  m:[72,28,68,14], fav:true },
+  { num:'008', name:'CP-70 Electric Piano',   cat:'KEYS',  eng:'DX7',  m:[64,40,62,22], fav:true },
+  { num:'015', name:'FM Crystal Tines',       cat:'KEYS',  eng:'DX7',  m:[82,58,74,30], fav:false },
+  { num:'024', name:'303 Acid Squelch',       cat:'BASS',  eng:'B303', m:[44,78,66,42], fav:true },
+  { num:'031', name:'Sub Moog Foundation',    cat:'BASS',  eng:'VA',   m:[32,24,52,18], fav:false },
+  { num:'042', name:'Blade SuperSaw',         cat:'PAD',   eng:'VA',   m:[74,38,76,54], fav:true },
+  { num:'048', name:'Warm K250 Strings',      cat:'PAD',   eng:'VA',   m:[58,20,84,40], fav:false },
+  { num:'056', name:'20th Century Brass',     cat:'BRASS', eng:'DX7',  m:[86,62,64,26], fav:true },
+  { num:'064', name:'Symphonic French Horn',  cat:'BRASS', eng:'VA',   m:[54,30,70,20], fav:false },
+  { num:'072', name:'6581 Arpeggio Lead',     cat:'LEAD',  eng:'SID',  m:[68,52,48,66], fav:true },
+  { num:'085', name:'Hyper Sync Solo',        cat:'LEAD',  eng:'VA',   m:[84,46,56,48], fav:false },
+  { num:'096', name:'TR-909 Warehouse Kit',   cat:'DRUMS', eng:'D808', m:[78,50,44,36], fav:false },
+  { num:'112', name:'Tape Shimmer Cloud',     cat:'FX',    eng:'GRAN', m:[66,72,88,62], fav:true },
+  { num:'128', name:'Glass Choir Scatter',    cat:'FX',    eng:'GRAN', m:[74,60,82,70], fav:false }
+];
+
+const TRACKS = [
+  { id:0, label:'T1', eng:'DX7',  presetIdx:0,  vol:88, mute:false, steps:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0] },
+  { id:1, label:'T2', eng:'B303', presetIdx:3,  vol:82, mute:false, steps:[1,0,1,0,0,0,1,0,1,0,0,1,0,1,0,0] },
+  { id:2, label:'T3', eng:'D808', presetIdx:11, vol:92, mute:false, steps:[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1] },
+  { id:3, label:'T4', eng:'VA',   presetIdx:5,  vol:86, mute:false, steps:[1,0,0,1,0,0,1,0,0,0,1,0,1,0,0,0] },
+  { id:4, label:'T5', eng:'DX7',  presetIdx:7,  vol:80, mute:false, steps:[1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0] },
+  { id:5, label:'T6', eng:'SID',  presetIdx:9,  vol:76, mute:false, steps:[0,0,1,0,0,0,1,0,0,0,1,0,0,1,1,0] },
+  { id:6, label:'T7', eng:'GRAN', presetIdx:12, vol:74, mute:false, steps:[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] },
+  { id:7, label:'T8', eng:'VA',   presetIdx:6,  vol:78, mute:false, steps:[0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0] }
+];
+
+let state = {
+  track: 3,
+  cat: 'ALL',
+  search: '',
+  macros: [...PRESETS[5].m],
+  abSlot: 'A',
+  snapshotB: null,
+  env: { a:12, d:62, s:70, r:48 },
+  lfo: { rate:35, depth:28, wave:0, dest:0 },
+  fx:  { drive:18, crush:0, phaser:24, reverb:42 },
+  activeDrawer: null,
+  dockMode: 'keys',
+  hwPage: 'HOME',
+  hwHudTimer: null,
+  hwHudActive: false,
+  playing: false,
+  bpm: 124,
+  step: -1
+};
+
+// ---- Real Web Audio Synth Engine ----
+let audioCtx = null, analyser = null, masterGain = null;
+function ensureAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 512;
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0.28;
+    masterGain.connect(analyser);
+    analyser.connect(audioCtx.destination);
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playNote(midi, dur = 0.45, vel = 0.8) {
+  ensureAudio();
+  const t = TRACKS[state.track];
+  const eng = ENGINES[t.eng];
+  const now = audioCtx.currentTime;
+  const freq = 440 * Math.pow(2, (midi - 69) / 12);
+
+  const osc1 = audioCtx.createOscillator();
+  const osc2 = audioCtx.createOscillator();
+  const filter = audioCtx.createBiquadFilter();
+  const gain = audioCtx.createGain();
+
+  osc1.type = eng.wave;
+  osc2.type = eng.id === 'DX7' ? 'sine' : eng.wave;
+  osc1.frequency.setValueAtTime(freq, now);
+  const detuneCents = (state.macros[3] / 100) * 32;
+  osc2.frequency.setValueAtTime(eng.id === 'DX7' ? freq * 2 : freq, now);
+  osc2.detune.setValueAtTime(detuneCents, now);
+
+  filter.type = 'lowpass';
+  const cutoffHz = 180 * Math.pow(65, state.macros[0] / 100);
+  filter.frequency.setValueAtTime(Math.min(18000, cutoffHz * 1.4), now);
+  filter.frequency.exponentialRampToValueAtTime(Math.max(120, cutoffHz * 0.45), now + 0.1 + (state.macros[2] / 100) * 0.8);
+  filter.Q.setValueAtTime(0.7 + (state.macros[1] / 100) * 14, now);
+
+  const atk = 0.006 + (state.env.a / 100) * 0.25;
+  const dec = 0.08 + (state.macros[2] / 100) * 1.1;
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.linearRampToValueAtTime(vel * 0.45, now + atk);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + atk + Math.max(dur, dec));
+
+  osc1.connect(filter);
+  osc2.connect(filter);
+  filter.connect(gain);
+  gain.connect(masterGain);
+
+  osc1.start(now); osc2.start(now);
+  const stopAt = now + atk + Math.max(dur, dec) + 0.05;
+  osc1.stop(stopAt); osc2.stop(stopAt);
+
+  document.getElementById('scopeVoiceInfo').textContent = `${eng.name} · MIDI ${midi}`;
+}
+
+function auditionChord() {
+  const t = TRACKS[state.track];
+  const notes = t.eng === 'B303' ? [36, 48] : t.eng === 'D808' ? [36, 42, 48] : [60, 64, 67, 71];
+  notes.forEach((n, i) => setTimeout(() => playNote(n, 0.55, 0.7), i * 28));
+}
+
+// ---- Theme & Engine Sync ----
+function applyAccent() {
+  const eng = ENGINES[TRACKS[state.track].eng];
+  document.documentElement.style.setProperty('--accent', eng.color);
+  document.documentElement.style.setProperty('--accent-soft', eng.soft);
+  document.getElementById('engineBadgeText').textContent = eng.name;
+  const p = PRESETS[TRACKS[state.track].presetIdx];
+  document.getElementById('heroPresetName').textContent = `${p.num} · ${p.name}`;
+  document.getElementById('heroPresetMeta').textContent = `Track ${state.track + 1} · ${p.cat} · ${eng.desc}`;
+}
+
+// ---- Render Preset Browser ----
+const CATS = ['ALL', '★', 'KEYS', 'BASS', 'PAD', 'BRASS', 'LEAD', 'DRUMS', 'FX'];
+function getFilteredPresets() {
+  const q = state.search.toLowerCase();
+  return PRESETS.map((p, idx) => ({ ...p, idx })).filter(p => {
+    if (state.cat === '★' && !p.fav) return false;
+    if (state.cat !== 'ALL' && state.cat !== '★' && p.cat !== state.cat) return false;
+    if (q && !`${p.num} ${p.name} ${p.cat} ${p.eng}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+
+function renderBrowser() {
+  const pillsEl = document.getElementById('catPills');
+  pillsEl.innerHTML = CATS.map(c => `<span class="pill ${state.cat===c?'active':''}" data-cat="${c}">${c}</span>`).join('');
+  pillsEl.querySelectorAll('.pill').forEach(el => {
+    el.onclick = () => { state.cat = el.dataset.cat; renderBrowser(); };
+  });
+
+  const list = getFilteredPresets();
+  document.getElementById('presetCount').textContent = `${list.length}/${PRESETS.length}`;
+  const activeIdx = TRACKS[state.track].presetIdx;
+  const listEl = document.getElementById('presetList');
+  listEl.innerHTML = list.map(p => `
+    <div class="preset-item ${p.idx===activeIdx?'active':''}" data-idx="${p.idx}">
+      <span class="preset-num">${p.num}</span>
+      <span class="preset-name">${p.name}</span>
+      <span class="preset-cat">${p.cat}</span>
+      <button class="star-btn ${p.fav?'fav':''}" data-star="${p.idx}">${p.fav?'★':'☆'}</button>
+    </div>
+  `).join('');
+
+  listEl.querySelectorAll('.preset-item').forEach(el => {
+    el.onclick = (e) => {
+      if (e.target.dataset.star !== undefined) {
+        const si = +e.target.dataset.star;
+        PRESETS[si].fav = !PRESETS[si].fav;
+        renderBrowser(); drawHwLcd(); return;
+      }
+      selectPreset(+el.dataset.idx, true);
+    };
+  });
+}
+
+function selectPreset(idx, showHud = false) {
+  const p = PRESETS[idx];
+  TRACKS[state.track].presetIdx = idx;
+  TRACKS[state.track].eng = p.eng;
+  state.macros = [...p.m];
+  state.abSlot = 'A';
+  state.snapshotB = null;
+  if (showHud) triggerHwHud();
+  renderAll();
+  if (document.getElementById('autoAudition').checked) auditionChord();
+}
+
+function triggerHwHud() {
+  state.hwHudActive = true;
+  clearTimeout(state.hwHudTimer);
+  state.hwHudTimer = setTimeout(() => { state.hwHudActive = false; drawHwLcd(); }, 1400);
+  drawHwLcd();
+}
+
+// ---- Render 4 Hero Macro Arcs (1:1 Hardware Parity) ----
+function renderMacros() {
+  const eng = ENGINES[TRACKS[state.track].eng];
+  const grid = document.getElementById('macrosGrid');
+  grid.innerHTML = eng.macros.map((name, i) => {
+    const val = state.macros[i];
+    const r = 28, cx = 36, cy = 36;
+    const startA = 135 * Math.PI / 180;
+    const sweep = (270 * (val / 100)) * Math.PI / 180;
+    const endA = startA + sweep;
+    const x1 = cx + r * Math.cos(startA), y1 = cy + r * Math.sin(startA);
+    const x2 = cx + r * Math.cos(endA), y2 = cy + r * Math.sin(endA);
+    const large = sweep > Math.PI ? 1 : 0;
+    const fullEnd = startA + 270 * Math.PI / 180;
+    const fx2 = cx + r * Math.cos(fullEnd), fy2 = cy + r * Math.sin(fullEnd);
+    return `
+      <div class="macro-knob" data-macro="${i}">
+        <svg viewBox="0 0 72 72">
+          <path d="M ${x1} ${y1} A ${r} ${r} 0 1 1 ${fx2} ${fy2}" fill="none" stroke="rgba(255,255,255,0.09)" stroke-width="5" stroke-linecap="round"/>
+          ${val > 0 ? `<path d="M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}" fill="none" stroke="${eng.color}" stroke-width="5" stroke-linecap="round"/>` : ''}
+          <text x="36" y="41" text-anchor="middle" fill="#f1f5f9" font-family="monospace" font-size="14" font-weight="700">${val}</text>
+        </svg>
+        <div class="macro-name">${name}</div>
+      </div>
+    `;
+  }).join('');
+
+  grid.querySelectorAll('.macro-knob').forEach(el => {
+    const idx = +el.dataset.macro;
+    el.onmousedown = (e) => {
+      e.preventDefault();
+      el.classList.add('dragging');
+      const startY = e.clientY, startVal = state.macros[idx];
+      const onMove = (ev) => {
+        const next = Math.max(0, Math.min(100, Math.round(startVal + (startY - ev.clientY) * 0.6)));
+        if (next !== state.macros[idx]) {
+          state.macros[idx] = next;
+          renderMacros();
+          drawHwLcd();
+        }
+      };
+      const onUp = () => {
+        el.classList.remove('dragging');
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+      };
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+    };
+  });
+}
+
+// ---- Contextual Drawer ----
+function renderDrawer() {
+  const drawer = document.getElementById('contextDrawer');
+  document.querySelectorAll('#quickStrip .btn').forEach(b => b.classList.toggle('active', b.dataset.drawer === state.activeDrawer));
+  if (!state.activeDrawer) { drawer.classList.remove('open'); return; }
+  drawer.classList.add('open');
+
+  if (state.activeDrawer === 'env') {
+    const items = [['Attack','a'],['Decay','d'],['Sustain','s'],['Release','r']];
+    drawer.innerHTML = items.map(([lbl,k]) => `
+      <div class="slider-col">
+        <div class="slider-top"><span>${lbl}</span><span>${state.env[k]}%</span></div>
+        <input type="range" min="0" max="100" value="${state.env[k]}" data-env="${k}" />
+      </div>`).join('');
+    drawer.querySelectorAll('input').forEach(inp => inp.oninput = () => {
+      state.env[inp.dataset.env] = +inp.value; renderDrawer(); drawHwLcd();
+    });
+  } else if (state.activeDrawer === 'lfo') {
+    const items = [['LFO Rate','rate'],['LFO Depth','depth']];
+    drawer.innerHTML = items.map(([lbl,k]) => `
+      <div class="slider-col">
+        <div class="slider-top"><span>${lbl}</span><span>${state.lfo[k]}%</span></div>
+        <input type="range" min="0" max="100" value="${state.lfo[k]}" data-lfo="${k}" />
+      </div>`).join('') + `
+      <div class="slider-col"><div class="slider-top"><span>Wave</span><span>SIN</span></div><button class="btn" onclick="auditionChord()">Test Mod</button></div>
+      <div class="slider-col"><div class="slider-top"><span>Target</span><span>CUTOFF</span></div><button class="btn" onclick="auditionChord()">Sync BPM</button></div>`;
+    drawer.querySelectorAll('input').forEach(inp => inp.oninput = () => {
+      state.lfo[inp.dataset.lfo] = +inp.value; renderDrawer(); drawHwLcd();
+    });
+  } else if (state.activeDrawer === 'fx') {
+    const items = [['Overdrive','drive'],['Bitcrush','crush'],['Phaser','phaser'],['Hall Reverb','reverb']];
+    drawer.innerHTML = items.map(([lbl,k]) => `
+      <div class="slider-col">
+        <div class="slider-top"><span>${lbl}</span><span>${state.fx[k]}%</span></div>
+        <input type="range" min="0" max="100" value="${state.fx[k]}" data-fx="${k}" />
+      </div>`).join('');
+    drawer.querySelectorAll('input').forEach(inp => inp.oninput = () => {
+      state.fx[inp.dataset.fx] = +inp.value; renderDrawer(); drawHwLcd();
+    });
+  } else if (state.activeDrawer === 'demos') {
+    const demos = ['1. Beethoven Orchestra (56s)','2. Jazz Big-Band (112s)','3. Stars & Stripes (87s)','4. All-Bank Mix (102s)','5. 20th Century Fanfare (23s)'];
+    drawer.innerHTML = demos.map((d, i) => `<button class="btn" onclick="selectPreset(${i===4?7:i}, true)">▶ ${d}</button>`).join('');
+  }
+}
+
+// ---- Track Dock & Bottom Dock ----
+function renderTracks() {
+  const dock = document.getElementById('trackDock');
+  dock.innerHTML = TRACKS.map((t, i) => {
+    const eng = ENGINES[t.eng];
+    return `
+      <div class="track-pill ${i===state.track?'active':''}" data-t="${i}">
+        <span class="t-dot" style="background:${eng.color}"></span>
+        <span>${t.label} · ${eng.name}</span>
+      </div>`;
+  }).join('');
+  dock.querySelectorAll('.track-pill').forEach(el => {
+    el.onclick = () => {
+      state.track = +el.dataset.t;
+      state.macros = [...PRESETS[TRACKS[state.track].presetIdx].m];
+      renderAll();
+    };
+  });
+}
+
+function renderDock() {
+  document.querySelectorAll('[data-dock]').forEach(b => b.classList.toggle('active', b.dataset.dock === state.dockMode));
+  const content = document.getElementById('dockContent');
+  if (state.dockMode === 'keys') {
+    const whites = [60,62,64,65,67,69,71,72,74,76,77,79,81,83];
+    const labels = ['A','S','D','F','G','H','J','K','L',';','','','',''];
+    const blacks = [[61,4.8],[63,12.0],[66,26.3],[68,33.4],[70,40.6],[73,54.8],[75,62.0],[78,76.3],[80,83.4],[82,90.6]];
+    content.innerHTML = `<div class="keybed">
+      ${whites.map((m,i)=>`<div class="w-key" data-midi="${m}">${labels[i]}</div>`).join('')}
+      ${blacks.map(([m,left])=>`<div class="b-key" data-midi="${m}" style="left:${left}%"></div>`).join('')}
+    </div>`;
+    content.querySelectorAll('[data-midi]').forEach(k => {
+      k.onmousedown = () => playNote(+k.dataset.midi);
+    });
+  } else if (state.dockMode === 'seq') {
+    const t = TRACKS[state.track];
+    content.innerHTML = `<div class="seq-grid">
+      ${t.steps.map((on,i)=>`
+        <div class="step-pad ${on?'on':''} ${i===state.step?'playing':''}" data-step="${i}">
+          <span>${String(i+1).padStart(2,'0')}</span>
+          <div class="step-led"></div>
+        </div>`).join('')}
+    </div>`;
+    content.querySelectorAll('.step-pad').forEach(p => {
+      p.onclick = () => { t.steps[+p.dataset.step] ^= 1; renderDock(); drawHwLcd(); };
+    });
+  } else {
+    content.innerHTML = `<div class="mixer-grid">
+      ${TRACKS.map((t,i)=>`
+        <div class="mix-ch">
+          <div class="mix-ch-name" style="color:${ENGINES[t.eng].color}">${t.label}</div>
+          <input type="range" min="0" max="100" value="${t.vol}" data-mix="${i}" />
+          <span style="font-family:var(--mono);font-size:10px;color:var(--text-muted)">${t.vol}%</span>
+        </div>`).join('')}
+    </div>`;
+    content.querySelectorAll('[data-mix]').forEach(inp => {
+      inp.oninput = () => { TRACKS[+inp.dataset.mix].vol = +inp.value; renderDock(); drawHwLcd(); };
+    });
+  }
+}
+
+// ---- 240x240 Hardware LCD Live Renderer (Exact 16px DMA-Band Layout) ----
+function drawHwLcd() {
+  const c = document.getElementById('hwLcd');
+  const ctx = c.getContext('2d');
+  const t = TRACKS[state.track];
+  const eng = ENGINES[t.eng];
+  const p = PRESETS[t.presetIdx];
+
+  ctx.fillStyle = '#080b10';
+  ctx.fillRect(0, 0, 240, 240);
+
+  // Header bar (y=0..24)
+  ctx.fillStyle = eng.color;
+  ctx.fillRect(0, 0, 240, 24);
+  ctx.fillStyle = '#080b10';
+  ctx.font = 'bold 11px monospace';
+  ctx.fillText(`T${state.track+1} ${eng.name}`, 8, 16);
+  ctx.fillText(`${state.bpm} BPM`, 132, 16);
+  ctx.fillText(`[${state.abSlot}]`, 212, 16);
+
+  if (state.hwPage === 'HOME') {
+    // Preset Hero (y=24..68)
+    ctx.fillStyle = '#111722';
+    ctx.fillRect(0, 24, 240, 44);
+    ctx.fillStyle = eng.color;
+    ctx.font = 'bold 11px monospace';
+    ctx.fillText(p.num, 8, 43);
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = 'bold 12px monospace';
+    ctx.fillText(p.name.slice(0, 21), 36, 43);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '10px monospace';
+    ctx.fillText(`${p.cat} ${p.fav ? '★' : ''}   < ENC1 BROWSE >`, 8, 60);
+
+    // 2x2 Macro Arc Grid (y=68..180)
+    eng.macros.forEach((mName, i) => {
+      const col = i % 2, row = Math.floor(i / 2);
+      const bx = 8 + col * 116, by = 74 + row * 52;
+      ctx.fillStyle = '#111722';
+      ctx.fillRect(bx, by, 108, 46);
+      const cx = bx + 24, cy = by + 24, r = 15;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0.75 * Math.PI, 2.25 * Math.PI);
+      ctx.strokeStyle = '#243042'; ctx.lineWidth = 4; ctx.stroke();
+      const frac = state.macros[i] / 100;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0.75 * Math.PI, (0.75 + 1.5 * frac) * Math.PI);
+      ctx.strokeStyle = eng.color; ctx.lineWidth = 4; ctx.stroke();
+      ctx.fillStyle = '#f8fafc'; ctx.font = 'bold 10px monospace';
+      ctx.fillText(String(state.macros[i]).padStart(2,' '), cx - 7, cy + 4);
+      ctx.fillStyle = '#cbd5e1'; ctx.font = 'bold 9px monospace';
+      ctx.fillText(mName, bx + 46, by + 20);
+      ctx.fillStyle = '#64748b'; ctx.font = '9px monospace';
+      ctx.fillText(`ENC${i+2}`, bx + 46, by + 35);
+    });
+
+    // Live Env / Mod Strip (y=180..216)
+    ctx.fillStyle = '#0e141e';
+    ctx.fillRect(0, 182, 240, 30);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '10px monospace';
+    ctx.fillText(`ENV A${state.env.a} D${state.env.d} S${state.env.s} R${state.env.r}`, 8, 201);
+  } else if (state.hwPage === 'SEQ') {
+    ctx.fillStyle = '#94a3b8'; ctx.font = 'bold 10px monospace';
+    ctx.fillText('16/128-STEP SEQUENCER (BANK A)', 8, 42);
+    t.steps.forEach((on, i) => {
+      const col = i % 4, row = Math.floor(i / 4);
+      const x = 10 + col * 56, y = 54 + row * 38;
+      ctx.fillStyle = on ? eng.color : '#161e2b';
+      ctx.fillRect(x, y, 50, 32);
+      if (i === state.step) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(x, y, 50, 32); }
+      ctx.fillStyle = on ? '#080b10' : '#64748b';
+      ctx.font = 'bold 11px monospace';
+      ctx.fillText(String(i+1).padStart(2,'0'), x + 17, y + 20);
+    });
+  } else if (state.hwPage === 'FX') {
+    ctx.fillStyle = '#94a3b8'; ctx.font = 'bold 10px monospace';
+    ctx.fillText('GRIT & PUNCH LIVE FX', 8, 42);
+    const fxList = [['DRIVE', state.fx.drive], ['CRUSH', state.fx.crush], ['PHASER', state.fx.phaser], ['REVERB', state.fx.reverb]];
+    fxList.forEach(([lbl, v], i) => {
+      const y = 62 + i * 36;
+      ctx.fillStyle = '#f8fafc'; ctx.font = 'bold 10px monospace'; ctx.fillText(lbl, 10, y + 12);
+      ctx.fillStyle = '#182230'; ctx.fillRect(72, y + 2, 126, 14);
+      ctx.fillStyle = eng.color; ctx.fillRect(72, y + 2, Math.round(1.26 * v), 14);
+      ctx.fillStyle = '#94a3b8'; ctx.fillText(`${v}%`, 204, y + 12);
+    });
+  } else {
+    ctx.fillStyle = '#94a3b8'; ctx.font = 'bold 10px monospace';
+    ctx.fillText(`DEEP INSPECTOR · ${eng.name}`, 8, 42);
+    ctx.fillStyle = '#111722'; ctx.fillRect(8, 54, 224, 150);
+    ctx.fillStyle = '#f8fafc'; ctx.font = '10px monospace';
+    ctx.fillText(`A:${state.env.a}  D:${state.env.d}  S:${state.env.s}  R:${state.env.r}`, 18, 80);
+    ctx.fillText(`LFO RATE:${state.lfo.rate}  DEPTH:${state.lfo.depth}`, 18, 106);
+    ctx.fillText(`VOICE ALLOC: 8 POLY (Q23)`, 18, 132);
+    ctx.fillText(`FLASH SYNC: CLEAN`, 18, 158);
+  }
+
+  // Track Pill Dock (y=216..240)
+  ctx.fillStyle = '#0c1018';
+  ctx.fillRect(0, 216, 240, 24);
+  for (let i = 0; i < 8; i++) {
+    const x = 4 + i * 29;
+    ctx.fillStyle = i === state.track ? ENGINES[TRACKS[i].eng].color : '#1b2433';
+    ctx.fillRect(x, 220, 25, 16);
+    ctx.fillStyle = i === state.track ? '#080b10' : '#94a3b8';
+    ctx.font = 'bold 10px monospace';
+    ctx.fillText(String(i + 1), x + 9, 232);
+  }
+
+  // Auto-Dismissing Floating Preset HUD Overlay (when turning ENC1)
+  if (state.hwHudActive) {
+    ctx.fillStyle = 'rgba(8, 11, 16, 0.92)';
+    ctx.fillRect(10, 62, 220, 96);
+    ctx.strokeStyle = eng.color; ctx.lineWidth = 2;
+    ctx.strokeRect(10, 62, 220, 96);
+    ctx.fillStyle = eng.color; ctx.font = 'bold 10px monospace';
+    ctx.fillText('INSTANT PRESET HUD (ENC1)', 20, 80);
+    const prev = PRESETS[(t.presetIdx - 1 + PRESETS.length) % PRESETS.length];
+    const next = PRESETS[(t.presetIdx + 1) % PRESETS.length];
+    ctx.fillStyle = '#64748b'; ctx.font = '10px monospace';
+    ctx.fillText(`  ${prev.num} ${prev.name.slice(0,18)}`, 20, 102);
+    ctx.fillStyle = '#f8fafc'; ctx.font = 'bold 11px monospace';
+    ctx.fillText(`▸ ${p.num} ${p.name.slice(0,18)}`, 20, 124);
+    ctx.fillStyle = '#64748b'; ctx.font = '10px monospace';
+    ctx.fillText(`  ${next.num} ${next.name.slice(0,18)}`, 20, 146);
+  }
+}
+
+// ---- Live Oscilloscope Animation ----
+function animateScope() {
+  const c = document.getElementById('scopeCanvas');
+  const ctx = c.getContext('2d');
+  const eng = ENGINES[TRACKS[state.track].eng];
+  ctx.fillStyle = '#0b0f14';
+  ctx.fillRect(0, 0, c.width, c.height);
+
+  // Subtle grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, c.height / 2); ctx.lineTo(c.width, c.height / 2);
+  ctx.stroke();
+
+  ctx.strokeStyle = eng.color;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  if (analyser) {
+    const buf = new Uint8Array(analyser.fftSize);
+    analyser.getByteTimeDomainData(buf);
+    for (let i = 0; i < buf.length; i++) {
+      const x = (i / buf.length) * c.width;
+      const y = (buf[i] / 255) * c.height;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+  } else {
+    const t = performance.now() * 0.002;
+    for (let x = 0; x < c.width; x++) {
+      const y = c.height / 2 + Math.sin(x * 0.03 + t) * 14 * (state.macros[0] / 100);
+      if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+  }
+  ctx.stroke();
+  requestAnimationFrame(animateScope);
+}
+
+// ---- Sequencer Clock ----
+let seqTimer = null;
+function togglePlay() {
+  state.playing = !state.playing;
+  const btn = document.getElementById('playBtn');
+  btn.classList.toggle('play-active', state.playing);
+  btn.textContent = state.playing ? '■ STOP' : '▶ PLAY';
+  if (state.playing) {
+    const stepMs = (60000 / state.bpm) / 4;
+    seqTimer = setInterval(() => {
+      state.step = (state.step + 1) % 16;
+      const t = TRACKS[state.track];
+      if (t.steps[state.step]) {
+        const scale = [48, 51, 55, 58, 60, 63, 67, 70];
+        playNote(scale[state.step % scale.length], 0.16, 0.55);
+      }
+      if (state.dockMode === 'seq') renderDock();
+      if (state.hwPage === 'SEQ') drawHwLcd();
+    }, stepMs);
+  } else {
+    clearInterval(seqTimer);
+    state.step = -1;
+    if (state.dockMode === 'seq') renderDock();
+    drawHwLcd();
+  }
+}
+
+// ---- Engine Popover ----
+function renderEnginePopover() {
+  const pop = document.getElementById('enginePopover');
+  pop.innerHTML = Object.values(ENGINES).map(e => `
+    <div class="eng-opt" data-eng="${e.id}" style="border-left:3px solid ${e.color}">
+      <div class="eng-opt-title" style="color:${e.color}">${e.name}</div>
+      <div class="eng-opt-desc">${e.desc}</div>
+    </div>`).join('');
+  pop.querySelectorAll('.eng-opt').forEach(el => {
+    el.onclick = () => {
+      TRACKS[state.track].eng = el.dataset.eng;
+      pop.classList.remove('open');
+      renderAll();
+      auditionChord();
+    };
+  });
+}
+
+// ---- Command Palette ----
+function openCmd() {
+  const bd = document.getElementById('cmdBackdrop');
+  bd.classList.add('open');
+  const inp = document.getElementById('cmdInput');
+  inp.value = ''; inp.focus();
+  renderCmdResults('');
+}
+function renderCmdResults(q) {
+  const res = document.getElementById('cmdResults');
+  const matches = PRESETS.map((p,idx)=>({...p,idx})).filter(p => `${p.num} ${p.name} ${p.cat} ${p.eng}`.toLowerCase().includes(q.toLowerCase()));
+  res.innerHTML = matches.map(p => `
+    <div class="preset-item" data-cidx="${p.idx}">
+      <span class="preset-num">${p.num}</span>
+      <span class="preset-name">${p.name}</span>
+      <span class="preset-cat" style="color:${ENGINES[p.eng].color}">${ENGINES[p.eng].name}</span>
+    </div>`).join('');
+  res.querySelectorAll('.preset-item').forEach(el => {
+    el.onclick = () => {
+      selectPreset(+el.dataset.cidx, true);
+      document.getElementById('cmdBackdrop').classList.remove('open');
+    };
+  });
+}
+
+// ---- Wire Events ----
+document.getElementById('browserSearch').oninput = (e) => { state.search = e.target.value; renderBrowser(); };
+document.getElementById('playBtn').onclick = togglePlay;
+document.getElementById('bpmPill').onclick = () => { state.bpm = state.bpm >= 150 ? 96 : state.bpm + 4; document.getElementById('bpmVal').textContent = state.bpm; drawHwLcd(); };
+document.getElementById('hwToggle').onclick = () => document.getElementById('mainGrid').classList.toggle('hw-hidden');
+document.getElementById('engineBadge').onclick = (e) => { e.stopPropagation(); renderEnginePopover(); document.getElementById('enginePopover').classList.toggle('open'); };
+document.addEventListener('click', () => document.getElementById('enginePopover').classList.remove('open'));
+document.getElementById('auditionNowBtn').onclick = auditionChord;
+document.getElementById('mutateBtn').onclick = () => {
+  state.macros = state.macros.map(v => Math.max(0, Math.min(100, v + Math.round((Math.random() - 0.5) * 26))));
+  renderMacros(); drawHwLcd(); auditionChord();
+};
+document.getElementById('resetBtn').onclick = () => {
+  state.macros = [...PRESETS[TRACKS[state.track].presetIdx].m];
+  renderMacros(); drawHwLcd(); auditionChord();
+};
+document.getElementById('abBtn').onclick = () => {
+  if (!state.snapshotB) state.snapshotB = [...PRESETS[TRACKS[state.track].presetIdx].m];
+  const cur = [...state.macros];
+  state.macros = [...state.snapshotB];
+  state.snapshotB = cur;
+  state.abSlot = state.abSlot === 'A' ? 'B' : 'A';
+  document.getElementById('abBtn').classList.toggle('active', state.abSlot === 'B');
+  renderMacros(); drawHwLcd(); auditionChord();
+};
+document.querySelectorAll('#quickStrip .btn').forEach(b => {
+  b.onclick = () => { state.activeDrawer = state.activeDrawer === b.dataset.drawer ? null : b.dataset.drawer; renderDrawer(); };
+});
+document.querySelectorAll('[data-dock]').forEach(b => {
+  b.onclick = () => { state.dockMode = b.dataset.dock; renderDock(); };
+});
+document.querySelectorAll('#hwPageBtns .hw-key').forEach(b => {
+  b.onclick = () => {
+    state.hwPage = b.dataset.hw;
+    document.querySelectorAll('#hwPageBtns .hw-key').forEach(x => x.classList.toggle('active', x === b));
+    drawHwLcd();
+  };
+});
+document.getElementById('enc1Prev').onclick = () => selectPreset((TRACKS[state.track].presetIdx - 1 + PRESETS.length) % PRESETS.length, true);
+document.getElementById('enc1Next').onclick = () => selectPreset((TRACKS[state.track].presetIdx + 1) % PRESETS.length, true);
+document.getElementById('cmdTrigger').onclick = openCmd;
+document.getElementById('cmdInput').oninput = (e) => renderCmdResults(e.target.value);
+document.getElementById('cmdBackdrop').onclick = (e) => { if (e.target.id === 'cmdBackdrop') e.target.classList.remove('open'); };
+
+// Keyboard shortcuts: /, Cmd+K, ArrowUp/Down audition, computer keyboard notes
+const KEY_MAP = { a:60, w:61, s:62, e:63, d:64, f:65, t:66, g:67, y:68, h:69, u:70, j:71, k:72 };
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { document.getElementById('cmdBackdrop').classList.remove('open'); return; }
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openCmd(); return; }
+  if (document.activeElement.tagName === 'INPUT') return;
+  if (e.key === '/') { e.preventDefault(); openCmd(); return; }
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    const list = getFilteredPresets();
+    if (!list.length) return;
+    const cur = list.findIndex(p => p.idx === TRACKS[state.track].presetIdx);
+    const next = list[(cur + (e.key === 'ArrowDown' ? 1 : -1) + list.length) % list.length];
+    selectPreset(next.idx, true);
+    return;
+  }
+  if (e.key === '1') { state.dockMode = 'keys'; renderDock(); return; }
+  if (e.key === '2') { state.dockMode = 'seq'; renderDock(); return; }
+  if (e.key === '3') { state.dockMode = 'mix'; renderDock(); return; }
+  if (KEY_MAP[e.key.toLowerCase()] && !e.repeat) playNote(KEY_MAP[e.key.toLowerCase()]);
+});
+
+function renderAll() {
+  applyAccent();
+  renderBrowser();
+  renderMacros();
+  renderDrawer();
+  renderTracks();
+  renderDock();
+  drawHwLcd();
+}
+
+renderAll();
+animateScope();
+</script>
+</body>
+</html>

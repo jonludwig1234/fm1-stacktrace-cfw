@@ -1,5 +1,7 @@
 # FM-1 Stack Trace CFW (Custom Firmware + 256-Preset Web Workstation)
 
+> **Launch the Live Web UI:** [**Open FM-1 Stack Trace Unified Studio (Web UI + 240×240 Hardware LCD Mirror)**](https://jonludwig1234.github.io/fm1-stacktrace-cfw/) — runs directly in your browser with Web Audio synthesis, zero install required.
+
 **Open-source Custom Firmware (`FM1_K250_STACKTRACE.fwsc`) for the M-VAVE FM-1 Groovebox / Synthesizer**, built on FM1 Open V14 with 4 new Q23 fixed-point DSP synthesis engines, a 128-step Pro Sequencer, Euclidean & 303 Acid generators, an 8-scene clip launcher, live Grit & Punch FX, a zero-flash-write sample slicer, MIDI CC Learn, 5 built-in MIDI-driven showcase demos, and a standalone 256-preset browser workstation.
 
 > **Safety First:** Always back up your Projects, Samples, and DX7 Voice Banks via the [M-VAVE FM-1 Workbench](https://open.m-vave.com/fm1-workbench) before flashing any custom firmware. You can return to stock V15 at any time using the official Workbench.
