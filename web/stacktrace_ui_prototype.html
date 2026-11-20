@@ -707,15 +707,15 @@ const DEMO_META = [
     busLabels:['DRUMLINE','TUBA','FR HORNS','GLK/XYLO','FLT/PICC','CLAR/SAX','TRUMPETS','TROMBONE'] },
   { id:3, name:'4. All-Bank Multi-Engine',    short:'1:41', bpm:116, durSec:100.5, notesCount:1654,
     busLabels:['DX7 FM','TB-303','TR-808','K250 ALL','VA POLY','TR-909','C64 SID','GRANULAR'] },
-  { id:4, name:'5. 20th Century Fox Fanfare', short:'21s',  bpm:106, durSec:21.3,  notesCount:297,
-    busLabels:['SNARE/CYM','TUBA/TMP','—','VIOLINS','CELLOS','TROMBONE','TRUMPETS','—'] }
+  { id:4, name:'5. 20th Century Fox Fanfare', short:'21s',  bpm:106, durSec:21.3,  notesCount:353,
+    busLabels:['SNARE/CYM','TUBA','TIMPANI','VIOLINS','CELLOS','HRN/TBN','TRUMPETS','—'] }
 ];
 let FULL_DEMOS = null;
 let fullDemosPromise = null;
 function loadFullDemos() {
   if (FULL_DEMOS) return Promise.resolve(FULL_DEMOS);
   if (fullDemosPromise) return fullDemosPromise;
-  fullDemosPromise = fetch('k250_demos.json?v=2')
+  fullDemosPromise = fetch('k250_demos.json?v=3')
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => { FULL_DEMOS = data; return data; })
     .catch(err => { fullDemosPromise = null; throw err; });
