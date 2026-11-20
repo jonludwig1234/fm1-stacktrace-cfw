@@ -226,17 +226,17 @@
   }
   .macros-grid {
     display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 6px; align-items: center; flex: 1; min-width: 0; min-height: 0;
+    gap: 6px; align-items: stretch; flex: 1; min-width: 0; min-height: 0;
   }
   .macro-knob {
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-    padding: 5px 3px; border-radius: var(--radius-md); min-width: 0;
+    padding: 5px 4px; border-radius: var(--radius-md); min-width: 0;
     background: var(--bg-canvas); border: 1px solid var(--border);
-    cursor: ns-resize; transition: border-color 0.12s; overflow: hidden;
+    cursor: ns-resize; transition: border-color 0.12s;
   }
   .macro-knob:hover, .macro-knob.dragging { border-color: var(--accent); }
   .macro-knob svg { width: 52px; height: 52px; overflow: visible; flex-shrink: 0; }
-  .macro-name { font-size: 10px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .macro-name { font-size: 9.5px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.02em; white-space: nowrap; text-align: center; line-height: 1.1; }
 
   /* Quick Contextual Strip & Drawer */
   .quick-strip { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
@@ -456,7 +456,7 @@
         <select id="demoSelect" aria-label="Choose demo song">
           <option value="0">1. Beethoven Orchestra (56s)</option>
           <option value="1">2. Jazz Big-Band (1:52)</option>
-          <option value="2">3. Stars &amp; Stripes (1:27)</option>
+          <option value="2">3. Stars &amp; Stripes (1:24)</option>
           <option value="3">4. All-Bank Multi-Engine (1:41)</option>
           <option value="4">5. 20th Century Fox (21s)</option>
         </select>
@@ -714,7 +714,7 @@ const DEMO_META = [
     busLabels:['JAZZ KIT','UPR BASS','PNO / EP','GTR/VIBE','FLT/CLAR','TENR SAX','BRASS','GTR/CONG'],
     busEngines:['K250','K250','K250','K250','K250','K250','K250','K250'],
     busPresetIndices:[50, 36, 3, 32, 22, 27, 18, 51] },
-  { id:2, name:'3. Stars & Stripes March',    short:'1:27', bpm:132, durSec:87.2,  notesCount:5270,
+  { id:2, name:'3. Stars & Stripes March',    short:'1:24', bpm:132, durSec:84.3,  notesCount:5288,
     busLabels:['DRUMLINE','TUBA','FR HORNS','GLK/XYLO','FLT/PICC','CLAR/SAX','TRUMPETS','TROMBONE'],
     busEngines:['K250','K250','K250','K250','K250','K250','K250','K250'],
     busPresetIndices:[45, 19, 15, 42, 23, 25, 16, 18] },
@@ -732,7 +732,7 @@ let fullDemosPromise = null;
 function loadFullDemos() {
   if (FULL_DEMOS) return Promise.resolve(FULL_DEMOS);
   if (fullDemosPromise) return fullDemosPromise;
-  fullDemosPromise = fetch('k250_demos.json?v=4')
+  fullDemosPromise = fetch('k250_demos.json?v=5')
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => { FULL_DEMOS = data; return data; })
     .catch(err => { fullDemosPromise = null; throw err; });
@@ -968,7 +968,11 @@ window.engineVoicePools = { k250: [], fm: [], bass303: [], va: [], sid: [], drum
 window.lastGlideFreqByTrack = {};
 window.triggerSidechainDuck = function() {};
 window.initAudio = function() { ensureAudio(); };
-window.getAudioTime = function() { return audioCtx ? audioCtx.currentTime : 0; };
+let scheduledAudioTime = 0;
+window.getAudioTime = function() {
+  if (!audioCtx) return 0;
+  return (scheduledAudioTime > audioCtx.currentTime) ? scheduledAudioTime : audioCtx.currentTime;
+};
 window.getTrackBusNode = function() {
   ensureAudio();
   return (window.__k250PlayCtx && window.__k250PlayCtx.isDemo && demoBus) ? demoBus : masterGain;
@@ -1036,8 +1040,9 @@ window.registerActiveVoice = function(note, voice, durationSec = 10.0, engine = 
     const kEl = document.querySelector(`[data-midi="${ctx.midi}"]`);
     if (kEl) kEl.classList.add('pressed');
   } else if (audioCtx && ctx && ctx.dur) {
-    const relAt = audioCtx.currentTime + Math.max(ctx.dur, 0.25);
-    setTimeout(() => { if (!voice.isReleased) voice.release(audioCtx.currentTime); }, Math.max(120, Math.round((relAt - audioCtx.currentTime) * 1000)));
+    const startT = (ctx.when && ctx.when > audioCtx.currentTime) ? ctx.when : audioCtx.currentTime;
+    const relAt = startT + Math.max(ctx.dur, 0.22);
+    setTimeout(() => { if (!voice.isReleased && audioCtx) voice.release(audioCtx.currentTime); }, Math.max(100, Math.round((relAt - audioCtx.currentTime) * 1000)));
   }
 };
 const k250RawChunks = {};
@@ -1100,7 +1105,7 @@ async function loadK250Sample(key) {
 
 function triggerK250Buffer(buf, opts, ctx) {
   if (!audioCtx || !buf) return;
-  const now = audioCtx.currentTime;
+  const now = (ctx && ctx.when && ctx.when > audioCtx.currentTime) ? ctx.when : audioCtx.currentTime;
   const t = TRACKS[ctx.tIdx] || TRACKS[state.track];
   const m = t.macros;
   const isDemo = Boolean(ctx && ctx.isDemo);
@@ -1146,7 +1151,8 @@ function triggerK250Buffer(buf, opts, ctx) {
     const rate = opts.vibratoRate || (0.25 + (state.lfo.rate / 100) * 12);
     lfoOsc.frequency.setValueAtTime(rate, now);
     if (opts.vibratoDepth) {
-      const targetVib = opts.vibratoDepth * 14;
+      // opts.vibratoDepth is already in cents (e.g. 6..22 cents on K250 presets)
+      const targetVib = Math.min(35, opts.vibratoDepth);
       if (opts.vibratoDelay && opts.vibratoDelay > 0) {
         lfoGain.gain.setValueAtTime(0, now);
         lfoGain.gain.setValueAtTime(0, now + opts.vibratoDelay);
@@ -1179,7 +1185,7 @@ function triggerK250Buffer(buf, opts, ctx) {
   gain.gain.setValueAtTime(0.0001, now);
   gain.gain.linearRampToValueAtTime(peakGain, now + atk);
 
-  updateMasterFx();
+  if (!isDemo) updateMasterFx();
   let src2 = null;
   if (opts.stereoEnsemble && typeof audioCtx.createStereoPanner === 'function') {
     src2 = audioCtx.createBufferSource();
@@ -1263,7 +1269,7 @@ function triggerK250Buffer(buf, opts, ctx) {
 
   const pool = window.engineVoicePools.k250;
   pool.push(voice);
-  if (pool.length > (isDemo ? 48 : 32)) {
+  if (pool.length > (isDemo ? 64 : 32)) {
     const oldest = pool.shift();
     if (oldest && !oldest.isReleased) oldest.release(now);
   }
@@ -1283,6 +1289,7 @@ function triggerK250Buffer(buf, opts, ctx) {
     if (lfoOsc) lfoOsc.stop(stopAt);
     src.onended = () => {
       voice.isReleased = true;
+      try { gain.disconnect(); } catch {}
       const idx = pool.indexOf(voice);
       if (idx >= 0) pool.splice(idx, 1);
     };
@@ -1407,7 +1414,7 @@ function playSynthVoice(midi, dur, vel, tIdx, latch, waveOverride = null, engOve
   const t = TRACKS[tIdx] || TRACKS[0];
   const engId = engOverride || t.eng;
   const eng = ENGINES[engId] || ENGINES.VA;
-  const now = audioCtx.currentTime;
+  const now = (demoOpts && demoOpts.when && demoOpts.when > audioCtx.currentTime) ? demoOpts.when : audioCtx.currentTime;
   const freq = 440 * Math.pow(2, (midi - 69) / 12);
   const DEMO_PRESET_MACROS = { VA: [74, 38, 76, 42], SID: [68, 48, 44, 24], GRAN: [66, 24, 84, 36] };
   const m = demoOpts ? (DEMO_PRESET_MACROS[engId] || [72, 30, 68, 22]) : t.macros;
@@ -1450,7 +1457,7 @@ function playSynthVoice(midi, dur, vel, tIdx, latch, waveOverride = null, engOve
   gain.gain.linearRampToValueAtTime(peakGain, now + atk);
   gain.gain.exponentialRampToValueAtTime(susLevel, now + atk + envDec);
 
-  updateMasterFx();
+  if (!demoOpts) updateMasterFx();
   osc1.connect(filter);
   osc2.connect(filter);
   filter.connect(gain);
@@ -1679,8 +1686,9 @@ function syncDemoControls() {
   }
 }
 
-function playDemoVoiceByPresetIdx(kp, trk, midi, velNorm, dur, busVol = 0.9, busPan = 0) {
-  window.__k250PlayCtx = { tIdx: trk, dur, latch: false, midi, isDemo: true, busVol, busPan };
+function playDemoVoiceByPresetIdx(kp, trk, midi, velNorm, dur, busVol = 0.9, busPan = 0, when = 0) {
+  window.__k250PlayCtx = { tIdx: trk, dur, latch: false, midi, isDemo: true, busVol, busPan, when };
+  scheduledAudioTime = when;
   if (kp.type === 'split') {
     const splitNote = kp.splitNote || 54;
     const targetType = midi < splitNote ? (kp.leftType || 'bass') : (kp.rightType || 'piano');
@@ -1709,12 +1717,13 @@ function playDemoVoiceByPresetIdx(kp, trk, midi, velNorm, dur, busVol = 0.9, bus
       });
     }
   }
+  scheduledAudioTime = 0;
 }
 
 const K250_ID_TO_PRESET_IDX = {};
 PRESETS.forEach((p, idx) => { if (p.k250 && p.k250.id) K250_ID_TO_PRESET_IDX[p.k250.id] = idx; });
 
-function playDemoEvent(trk, midi, vel, dur, voice, extraIdx = 0, song = null) {
+function playDemoEvent(trk, midi, vel, dur, voice, extraIdx = 0, song = null, when = 0) {
   ensureAudio();
   const safeTrk = (trk >= 0 && trk < TRACKS.length) ? trk : 0;
   if (!isTrackAudible(safeTrk)) return;
@@ -1730,31 +1739,35 @@ function playDemoEvent(trk, midi, vel, dur, voice, extraIdx = 0, song = null) {
       t.presetIdx = mappedIdx;
       t.macros = [...PRESETS[mappedIdx].m];
       if (safeTrk === state.track) {
-        applyAccent();
-        renderBrowser();
-        renderMacros();
-        drawHwLcd();
+        const p = PRESETS[mappedIdx];
+        const hName = document.getElementById('heroPresetName');
+        const hMeta = document.getElementById('heroPresetMeta');
+        if (hName) hName.textContent = `${p.num} · ${p.name}`;
+        if (hMeta) hMeta.textContent = `Track ${state.track + 1} · ${p.cat} · ${ENGINES.K250.desc}`;
       }
     }
-    playDemoVoiceByPresetIdx(kp, safeTrk, midi, velNorm, dur, busVol, busPan);
+    playDemoVoiceByPresetIdx(kp, safeTrk, midi, velNorm, dur, busVol, busPan, when);
   } else if (voice === 'D808' && typeof play808Drum === 'function') {
-    window.__k250PlayCtx = { tIdx: safeTrk, dur, latch: false, midi, isDemo: true, busVol, busPan };
-    updateMasterFx();
+    window.__k250PlayCtx = { tIdx: safeTrk, dur, latch: false, midi, isDemo: true, busVol, busPan, when };
+    scheduledAudioTime = when;
     play808Drum(midi, velNorm * busVol * (t.vol / 100) * 1.1);
+    scheduledAudioTime = 0;
   } else if (voice === 'B303' && typeof play303Bass === 'function') {
     const p = extraIdx || 0;
     const cut = p >> 2;
-    window.__k250PlayCtx = { tIdx: safeTrk, dur, latch: false, midi, isDemo: true, busVol, busPan };
-    updateMasterFx();
+    window.__k250PlayCtx = { tIdx: safeTrk, dur, latch: false, midi, isDemo: true, busVol, busPan, when };
+    scheduledAudioTime = when;
     play303Bass(midi, velNorm * busVol * (t.vol / 100), null, { accent: Boolean(p & 1), slide: Boolean(p & 2), cutoffLock: cut > 0 ? cut : null });
+    scheduledAudioTime = 0;
   } else if (voice === 'DX7' && typeof playFmSynth === 'function') {
-    window.__k250PlayCtx = { tIdx: safeTrk, dur, latch: false, midi, isDemo: true, busVol, busPan };
-    updateMasterFx();
+    window.__k250PlayCtx = { tIdx: safeTrk, dur, latch: false, midi, isDemo: true, busVol, busPan, when };
+    scheduledAudioTime = when;
     playFmSynth(midi, velNorm * busVol * (t.vol / 100), null, { patchIdx: extraIdx || 0 });
+    scheduledAudioTime = 0;
   } else {
-    playSynthVoice(midi, dur, velNorm * busVol, safeTrk, false, null, typeof voice === 'string' ? voice : 'VA', { cutoffLock: extraIdx || 0, busPan });
+    playSynthVoice(midi, dur, velNorm * busVol, safeTrk, false, null, typeof voice === 'string' ? voice : 'VA', { cutoffLock: extraIdx || 0, busPan, when });
   }
-  pulseTrack(safeTrk, velNorm * busVol * (t.vol / 100));
+  TRACKS[safeTrk].peak = Math.min(1, Math.max(TRACKS[safeTrk].peak, velNorm * busVol * (t.vol / 100)));
 }
 
 async function prefetchDemoSamples(song, onProgress) {
@@ -1887,24 +1900,32 @@ async function startDemo(demoIdx, startOffsetSec = 0) {
   const offset = Math.max(0, Math.min(d.durSec - 0.1, startOffsetSec));
   let cursor = 0;
   while (cursor < d.notes.length && d.notes[cursor][0] < offset) cursor++;
-  const startWall = performance.now() - offset * 1000;
+  const originAudioTime = audioCtx.currentTime + 0.05 - offset;
+  let lastUiUpdate = 0;
 
-  if (scopeEl) scopeEl.textContent = `♫ ${d.name} · 0.0s / ${d.durSec}s`;
+  if (scopeEl) scopeEl.textContent = `♫ ${d.name} · ${offset.toFixed(1)}s / ${d.durSec}s`;
   demoTimer = setInterval(() => {
-    if (myRun !== demoRunId) { clearInterval(demoTimer); return; }
-    const elSec = (performance.now() - startWall) / 1000;
+    if (myRun !== demoRunId || !audioCtx) { clearInterval(demoTimer); return; }
+    const nowAudio = audioCtx.currentTime;
+    const elSec = Math.max(0, nowAudio - originAudioTime);
+    const lookaheadSec = elSec + 0.11;
     state.demoElapsed = elSec;
-    while (cursor < d.notes.length && d.notes[cursor][0] <= elSec) {
-      const [, trk, midi, vel, dur, voice, extraIdx] = d.notes[cursor++];
-      playDemoEvent(trk, midi, vel, dur, voice, extraIdx || 0, d);
+    while (cursor < d.notes.length && d.notes[cursor][0] <= lookaheadSec) {
+      const [tOn, trk, midi, vel, dur, voice, extraIdx] = d.notes[cursor++];
+      const exactWhen = Math.max(nowAudio, originAudioTime + tOn);
+      playDemoEvent(trk, midi, vel, dur, voice, extraIdx || 0, d, exactWhen);
     }
-    const fill = document.getElementById('demoProgressFill');
-    const lbl = document.getElementById('demoTimeLabel');
-    if (fill) fill.style.width = `${Math.min(100, (elSec / d.durSec) * 100)}%`;
-    if (lbl) lbl.textContent = `${elSec.toFixed(1)}s / ${d.durSec}s`;
-    if (scopeEl) scopeEl.textContent = `♫ ${d.name} · ${elSec.toFixed(1)}s / ${d.durSec}s`;
+    const nowPerf = performance.now();
+    if (nowPerf - lastUiUpdate >= 100) {
+      lastUiUpdate = nowPerf;
+      const fill = document.getElementById('demoProgressFill');
+      const lbl = document.getElementById('demoTimeLabel');
+      if (fill) fill.style.width = `${Math.min(100, (elSec / d.durSec) * 100)}%`;
+      if (lbl) lbl.textContent = `${elSec.toFixed(1)}s / ${d.durSec}s`;
+      if (scopeEl) scopeEl.textContent = `♫ ${d.name} · ${elSec.toFixed(1)}s / ${d.durSec}s`;
+    }
     if (elSec >= d.durSec) stopDemo();
-  }, 16);
+  }, 20);
   renderDrawer();
 }
 
