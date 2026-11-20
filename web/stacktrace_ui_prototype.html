@@ -699,18 +699,23 @@ const TRACKS = [
 
 // Full-length authentic showcase demo songs (loaded from k250_demos.json on demand)
 const DEMO_META = [
-  { id:0, name:'1. Beethoven Orchestra',      short:'56s',  bpm:132, durSec:55.8,  notesCount:816  },
-  { id:1, name:'2. Jazz Big-Band',            short:'1:52', bpm:140, durSec:112.1, notesCount:1471 },
-  { id:2, name:'3. Stars & Stripes March',    short:'1:27', bpm:132, durSec:87.2,  notesCount:5270 },
-  { id:3, name:'4. All-Bank Multi-Engine',    short:'1:41', bpm:116, durSec:100.5, notesCount:1654 },
-  { id:4, name:'5. 20th Century Fox Fanfare', short:'21s',  bpm:106, durSec:21.3,  notesCount:297  }
+  { id:0, name:'1. Beethoven Orchestra',      short:'56s',  bpm:132, durSec:55.8,  notesCount:816,
+    busLabels:['VIOLINS','CELLO/BS','VIOLAS','STEINWAY','FLT/OBOE','CLAR/BSN','HRN/TPT','TIMPANI'] },
+  { id:1, name:'2. Jazz Big-Band',            short:'1:52', bpm:140, durSec:112.1, notesCount:1471,
+    busLabels:['JAZZ KIT','UPR BASS','PNO / EP','GTR/VIBE','FLT/CLAR','ALTO SAX','BRASS','CONGAS'] },
+  { id:2, name:'3. Stars & Stripes March',    short:'1:27', bpm:132, durSec:87.2,  notesCount:5270,
+    busLabels:['DRUMLINE','TUBA','FR HORNS','GLK/XYLO','FLT/PICC','CLAR/SAX','TRUMPETS','TROMBONE'] },
+  { id:3, name:'4. All-Bank Multi-Engine',    short:'1:41', bpm:116, durSec:100.5, notesCount:1654,
+    busLabels:['DX7 FM','TB-303','TR-808','K250 ALL','VA POLY','TR-909','C64 SID','GRANULAR'] },
+  { id:4, name:'5. 20th Century Fox Fanfare', short:'21s',  bpm:106, durSec:21.3,  notesCount:297,
+    busLabels:['SNARE/CYM','TUBA/TMP','—','VIOLINS','CELLOS','TROMBONE','TRUMPETS','—'] }
 ];
 let FULL_DEMOS = null;
 let fullDemosPromise = null;
 function loadFullDemos() {
   if (FULL_DEMOS) return Promise.resolve(FULL_DEMOS);
   if (fullDemosPromise) return fullDemosPromise;
-  fullDemosPromise = fetch('k250_demos.json?v=1')
+  fullDemosPromise = fetch('k250_demos.json?v=2')
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => { FULL_DEMOS = data; return data; })
     .catch(err => { fullDemosPromise = null; throw err; });
@@ -811,7 +816,7 @@ function performUndo() {
 }
 
 // ---- Real Web Audio Synth Engine (ADSR + LFO + Grit/Phaser/Reverb + Held Voices + Solo/Mute) ----
-let audioCtx = null, analyser = null, masterGain = null;
+let audioCtx = null, analyser = null, masterGain = null, demoBus = null, demoDry = null, demoVerb = null;
 let shaperNode = null, phaserNode = null, reverbNode = null, reverbWet = null, dryGain = null;
 const heldVoices = new Map();
 
@@ -831,6 +836,7 @@ function makeDriveCurve(drivePct, crushPct) {
 function updateMasterFx() {
   if (!audioCtx || !shaperNode) return;
   masterGain.gain.setValueAtTime((state.masterVol / 100) * 0.36, audioCtx.currentTime);
+  if (demoBus) demoBus.gain.setValueAtTime((state.masterVol / 100) * 0.44, audioCtx.currentTime);
   shaperNode.curve = makeDriveCurve(state.fx.drive, state.fx.crush);
   phaserNode.frequency.setValueAtTime(300 + (state.fx.phaser / 100) * 2600, audioCtx.currentTime);
   phaserNode.Q.setValueAtTime(0.5 + (state.fx.phaser / 100) * 6, audioCtx.currentTime);
@@ -856,6 +862,9 @@ function ensureAudio() {
     analyser = audioCtx.createAnalyser();
     analyser.fftSize = 512;
     masterGain = audioCtx.createGain();
+    demoBus = audioCtx.createGain();
+    demoDry = audioCtx.createGain();
+    demoVerb = audioCtx.createGain();
 
     shaperNode = audioCtx.createWaveShaper();
     shaperNode.oversample = '2x';
@@ -880,6 +889,15 @@ function ensureAudio() {
     reverbNode.connect(reverbWet);
     dryGain.connect(analyser);
     reverbWet.connect(analyser);
+
+    // Clean studio demo path (bypasses live Grit/Bitcrush/Phaser)
+    demoDry.gain.setValueAtTime(0.85, audioCtx.currentTime);
+    demoVerb.gain.setValueAtTime(0.32, audioCtx.currentTime);
+    demoBus.connect(demoDry);
+    demoBus.connect(demoVerb);
+    demoDry.connect(analyser);
+    demoVerb.connect(reverbNode);
+
     analyser.connect(audioCtx.destination);
     updateMasterFx();
   }
@@ -934,7 +952,10 @@ window.lastGlideFreqByTrack = {};
 window.triggerSidechainDuck = function() {};
 window.initAudio = function() { ensureAudio(); };
 window.getAudioTime = function() { return audioCtx ? audioCtx.currentTime : 0; };
-window.getTrackBusNode = function() { ensureAudio(); return masterGain; };
+window.getTrackBusNode = function() {
+  ensureAudio();
+  return (window.__k250PlayCtx && window.__k250PlayCtx.isDemo && demoBus) ? demoBus : masterGain;
+};
 window.pruneReleasedVoiceFromPool = function(voice) {
   const eng = voice && voice._engine ? voice._engine : 'k250';
   const pool = window.engineVoicePools[eng];
@@ -1065,6 +1086,7 @@ function triggerK250Buffer(buf, opts, ctx) {
   const now = audioCtx.currentTime;
   const t = TRACKS[ctx.tIdx] || TRACKS[state.track];
   const m = t.macros;
+  const isDemo = Boolean(ctx && ctx.isDemo);
 
   const src = audioCtx.createBufferSource();
   src.buffer = buf;
@@ -1073,7 +1095,7 @@ function triggerK250Buffer(buf, opts, ctx) {
   while (pr > 3.5) pr *= 0.5;
   while (pr < 0.28) pr *= 2.0;
   src.playbackRate.setValueAtTime(pr, now);
-  const detuneCents = (opts.detune || 0) + ((m[3] / 100) * 28);
+  const detuneCents = (opts.detune || 0) + (isDemo ? 0 : (m[3] / 100) * 28);
   src.detune.setValueAtTime(detuneCents, now);
   if (opts.canLoop && buf.duration > 0.65) {
     src.loop = true;
@@ -1086,7 +1108,7 @@ function triggerK250Buffer(buf, opts, ctx) {
   const baseCut = opts.cutoff || 14000;
   const pDef = PRESETS[t.presetIdx];
   const defCutPct = (pDef && pDef.m) ? pDef.m[0] : 75;
-  const cutRatio = Math.pow(4, (m[0] - defCutPct) / 50);
+  const cutRatio = isDemo ? 1.0 : Math.pow(4, (m[0] - defCutPct) / 50);
   const effCut = Math.max(180, Math.min(19500, baseCut * cutRatio));
   if (opts.brassSweepHz && opts.brassSweepHz > 0) {
     filter.frequency.setValueAtTime(Math.max(380, effCut * 0.45), now);
@@ -1096,10 +1118,11 @@ function triggerK250Buffer(buf, opts, ctx) {
     filter.frequency.setValueAtTime(effCut, now);
   }
   const defResPct = (pDef && pDef.m) ? pDef.m[1] : 15;
-  filter.Q.setValueAtTime(Math.max(0.5, (opts.res || 1.0) + Math.max(0, (m[1] - defResPct) / 100) * 8), now);
+  const qFinal = isDemo ? Math.max(0.5, opts.res || 1.0) : Math.max(0.5, (opts.res || 1.0) + Math.max(0, (m[1] - defResPct) / 100) * 8);
+  filter.Q.setValueAtTime(qFinal, now);
 
   let lfoOsc = null;
-  if (state.lfo.depth > 0 || (opts.vibratoDepth && opts.vibratoRate)) {
+  if ((opts.vibratoDepth && opts.vibratoRate) || (!isDemo && state.lfo.depth > 0)) {
     lfoOsc = audioCtx.createOscillator();
     const lfoGain = audioCtx.createGain();
     lfoOsc.type = 'sine';
@@ -1126,12 +1149,15 @@ function triggerK250Buffer(buf, opts, ctx) {
 
   const gain = audioCtx.createGain();
   const vel = Math.max(0.05, Math.min(1.25, opts.velocity ?? 0.8));
-  const peakGain = Math.max(0.001, vel * 0.88 * (t.vol / 100));
-  const envAtkOffset = Math.max(0, ((state.env.a - 12) / 88) * 0.25);
+  const busVol = isDemo && typeof ctx.busVol === 'number' ? ctx.busVol : 1.0;
+  const peakGain = Math.max(0.001, vel * busVol * (isDemo ? 0.62 : 0.88) * (t.vol / 100));
+  const envAtkOffset = isDemo ? 0 : Math.max(0, ((state.env.a - 12) / 88) * 0.25);
   const atk = Math.max(0.001, (opts.attack ?? 0.004) + envAtkOffset);
-  const rel = Math.max(0.04, (opts.releaseTime ?? 0.38) * (0.4 + (state.env.r / 100) * 1.4));
-  const decScale = 0.35 + (m[2] / 100) * 1.15;
-  const holdDur = Math.max(ctx.dur || 0.45, opts.naturalSustain ? Math.min(buf.duration, (opts.decay || 3.2) * decScale) : (ctx.dur || 0.55));
+  const rel = isDemo ? Math.max(0.04, Math.min(0.45, opts.releaseTime ?? 0.28)) : Math.max(0.04, (opts.releaseTime ?? 0.38) * (0.4 + (state.env.r / 100) * 1.4));
+  const decScale = isDemo ? 1.0 : (0.35 + (m[2] / 100) * 1.15);
+  const holdDur = isDemo
+    ? Math.max(0.04, ctx.dur || 0.45)
+    : Math.max(ctx.dur || 0.45, opts.naturalSustain ? Math.min(buf.duration, (opts.decay || 3.2) * decScale) : (ctx.dur || 0.55));
 
   gain.gain.setValueAtTime(0.0001, now);
   gain.gain.linearRampToValueAtTime(peakGain, now + atk);
@@ -1186,7 +1212,15 @@ function triggerK250Buffer(buf, opts, ctx) {
     subOsc.start(now);
   }
 
-  gain.connect(masterGain);
+  const destBus = (isDemo && demoBus) ? demoBus : masterGain;
+  if (isDemo && typeof ctx.busPan === 'number' && !opts.stereoEnsemble && typeof audioCtx.createStereoPanner === 'function') {
+    const panner = audioCtx.createStereoPanner();
+    panner.pan.setValueAtTime(Math.max(-1, Math.min(1, ctx.busPan)), now);
+    gain.connect(panner);
+    panner.connect(destBus);
+  } else {
+    gain.connect(destBus);
+  }
   src.start(now);
 
   const voice = {
@@ -1212,7 +1246,7 @@ function triggerK250Buffer(buf, opts, ctx) {
 
   const pool = window.engineVoicePools.k250;
   pool.push(voice);
-  if (pool.length > 32) {
+  if (pool.length > (isDemo ? 48 : 32)) {
     const oldest = pool.shift();
     if (oldest && !oldest.isReleased) oldest.release(now);
   }
@@ -1352,12 +1386,14 @@ function playNote(midi, dur = 0.45, vel = 0.8, trackOverride = null, latch = fal
   playSynthVoice(midi, dur, vel, tIdx, latch);
 }
 
-function playSynthVoice(midi, dur, vel, tIdx, latch, waveOverride = null, engOverride = null) {
+function playSynthVoice(midi, dur, vel, tIdx, latch, waveOverride = null, engOverride = null, demoOpts = null) {
   const t = TRACKS[tIdx] || TRACKS[0];
-  const eng = ENGINES[engOverride || t.eng] || ENGINES.VA;
+  const engId = engOverride || t.eng;
+  const eng = ENGINES[engId] || ENGINES.VA;
   const now = audioCtx.currentTime;
   const freq = 440 * Math.pow(2, (midi - 69) / 12);
-  const m = t.macros;
+  const DEMO_PRESET_MACROS = { VA: [74, 38, 76, 42], SID: [68, 48, 44, 24], GRAN: [66, 24, 84, 36] };
+  const m = demoOpts ? (DEMO_PRESET_MACROS[engId] || [72, 30, 68, 22]) : t.macros;
 
   const osc1 = audioCtx.createOscillator();
   const osc2 = audioCtx.createOscillator();
@@ -1371,14 +1407,14 @@ function playSynthVoice(midi, dur, vel, tIdx, latch, waveOverride = null, engOve
   osc2.detune.setValueAtTime((m[3] / 100) * 32, now);
 
   filter.type = 'lowpass';
-  const cutoffHz = 180 * Math.pow(65, m[0] / 100);
-  const envDec = 0.06 + ((state.env.d * 0.5 + m[2] * 0.5) / 100) * 0.9;
+  const cutoffHz = (demoOpts && demoOpts.cutoffLock > 0) ? Math.min(18000, demoOpts.cutoffLock) : (180 * Math.pow(65, m[0] / 100));
+  const envDec = demoOpts ? (0.08 + (m[2] / 100) * 0.65) : (0.06 + ((state.env.d * 0.5 + m[2] * 0.5) / 100) * 0.9);
   filter.frequency.setValueAtTime(Math.min(18000, cutoffHz * 1.4), now);
   filter.frequency.exponentialRampToValueAtTime(Math.max(120, cutoffHz * 0.45), now + envDec);
-  filter.Q.setValueAtTime(0.7 + (m[1] / 100) * 14, now);
+  filter.Q.setValueAtTime(0.7 + (m[1] / 100) * (demoOpts ? 6 : 14), now);
 
   let lfoOsc = null;
-  if (state.lfo.depth > 0) {
+  if (!demoOpts && state.lfo.depth > 0) {
     lfoOsc = audioCtx.createOscillator();
     const lfoGain = audioCtx.createGain();
     lfoOsc.type = 'sine';
@@ -1388,10 +1424,10 @@ function playSynthVoice(midi, dur, vel, tIdx, latch, waveOverride = null, engOve
     lfoGain.connect(filter.frequency);
   }
 
-  const peakGain = Math.max(0.001, vel * 0.45 * (t.vol / 100));
-  const atk = 0.006 + (state.env.a / 100) * 0.25;
-  const susLevel = Math.max(0.001, peakGain * (state.env.s / 100));
-  const rel = 0.05 + (state.env.r / 100) * 0.85;
+  const peakGain = Math.max(0.001, vel * (demoOpts ? 0.34 : 0.45) * (t.vol / 100));
+  const atk = demoOpts ? 0.008 : (0.006 + (state.env.a / 100) * 0.25);
+  const susLevel = Math.max(0.001, peakGain * (demoOpts ? 0.65 : (state.env.s / 100)));
+  const rel = demoOpts ? 0.14 : (0.05 + (state.env.r / 100) * 0.85);
 
   gain.gain.setValueAtTime(0.0001, now);
   gain.gain.linearRampToValueAtTime(peakGain, now + atk);
@@ -1401,7 +1437,15 @@ function playSynthVoice(midi, dur, vel, tIdx, latch, waveOverride = null, engOve
   osc1.connect(filter);
   osc2.connect(filter);
   filter.connect(gain);
-  gain.connect(masterGain);
+  const destBus = (demoOpts && demoBus) ? demoBus : masterGain;
+  if (demoOpts && typeof demoOpts.busPan === 'number' && typeof audioCtx.createStereoPanner === 'function') {
+    const panner = audioCtx.createStereoPanner();
+    panner.pan.setValueAtTime(Math.max(-1, Math.min(1, demoOpts.busPan)), now);
+    gain.connect(panner);
+    panner.connect(destBus);
+  } else {
+    gain.connect(destBus);
+  }
 
   osc1.start(now); osc2.start(now);
   if (lfoOsc) lfoOsc.start(now);
@@ -1618,8 +1662,8 @@ function syncDemoControls() {
   }
 }
 
-function playDemoVoiceByPresetIdx(kp, trk, midi, velNorm, dur) {
-  window.__k250PlayCtx = { tIdx: trk, dur, latch: false, midi };
+function playDemoVoiceByPresetIdx(kp, trk, midi, velNorm, dur, busVol = 0.9, busPan = 0) {
+  window.__k250PlayCtx = { tIdx: trk, dur, latch: false, midi, isDemo: true, busVol, busPan };
   if (kp.type === 'split') {
     const splitNote = kp.splitNote || 54;
     const targetType = midi < splitNote ? (kp.leftType || 'bass') : (kp.rightType || 'piano');
@@ -1650,30 +1694,34 @@ function playDemoVoiceByPresetIdx(kp, trk, midi, velNorm, dur) {
   }
 }
 
-function playDemoEvent(trk, midi, vel, dur, voice) {
+function playDemoEvent(trk, midi, vel, dur, voice, extraIdx = 0, song = null) {
   ensureAudio();
   const safeTrk = (trk >= 0 && trk < TRACKS.length) ? trk : 0;
   if (!isTrackAudible(safeTrk)) return;
   const t = TRACKS[safeTrk];
+  const busVol = (song && song.vols && song.vols[safeTrk] !== undefined) ? song.vols[safeTrk] : 0.9;
+  const busPan = (song && song.pans && song.pans[safeTrk] !== undefined) ? song.pans[safeTrk] : 0;
   const velNorm = Math.max(0.05, Math.min(1.0, vel / 127));
   if (typeof voice === 'number' && typeof K250_PRESETS !== 'undefined' && K250_PRESETS[voice] && typeof playVoiceByType === 'function') {
-    playDemoVoiceByPresetIdx(K250_PRESETS[voice], safeTrk, midi, velNorm, dur);
+    playDemoVoiceByPresetIdx(K250_PRESETS[voice], safeTrk, midi, velNorm, dur, busVol, busPan);
   } else if (voice === 'D808' && typeof play808Drum === 'function') {
-    window.__k250PlayCtx = { tIdx: safeTrk, dur, latch: false, midi };
+    window.__k250PlayCtx = { tIdx: safeTrk, dur, latch: false, midi, isDemo: true, busVol, busPan };
     updateMasterFx();
-    play808Drum(midi, velNorm * (t.vol / 100) * 1.15);
+    play808Drum(midi, velNorm * busVol * (t.vol / 100) * 1.1);
   } else if (voice === 'B303' && typeof play303Bass === 'function') {
-    window.__k250PlayCtx = { tIdx: safeTrk, dur, latch: false, midi };
+    const p = extraIdx || 0;
+    const cut = p >> 2;
+    window.__k250PlayCtx = { tIdx: safeTrk, dur, latch: false, midi, isDemo: true, busVol, busPan };
     updateMasterFx();
-    play303Bass(midi, velNorm * (t.vol / 100));
+    play303Bass(midi, velNorm * busVol * (t.vol / 100), null, { accent: Boolean(p & 1), slide: Boolean(p & 2), cutoffLock: cut > 0 ? cut : null });
   } else if (voice === 'DX7' && typeof playFmSynth === 'function') {
-    window.__k250PlayCtx = { tIdx: safeTrk, dur, latch: false, midi };
+    window.__k250PlayCtx = { tIdx: safeTrk, dur, latch: false, midi, isDemo: true, busVol, busPan };
     updateMasterFx();
-    playFmSynth(midi, velNorm * (t.vol / 100));
+    playFmSynth(midi, velNorm * busVol * (t.vol / 100), null, { patchIdx: extraIdx || 0 });
   } else {
-    playSynthVoice(midi, dur, velNorm, safeTrk, false, null, typeof voice === 'string' ? voice : 'VA');
+    playSynthVoice(midi, dur, velNorm * busVol, safeTrk, false, null, typeof voice === 'string' ? voice : 'VA', { cutoffLock: extraIdx || 0, busPan });
   }
-  pulseTrack(safeTrk, velNorm * (t.vol / 100));
+  pulseTrack(safeTrk, velNorm * busVol * (t.vol / 100));
 }
 
 async function prefetchDemoSamples(song, onProgress) {
@@ -1742,6 +1790,7 @@ function stopDemo() {
   state.demoLoading = false;
   state.demoElapsed = 0;
   syncDemoControls();
+  renderTracks();
   if (state.activeDrawer === 'demos') renderDrawer();
 }
 
@@ -1783,7 +1832,9 @@ async function startDemo(demoIdx, startOffsetSec = 0) {
   state.demoPlaying = meta.id;
   state.bpm = d.bpm;
   document.getElementById('bpmVal').textContent = d.bpm;
+  if (audioCtx && demoVerb) demoVerb.gain.setValueAtTime(d.reverbNorm || 0.30, audioCtx.currentTime);
   syncDemoControls();
+  renderTracks();
 
   const offset = Math.max(0, Math.min(d.durSec - 0.1, startOffsetSec));
   let cursor = 0;
@@ -1796,8 +1847,8 @@ async function startDemo(demoIdx, startOffsetSec = 0) {
     const elSec = (performance.now() - startWall) / 1000;
     state.demoElapsed = elSec;
     while (cursor < d.notes.length && d.notes[cursor][0] <= elSec) {
-      const [, trk, midi, vel, dur, voice] = d.notes[cursor++];
-      playDemoEvent(trk, midi, vel, dur, voice);
+      const [, trk, midi, vel, dur, voice, extraIdx] = d.notes[cursor++];
+      playDemoEvent(trk, midi, vel, dur, voice, extraIdx || 0, d);
     }
     const fill = document.getElementById('demoProgressFill');
     const lbl = document.getElementById('demoTimeLabel');
@@ -1919,13 +1970,19 @@ function renderDrawer() {
 function renderTracks() {
   const dock = document.getElementById('trackDock');
   const anySolo = TRACKS.some(x => x.solo);
+  const activeDemo = (state.demoPlaying >= 0 && DEMO_META[state.demoPlaying]) ? DEMO_META[state.demoPlaying] : null;
+  const demoMixEngines = ['DX7', 'B303', 'D808', 'K250', 'VA', 'D808', 'SID', 'GRAN'];
   dock.innerHTML = TRACKS.map((t, i) => {
-    const eng = ENGINES[t.eng];
+    const eng = activeDemo
+      ? ENGINES[activeDemo.id === 3 ? demoMixEngines[i] : 'K250']
+      : ENGINES[t.eng];
     const dim = anySolo ? !t.solo : t.mute;
     const p = PRESETS[t.presetIdx];
-    const shortLabel = (t.eng === 'K250' && p) ? `K250 ${p.cat}` : eng.name;
+    const shortLabel = (activeDemo && activeDemo.busLabels)
+      ? activeDemo.busLabels[i]
+      : ((t.eng === 'K250' && p) ? `K250 ${p.cat}` : eng.name);
     return `
-      <div class="track-pill ${i===state.track?'active':''}" tabindex="0" role="button" data-t="${i}" style="${dim?'opacity:0.42':''}" title="${t.label}: ${eng.name}${p ? ' — ' + p.name : ''}">
+      <div class="track-pill ${(!activeDemo && i===state.track)?'active':''}" tabindex="0" role="button" data-t="${i}" style="${dim?'opacity:0.42':''}" title="${t.label}: ${activeDemo ? shortLabel : eng.name + (p ? ' — ' + p.name : '')}">
         <span class="t-dot" data-tdot="${i}" style="background:${eng.color};color:${eng.color}"></span>
         <span>${t.label} · ${shortLabel}</span>
       </div>`;
