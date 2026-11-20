@@ -180,13 +180,14 @@
   /* ---- Center Instrument Stage ---- */
   .stage {
     display: flex; flex-direction: column; min-height: 0; min-width: 0;
-    padding: 10px 16px; gap: 10px; overflow: hidden;
+    padding: 8px 14px; gap: 8px; overflow: hidden;
   }
   .stage-header {
     display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: nowrap; gap: 10px; flex-shrink: 0; min-width: 0;
+    flex-wrap: wrap; gap: 8px; flex-shrink: 0; min-width: 0;
   }
-  .track-identity { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
+  .track-identity { display: flex; align-items: center; gap: 8px; min-width: 180px; flex: 1; overflow: hidden; }
+  .track-identity-text { min-width: 0; flex: 1; overflow: hidden; }
   .engine-badge {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 5px 10px; border-radius: var(--radius-sm);
@@ -194,43 +195,48 @@
     color: var(--accent); font-weight: 700; font-size: 12px;
     letter-spacing: 0.03em; cursor: pointer; white-space: nowrap; flex-shrink: 0;
   }
-  .preset-title { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .preset-title { font-size: 14.5px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .preset-meta { font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .stage-actions { display: flex; align-items: center; flex-wrap: nowrap; gap: 5px; flex-shrink: 0; }
-  .stage-actions .btn { height: 27px; padding: 0 8px; font-size: 11px; }
+  .stage-actions .btn { height: 26px; padding: 0 7px; font-size: 11px; }
 
   /* Hero Row: XY Scope + 4 Macro Arcs */
   .hero-grid {
     display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
-    gap: 10px; align-items: stretch; flex: 1; min-height: 0; max-height: 220px;
+    gap: 10px; align-items: stretch; flex: 0 1 200px; min-height: 158px;
   }
   .card {
     background: var(--bg-surface); border: 1px solid var(--border);
-    border-radius: var(--radius-lg); padding: 10px 12px;
-    display: flex; flex-direction: column; gap: 6px; min-width: 0; min-height: 0;
+    border-radius: var(--radius-lg); padding: 8px 11px;
+    display: flex; flex-direction: column; gap: 5px; min-width: 0; min-height: 0; overflow: hidden;
   }
   .card-label {
     font-size: 10.5px; font-weight: 600; text-transform: uppercase;
     letter-spacing: 0.06em; color: var(--text-muted); flex-shrink: 0;
     display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: nowrap; white-space: nowrap; overflow: hidden;
   }
+  #scopeVoiceInfo {
+    font-family: var(--mono); color: var(--text-secondary);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 64%;
+  }
   #scopeCanvas {
-    width: 100%; height: 118px; flex: 1; min-height: 96px; background: var(--bg-canvas);
+    width: 100%; height: 104px; flex: 1; min-height: 82px; background: var(--bg-canvas);
     border-radius: var(--radius-md); border: 1px solid var(--border);
     display: block; cursor: crosshair;
   }
   .macros-grid {
     display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 8px; align-items: center; flex: 1; min-width: 0;
+    gap: 6px; align-items: center; flex: 1; min-width: 0; min-height: 0;
   }
   .macro-knob {
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    padding: 6px 4px; border-radius: var(--radius-md); min-width: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    padding: 5px 3px; border-radius: var(--radius-md); min-width: 0;
     background: var(--bg-canvas); border: 1px solid var(--border);
-    cursor: ns-resize; transition: border-color 0.12s;
+    cursor: ns-resize; transition: border-color 0.12s; overflow: hidden;
   }
   .macro-knob:hover, .macro-knob.dragging { border-color: var(--accent); }
-  .macro-knob svg { width: 58px; height: 58px; overflow: visible; }
-  .macro-name { font-size: 10.5px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.04em; white-space: nowrap; }
+  .macro-knob svg { width: 52px; height: 52px; overflow: visible; flex-shrink: 0; }
+  .macro-name { font-size: 10px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 
   /* Quick Contextual Strip & Drawer */
   .quick-strip { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
@@ -419,11 +425,12 @@
     .main { grid-template-columns: 244px minmax(0, 1fr) 276px; }
     .master-pill { display: none; }
   }
-  @media (max-width: 1040px) {
-    .hero-grid { grid-template-columns: 1fr; max-height: none; }
-    #scopeCanvas { height: 96px; }
-    .macros-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .drawer, .drawer.env-mode { grid-template-columns: 1fr; }
+  @media (max-width: 1080px) {
+    .stage-actions .btn { padding: 0 6px; font-size: 10.5px; }
+    .hero-grid { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.45fr); flex: 0 1 182px; min-height: 146px; }
+    #scopeCanvas { height: 88px; min-height: 70px; }
+    .macro-knob svg { width: 46px; height: 46px; }
+    .drawer, .drawer.env-mode { grid-template-columns: 1fr 1fr; }
   }
 </style>
   <script src="k250_presets_and_zones.js?v=4"></script>
@@ -497,9 +504,9 @@
             <span id="engineBadgeText">VA POLY</span>
             <span style="opacity:0.7">▾</span>
           </button>
-          <div style="min-width:0;">
+          <div class="track-identity-text">
             <div class="preset-title" id="heroPresetName">042 · Blade SuperSaw</div>
-            <div style="font-size:11px;color:var(--text-secondary)" id="heroPresetMeta">Track 4 · PAD · Dual-DCO SuperSaw + resonant SVF</div>
+            <div class="preset-meta" id="heroPresetMeta">Track 4 · PAD · Dual-DCO SuperSaw + resonant SVF</div>
           </div>
         </div>
         <div class="stage-actions">
@@ -700,29 +707,39 @@ const TRACKS = [
 // Full-length authentic showcase demo songs (loaded from k250_demos.json on demand)
 const DEMO_META = [
   { id:0, name:'1. Beethoven Orchestra',      short:'56s',  bpm:132, durSec:55.8,  notesCount:816,
-    busLabels:['VIOLINS','CELLO/BS','VIOLAS','STEINWAY','FLT/OBOE','CLAR/BSN','HRN/TPT','TIMPANI'] },
+    busLabels:['VIOLINS','CELLO/BS','VIOLAS','STEINWAY','FLT/OBOE','CLAR/BSN','HRN/TPT','TIMPANI'],
+    busEngines:['K250','K250','K250','K250','K250','K250','K250','K250'],
+    busPresetIndices:[8, 9, 10, 0, 24, 26, 15, 38] },
   { id:1, name:'2. Jazz Big-Band',            short:'1:52', bpm:140, durSec:112.1, notesCount:1471,
-    busLabels:['JAZZ KIT','UPR BASS','PNO / EP','GTR/VIBE','FLT/CLAR','ALTO SAX','BRASS','CONGAS'] },
+    busLabels:['JAZZ KIT','UPR BASS','PNO / EP','GTR/VIBE','FLT/CLAR','TENR SAX','BRASS','GTR/CONG'],
+    busEngines:['K250','K250','K250','K250','K250','K250','K250','K250'],
+    busPresetIndices:[50, 36, 3, 32, 22, 27, 18, 51] },
   { id:2, name:'3. Stars & Stripes March',    short:'1:27', bpm:132, durSec:87.2,  notesCount:5270,
-    busLabels:['DRUMLINE','TUBA','FR HORNS','GLK/XYLO','FLT/PICC','CLAR/SAX','TRUMPETS','TROMBONE'] },
+    busLabels:['DRUMLINE','TUBA','FR HORNS','GLK/XYLO','FLT/PICC','CLAR/SAX','TRUMPETS','TROMBONE'],
+    busEngines:['K250','K250','K250','K250','K250','K250','K250','K250'],
+    busPresetIndices:[45, 19, 15, 42, 23, 25, 16, 18] },
   { id:3, name:'4. All-Bank Multi-Engine',    short:'1:41', bpm:116, durSec:100.5, notesCount:1654,
-    busLabels:['DX7 FM','TB-303','TR-808','K250 ALL','VA POLY','TR-909','C64 SID','GRANULAR'] },
-  { id:4, name:'5. 20th Century Fox Fanfare', short:'21s',  bpm:106, durSec:21.3,  notesCount:353,
-    busLabels:['SNARE/CYM','TUBA','TIMPANI','VIOLINS','CELLOS','HRN/TBN','TRUMPETS','—'] }
+    busLabels:['DX7 FM','TB-303','TR-808','K250 ALL','VA POLY','TR-909','C64 SID','GRANULAR'],
+    busEngines:['DX7','B303','D808','K250','VA','D808','SID','GRAN'],
+    busPresetIndices:[0, 36, 47, 0, 7, 48, 22, 29] },
+  { id:4, name:'5. 20th Century Fox Fanfare', short:'21s',  bpm:114, durSec:22.1,  notesCount:229,
+    busLabels:['SNARE/CYM','TUBA/TMP','—','VIOLINS','CELLOS','HRN/TBN','TRUMPETS','—'],
+    busEngines:['K250','K250','K250','K250','K250','K250','K250','K250'],
+    busPresetIndices:[45, 19, 38, 7, 9, 15, 16, 7] }
 ];
 let FULL_DEMOS = null;
 let fullDemosPromise = null;
 function loadFullDemos() {
   if (FULL_DEMOS) return Promise.resolve(FULL_DEMOS);
   if (fullDemosPromise) return fullDemosPromise;
-  fullDemosPromise = fetch('k250_demos.json?v=3')
+  fullDemosPromise = fetch('k250_demos.json?v=4')
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => { FULL_DEMOS = data; return data; })
     .catch(err => { fullDemosPromise = null; throw err; });
   return fullDemosPromise;
 }
 
-const STORAGE_KEY = 'fm1_stacktrace_session_v4';
+const STORAGE_KEY = 'fm1_stacktrace_session_v5';
 let undoStack = [];
 
 let state = {
@@ -1694,6 +1711,9 @@ function playDemoVoiceByPresetIdx(kp, trk, midi, velNorm, dur, busVol = 0.9, bus
   }
 }
 
+const K250_ID_TO_PRESET_IDX = {};
+PRESETS.forEach((p, idx) => { if (p.k250 && p.k250.id) K250_ID_TO_PRESET_IDX[p.k250.id] = idx; });
+
 function playDemoEvent(trk, midi, vel, dur, voice, extraIdx = 0, song = null) {
   ensureAudio();
   const safeTrk = (trk >= 0 && trk < TRACKS.length) ? trk : 0;
@@ -1703,7 +1723,20 @@ function playDemoEvent(trk, midi, vel, dur, voice, extraIdx = 0, song = null) {
   const busPan = (song && song.pans && song.pans[safeTrk] !== undefined) ? song.pans[safeTrk] : 0;
   const velNorm = Math.max(0.05, Math.min(1.0, vel / 127));
   if (typeof voice === 'number' && typeof K250_PRESETS !== 'undefined' && K250_PRESETS[voice] && typeof playVoiceByType === 'function') {
-    playDemoVoiceByPresetIdx(K250_PRESETS[voice], safeTrk, midi, velNorm, dur, busVol, busPan);
+    const kp = K250_PRESETS[voice];
+    const mappedIdx = K250_ID_TO_PRESET_IDX[kp.id];
+    if (mappedIdx !== undefined && t.presetIdx !== mappedIdx) {
+      t.eng = 'K250';
+      t.presetIdx = mappedIdx;
+      t.macros = [...PRESETS[mappedIdx].m];
+      if (safeTrk === state.track) {
+        applyAccent();
+        renderBrowser();
+        renderMacros();
+        drawHwLcd();
+      }
+    }
+    playDemoVoiceByPresetIdx(kp, safeTrk, midi, velNorm, dur, busVol, busPan);
   } else if (voice === 'D808' && typeof play808Drum === 'function') {
     window.__k250PlayCtx = { tIdx: safeTrk, dur, latch: false, midi, isDemo: true, busVol, busPan };
     updateMasterFx();
@@ -1794,6 +1827,19 @@ function stopDemo() {
   if (state.activeDrawer === 'demos') renderDrawer();
 }
 
+function applyDemoBankToTracks(meta) {
+  if (!meta || !meta.busEngines || !meta.busPresetIndices) return;
+  for (let i = 0; i < TRACKS.length; i++) {
+    const pIdx = Math.max(0, Math.min(PRESETS.length - 1, meta.busPresetIndices[i] ?? 0));
+    const eng = meta.busEngines[i] || 'K250';
+    TRACKS[i].eng = eng;
+    TRACKS[i].presetIdx = pIdx;
+    if (eng === 'K250' && PRESETS[pIdx]) {
+      TRACKS[i].macros = [...PRESETS[pIdx].m];
+    }
+  }
+}
+
 async function startDemo(demoIdx, startOffsetSec = 0) {
   if (state.playing) togglePlay();
   stopDemo();
@@ -1801,8 +1847,9 @@ async function startDemo(demoIdx, startOffsetSec = 0) {
   const meta = DEMO_META[demoIdx] || DEMO_META[0];
   state.demoSelected = meta.id;
   state.demoLoading = true;
+  applyDemoBankToTracks(meta);
   syncDemoControls();
-  if (state.activeDrawer === 'demos') renderDrawer();
+  renderAll();
 
   const scopeEl = document.getElementById('scopeVoiceInfo');
   if (scopeEl) scopeEl.textContent = `Loading ${meta.name}...`;
@@ -1833,8 +1880,9 @@ async function startDemo(demoIdx, startOffsetSec = 0) {
   state.bpm = d.bpm;
   document.getElementById('bpmVal').textContent = d.bpm;
   if (audioCtx && demoVerb) demoVerb.gain.setValueAtTime(d.reverbNorm || 0.30, audioCtx.currentTime);
+  applyDemoBankToTracks(meta);
   syncDemoControls();
-  renderTracks();
+  renderAll();
 
   const offset = Math.max(0, Math.min(d.durSec - 0.1, startOffsetSec));
   let cursor = 0;
